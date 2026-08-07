@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regresión lineal simple · ML</title>
+  <meta name="description" content="Cómo una recta aprende a predecir: mínimos cuadrados explicados desde cero, con ejercicios.">
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-2">
+  <div class="barra-progreso"></div>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+      <!-- Estudio y Práctica se agregan en la Etapa 6, cuando esas páginas
+           existan. Un link de navegación a un 404 es peor que su ausencia. -->
+      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 2</p>
+      <p class="eyebrow">Tema 09 · Regresión</p>
+      <h1>Regresión lineal simple</h1>
+      <p class="lede">La forma más vieja y más útil de que una máquina aprenda: encontrar la recta que menos se equivoca.</p>
+      <hr class="regla">
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <h2>La intuición, sin una sola fórmula</h2>
+        <p>Imaginá que anotaste, para diez casas que se vendieron en tu barrio, el tamaño en metros cuadrados y el precio en el que se vendieron. Si marcás cada casa como un punto en un gráfico —tamaño para un lado, precio para el otro— vas a ver que los puntos no están tirados al azar: las casas más grandes tienden a estar más arriba, más caras. Hay un patrón, aunque no sea perfecto.</p>
+        <p>Ahora te enteraste de una casa nueva en venta, de la que solo sabés el tamaño. ¿Cuánto debería costar? Necesitás una manera de resumir el patrón que viste en los diez puntos y usarla para adivinar el precio de un punto que todavía no tenés. La forma más simple de resumir "los puntos suben hacia la derecha" es, justamente, una línea recta.</p>
+        <p>El problema es que hay infinitas rectas posibles, y no cualquiera sirve. Mirá el diagrama: dos de las rectas se equivocan sistemáticamente —una es demasiado chata y no le importa que las casas grandes sean más caras, la otra se dispara demasiado rápido y termina lejos de casi todos los puntos—. La tercera, la marcada, es la que en conjunto queda más cerca de todos los puntos a la vez. No pasa exactamente por ninguno, pero tampoco se aleja mucho de ninguno.</p>
+        <p>Eso es todo lo que hace la regresión lineal: buscar, entre todas las rectas posibles, la que "menos se equivoca en total" sobre los datos que tenés. El resto de este tema es, nomás, cómo definir con precisión qué significa "menos se equivoca" y cómo encontrar esa recta sin tener que probarlas todas a mano.</p>
+        <figure class="diagram" id="d-intuicion">
+          <svg viewBox="0 0 640 380" role="img" aria-label="Nube de puntos de tamaño contra precio de casas, con tres rectas candidatas: dos se equivocan sistemáticamente y una, destacada, queda más cerca del conjunto completo">
+            <line class="daxis" x1="60" y1="330" x2="600" y2="330"/>
+            <line class="daxis" x1="60" y1="330" x2="60" y2="40"/>
+            <line class="dedge-mute" x1="80" y1="290" x2="580" y2="260" stroke-dasharray="5 5"/>
+            <line class="dedge-mute" x1="80" y1="330" x2="580" y2="90" stroke-dasharray="5 5"/>
+            <line class="dedge" x1="80" y1="310" x2="580" y2="110"/>
+            <g>
+              <circle class="dnode-solid" cx="100" cy="300" r="4"/>
+              <circle class="dnode-solid" cx="160" cy="270" r="4"/>
+              <circle class="dnode-solid" cx="210" cy="285" r="4"/>
+              <circle class="dnode-solid" cx="260" cy="240" r="4"/>
+              <circle class="dnode-solid" cx="310" cy="250" r="4"/>
+              <circle class="dnode-solid" cx="360" cy="205" r="4"/>
+              <circle class="dnode-solid" cx="410" cy="215" r="4"/>
+              <circle class="dnode-solid" cx="470" cy="175" r="4"/>
+              <circle class="dnode-solid" cx="520" cy="150" r="4"/>
+              <circle class="dnode-solid" cx="570" cy="120" r="4"/>
+            </g>
+            <text class="dlabel" x="280" y="80" text-anchor="middle">la que menos se equivoca en total</text>
+            <text class="dlabel" x="330" y="365" text-anchor="middle">tamaño</text>
+            <text class="dlabel" x="20" y="185" text-anchor="middle" transform="rotate(-90 20 185)">precio</text>
+          </svg>
+          <figcaption>Tres rectas candidatas. Las dos discontinuas se equivocan mucho en algunos puntos; la sólida es la que acumula menos error sobre el conjunto completo.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <h2>El error de una recta</h2>
+        <p>Para cualquier recta candidata, cada punto de tu nube de datos queda un poco arriba o un poco abajo de ella. Esa distancia vertical —cuánto se equivocó la recta para ese punto en particular— se llama <strong>residuo</strong>.</p>
+        <p>El primer instinto para medir qué tan mala es una recta sería sumar todos los residuos. El problema es que los positivos (puntos por arriba de la recta) y los negativos (puntos por abajo) se cancelan entre sí. Una recta que pasa 10 unidades arriba de un punto y 10 abajo de otro tiene una suma de residuos de cero, como si fuera perfecta, cuando en realidad se equivocó bastante en los dos.</p>
+        <p>Elevar cada residuo al cuadrado arregla el problema: un número al cuadrado siempre da positivo, así que ya no hay manera de que los errores se tapen entre sí. De paso, el cuadrado castiga mucho más los errores grandes que los chicos: un residuo de 10 aporta 100, mientras que dos residuos de 5 aportan 25 cada uno, 50 en total. Eso empuja a la recta a evitar quedar muy lejos de cualquier punto en particular, en vez de conformarse con estar perfecta en casi todos y espantosa en uno solo.</p>
+        <figure class="diagram" id="d-residuos">
+          <svg viewBox="0 0 640 320" role="img" aria-label="Cinco puntos con sus residuos marcados como segmentos verticales hasta la recta, y un cuadrado apoyado sobre cada residuo representando su área al cuadrado">
+            <line class="daxis" x1="60" y1="280" x2="600" y2="280"/>
+            <line class="daxis" x1="60" y1="280" x2="60" y2="40"/>
+            <line class="dedge" x1="60" y1="280" x2="600" y2="130"/>
+            <line class="dedge-mute" x1="140" y1="220" x2="140" y2="258"/>
+            <line class="dedge-mute" x1="240" y1="260" x2="240" y2="230"/>
+            <line class="dedge-mute" x1="340" y1="190" x2="340" y2="202"/>
+            <line class="dedge-mute" x1="440" y1="215" x2="440" y2="174"/>
+            <line class="dedge-mute" x1="540" y1="110" x2="540" y2="147"/>
+            <rect class="dnode-bg" x="144" y="220" width="38" height="38"/>
+            <rect class="dnode-bg" x="244" y="230" width="30" height="30"/>
+            <rect class="dnode-bg" x="344" y="190" width="12" height="12"/>
+            <rect class="dnode-bg" x="444" y="174" width="41" height="41"/>
+            <rect class="dnode-bg" x="544" y="110" width="37" height="37"/>
+            <circle class="dnode-solid" cx="140" cy="220" r="5"/>
+            <circle class="dnode-solid" cx="240" cy="260" r="5"/>
+            <circle class="dnode-solid" cx="340" cy="190" r="5"/>
+            <circle class="dnode-solid" cx="440" cy="215" r="5"/>
+            <circle class="dnode-solid" cx="540" cy="110" r="5"/>
+            <text class="dlabel" x="330" y="310" text-anchor="middle">tamaño</text>
+            <text class="dlabel" x="20" y="160" text-anchor="middle" transform="rotate(-90 20 160)">precio</text>
+          </svg>
+          <figcaption>Cada segmento gris es un residuo: la distancia entre el punto y la recta. El cuadrado apoyado sobre cada uno tiene esa distancia como lado — su área es, literalmente, lo que se suma y se minimiza.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <h2>Mínimos cuadrados</h2>
+        <p>En la sección anterior vimos que el error de una recta se mide sumando los cuadrados de sus residuos. Ahora sí, la pregunta que quedó pendiente: ¿qué recta hace que esa suma sea lo más chica posible? Resulta que existe una fórmula que la calcula directo, sin tener que probar rectas a mano ni ir ajustando por prueba y error.</p>
+        <div class="callout formula">β₁ = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²&nbsp;&nbsp;&nbsp;&nbsp;β₀ = ȳ − β₁x̄</div>
+        <p><strong>xᵢ, yᵢ</strong> — cada observación individual: el tamaño y el precio de una casa en particular, la i-ésima de tu lista de datos.</p>
+        <p><strong>x̄, ȳ</strong> — los promedios: el tamaño promedio de todas las casas, el precio promedio de todas las casas.</p>
+        <p><strong>(xᵢ − x̄)</strong> y <strong>(yᵢ − ȳ)</strong> — cuánto se aleja esa casa en particular del promedio general. Una casa grande da un (xᵢ − x̄) positivo; una casa chica, uno negativo. Lo mismo para el precio.</p>
+        <p><strong>El numerador, Σ(xᵢ − x̄)(yᵢ − ȳ)</strong> — para cada casa, multiplicás cuánto se aleja en tamaño por cuánto se aleja en precio, y sumás esos productos entre todas las casas. Si las casas grandes tienden a ser las caras, casi todos esos productos te van a dar positivo —grande por grande, o chico por chico, siempre da positivo— y la suma total sale un número grande. Eso es una <strong>covarianza</strong>: mide si dos cosas se mueven juntas, en la misma dirección.</p>
+        <p><strong>El denominador, Σ(xᵢ − x̄)²</strong> — lo mismo, pero solo con x, elevado al cuadrado. Como es una suma de cuadrados, nunca da negativo. Mide cuánto varían los tamaños entre sí, sin mirar el precio para nada. Eso es una <strong>varianza</strong> (bueno, casi: la varianza de verdad divide esto por n, pero para lo que necesitamos acá esa división se cancela y no hace falta).</p>
+        <p><strong>β₁, el resultado de dividir uno por el otro</strong> — covarianza sobre varianza. Te dice cuánto tiende a subir el precio por cada unidad que sube el tamaño, medido contra cuánto varían los tamaños en tus datos.</p>
+        <p><strong>β₀</strong> — una vez que tenés la pendiente, el intercepto sale solo: es el valor que hace que la recta pase exactamente por el punto (x̄, ȳ), el centro de gravedad de la nube de puntos. Todas las rectas de mínimos cuadrados pasan por ese punto, sin excepción.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <h2>Calcularlo a mano</h2>
+        <p>Con cinco puntos chiquitos, la cuenta completa entra en una tabla. Vamos a usar (1, 2), (2, 4), (3, 5), (4, 4) y (5, 5) — números redondos, elegidos para que las cuentas den justo.</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>i</th><th>x</th><th>y</th><th>x − x̄</th><th>y − ȳ</th><th>(x − x̄)(y − ȳ)</th><th>(x − x̄)²</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>1</td><td>1</td><td>2</td><td>−2</td><td>−2</td><td>4</td><td>4</td></tr>
+              <tr><td>2</td><td>2</td><td>4</td><td>−1</td><td>0</td><td>0</td><td>1</td></tr>
+              <tr><td>3</td><td>3</td><td>5</td><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+              <tr><td>4</td><td>4</td><td>4</td><td>1</td><td>0</td><td>0</td><td>1</td></tr>
+              <tr><td>5</td><td>5</td><td>5</td><td>2</td><td>1</td><td>2</td><td>4</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>suma</td><td>x̄ = 3</td><td>ȳ = 4</td><td>—</td><td>—</td><td>6</td><td>10</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p>El numerador quedó en 6, el denominador en 10. β₁ = 6 / 10 = 0.6. Y β₀ = ȳ − β₁x̄ = 4 − 0.6 × 3 = 2.2. La recta que mejor ajusta estos cinco puntos es ŷ = 2.2 + 0.6x. Guardá estos números: los ejercicios numéricos de más abajo parten de esta misma tabla.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <h2>Qué tan buena es la recta</h2>
+        <p>Una vez que tenés la recta, queda la pregunta de qué tan bien te sirve. Ahí entra <strong>R²</strong>, una manera de resumir en un solo número qué proporción de la variación en tus datos explica la recta.</p>
+        <div class="callout formula">R² = 1 − SCresidual / SCtotal</div>
+        <p><strong>SCresidual</strong> ya la conocés: es la suma de los residuos al cuadrado, la misma que mínimos cuadrados minimiza. <strong>SCtotal</strong> es distinta — es Σ(yᵢ − ȳ)², cuánto varían los precios si ni siquiera usaras el tamaño y solo predijeras siempre el promedio.</p>
+        <p>R² compara esas dos sumas. Si tu recta predice casi tan mal como el promedio solo, SCresidual queda casi igual a SCtotal y R² sale cerca de 0: la recta no aportó nada. Si tu recta explica casi toda la variación, SCresidual queda chiquito comparado con SCtotal y R² sale cerca de 1.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>R² no te dice si la relación es realmente lineal, no te dice si hay un solo punto raro inflando o arruinando el ajuste, y no te dice si tiene sentido usar esta recta para el rango de datos que tenés. Un R² de 0.95 puede convivir perfectamente con un modelo inútil. Más abajo, en errores frecuentes, hay un ejemplo que lo deja bien claro.</div>
+      </div>
+    </section>
+
+    <section class="section" id="s-ajuste">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <h2>Ver el ajuste ocurriendo</h2>
+        <p>Scrolleá despacio. La misma recta va a ir girando y desplazándose, empezando mal ubicada y terminando en la posición que minimiza la suma de los cuadrados de los residuos.</p>
+        <figure class="diagram" id="d-ajuste">
+          <svg viewBox="0 0 640 380" role="img"
+               aria-label="Una recta candidata gira y se desplaza hasta minimizar la suma de los residuos al cuadrado.">
+            <line class="daxis" x1="60" y1="330" x2="600" y2="330"/>
+            <line class="daxis" x1="60" y1="330" x2="60" y2="40"/>
+            <g id="puntos">
+              <circle class="dnode-solid" cx="99" cy="310" r="5"/>
+              <circle class="dnode-solid" cx="199" cy="265" r="5"/>
+              <circle class="dnode-solid" cx="253" cy="252" r="5"/>
+              <circle class="dnode-solid" cx="306" cy="214" r="5"/>
+              <circle class="dnode-solid" cx="368" cy="194" r="5"/>
+              <circle class="dnode-solid" cx="430" cy="157" r="5"/>
+              <circle class="dnode-solid" cx="484" cy="143" r="5"/>
+              <circle class="dnode-solid" cx="561" cy="92" r="5"/>
+            </g>
+            <g id="residuos">
+              <line class="dedge-mute" x1="99" y1="310" x2="99" y2="287"/>
+              <line class="dedge-mute" x1="199" y1="265" x2="199" y2="254"/>
+              <line class="dedge-mute" x1="253" y1="252" x2="253" y2="236"/>
+              <line class="dedge-mute" x1="306" y1="214" x2="306" y2="218"/>
+              <line class="dedge-mute" x1="368" y1="194" x2="368" y2="197"/>
+              <line class="dedge-mute" x1="430" y1="157" x2="430" y2="177"/>
+              <line class="dedge-mute" x1="484" y1="143" x2="484" y2="159"/>
+              <line class="dedge-mute" x1="561" y1="92" x2="561" y2="133"/>
+            </g>
+            <line id="recta" class="dedge" x1="60" y1="300" x2="600" y2="280"/>
+            <text class="dlabel" x="330" y="365" text-anchor="middle">superficie de m2</text>
+            <text class="dlabel" x="20" y="185" text-anchor="middle" transform="rotate(-90 20 185)">precio</text>
+            <text class="dtxt-mute" id="etq-error" x="600" y="60" text-anchor="end">error: —</text>
+          </svg>
+          <figcaption>La recta gira y se corre hasta minimizar la suma de los cuadrados de los residuos. El número de arriba a la derecha es esa suma en el ajuste final, sobre estos ocho puntos.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" id="s-sim">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <h2>Probá vos</h2>
+        <p>Movés la recta con los sliders, el error se recalcula al instante. Buscá el mínimo a mano, moviendo un slider por vez, y después compará lo que encontraste con lo que da la fórmula de la sección 03 para estos mismos ocho puntos.</p>
+        <figure class="diagram">
+          <svg viewBox="0 0 640 340" id="sim-svg" role="img" aria-label="Simulador de ajuste de recta: dos sliders controlan pendiente e intercepto">
+            <line class="daxis" x1="60" y1="290" x2="600" y2="290"/>
+            <line class="daxis" x1="60" y1="290" x2="60" y2="30"/>
+            <g id="sim-puntos"></g>
+            <g id="sim-residuos"></g>
+            <line id="sim-recta" class="dedge" x1="60" y1="0" x2="600" y2="0"/>
+          </svg>
+          <div class="sim-ctrl">
+            <label>Pendiente <input type="range" id="sim-b1" min="-2" max="6" step="0.1" value="1"><output id="out-b1">1.0</output></label>
+            <label>Intercepto <input type="range" id="sim-b0" min="-40" max="80" step="1" value="0"><output id="out-b0">0</output></label>
+            <p class="sim-error">Suma de cuadrados: <strong id="sim-sse">—</strong></p>
+          </div>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios, de menor a mayor esfuerzo: una pregunta conceptual, dos cuentas numéricas sobre la tabla de la sección 04, armar una función en Python paso por paso, y correr el ajuste de verdad con scikit-learn.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <h2>Errores frecuentes</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span>Correlación no es causalidad. Que dos variables se muevan juntas no significa que una cause la otra. Las ventas de helado y los ahogamientos en playas suben juntos durante el verano — no porque el helado cause ahogamientos, sino porque el calor empuja las dos cosas por separado. Una recta que ajusta bien no te dice nada sobre qué causa qué.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span>Extrapolar fuera del rango de los datos. Tu recta se ajustó con las casas que tenías — digamos, entre 30 y 100 m². Usarla para predecir el precio de una casa de 500 m² es una apuesta a ciegas: no tenés ninguna evidencia de que la relación siga siendo lineal ahí afuera. Cuanto más lejos del rango que observaste, menos confianza merece la predicción.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>Un R² alto con un modelo inútil. Hay un ejemplo clásico —el cuarteto de Anscombe— donde cuatro conjuntos de datos completamente distintos dan exactamente el mismo R², la misma pendiente y el mismo intercepto: uno es realmente lineal, otro es una curva perfecta que la recta no capta, otro tiene un solo outlier que arma toda la pendiente, y otro tiene casi todos los puntos amontonados en una misma vertical con un único punto lejos definiendo la recta. Mirando solo los números, los cuatro parecen el mismo buen modelo. Mirando el gráfico, tres de los cuatro son un desastre.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">10</div>
+      <div class="sec-body">
+        <h2>Síntesis</h2>
+        <p>La regresión lineal simple busca la recta que mejor resume la relación entre dos variables numéricas: una que se usa para predecir, otra que se quiere predecir. "Mejor" tiene una definición precisa —la que minimiza la suma de los residuos al cuadrado— y esa definición tiene una fórmula cerrada: la pendiente sale de dividir la covarianza entre x e y por la varianza de x, y el intercepto se ajusta para que la recta pase por el promedio de ambas variables. R² resume qué tan bien esa recta explica los datos, pero no reemplaza mirar el gráfico: relaciones no lineales, outliers y extrapolaciones pueden esconderse detrás de un R² que parece bueno. La regresión múltiple, el próximo tema, extiende esta misma idea a más de un predictor.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav">
+      <a href="concept-08-sesgo-varianza.html"><span class="cn-dir">← Anterior</span><span class="cn-t">Sesgo, varianza y overfitting</span></a>
+      <a href="concept-10-gradiente.html" class="cn-next"><span class="cn-dir">Siguiente →</span><span class="cn-t">Regresión múltiple y descenso de gradiente</span></a>
+    </nav>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="regresion-lineal.js"></script>
+</body>
+</html>
