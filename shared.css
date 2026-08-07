@@ -1,139 +1,161 @@
+/* Sistema visual derivado de DESIGN-gsap.md (la referencia de estilo de
+   gsap.com) y adaptado en DESIGN.md. Los desvíos deliberados están anotados
+   allá con su razón; acá van anotados los que se pueden perder de vista al
+   editar una regla suelta. */
+
 /* ── Fuentes ─────────────────────────────────────────────── */
-@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap");
-/* Space Grotesk se importa acá aposta: es el fallback declarado en --font-display
-   y sin importarlo el fallback no existiría. Va en el mismo pedido que la mono. */
-@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap");
+/* Inter Tight es el sustituto que el propio DESIGN-gsap.md nombra primero para
+   Mori, que es de pago. Punto de reemplazo único: si algún día se compran los
+   .woff2 de PP Mori, se cambia `--font` y no hay que tocar nada más.
+   La mono NO es decorativa: solo pinta contenido que es código o cifra que
+   tiene que alinearse en columna. */
+@import url("https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;600&family=JetBrains+Mono:wght@400;700&display=swap");
 
-/* ── Tokens base ─────────────────────────────────────────── */
+/* ── Tokens crudos ───────────────────────────────────────── */
+/* Los hex exactos de gsap.com. No se usan directo fuera de este bloque. */
 :root {
-  /* Crudos, tomados de gsap.com. No se usan directo salvo acá. */
-  --just-black: #0e100f;
-  --off-black: #191919;
-  --surface-white: #fffce1;
-  --s75: #bbbaa6;
-  --s50: #7c7c6f;
-  --s40: #6b6b5f;   /* gris cálido para texto secundario en tema claro */
-  --s25: #42433d;
-  --surface-panel-lt: #fffef4;
-  --rule-lt: #ddd9bd;
+  --just-black: #0e100f;   /* canvas: el único fondo de la página */
+  --off-black: #191919;    /* panel anidado: pie, tarjetas, bloques de código */
+  --cream: #fffce1;        /* texto principal, bordes de pills, títulos */
+  --s75: #bbbaa6;          /* TODO el texto secundario. Ver nota abajo */
+  --s50: #7c7c6f;          /* NUNCA texto. Trazos de eje, íconos en reposo */
+  --s25: #42433d;          /* filetes de 1px, divisores */
 
-  /* Hue de fase por defecto: verde firma de GSAP */
-  --fase-h: 145;
+  /* Los dos grises no son un capricho. `--s50` es el apagado de gsap.com y
+     sobre su canvas da 4.52:1, que pasa AA raspando. Pero acá el texto
+     secundario también vive dentro de las tarjetas (`--off-black`), y ahí cae
+     a 4.16:1 — no llega. Por eso el token de texto es `--s75` y `--s50` quedó
+     restringido a lo no-textual, donde el piso es 3. Lo verifica
+     `node contraste.js`, que sale con código 1 si alguna fila baja. */
 
-  --font-display: "Satoshi", "Space Grotesk", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
-
-  /* Escala tipográfica fluida */
-  --t-display: clamp(2.8rem, 1.5rem + 6.5vw, 7rem);
-  --t-h1: clamp(2.2rem, 1.4rem + 3.6vw, 4.2rem);
-  --t-h2: clamp(1.6rem, 1.2rem + 1.8vw, 2.6rem);
-  --t-h3: clamp(1.15rem, 1rem + 0.7vw, 1.5rem);
-  --t-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
-  --t-small: 0.875rem;
-
-  --medida: 68ch;          /* medida máxima de lectura */
-  --radio: 14px;
-  --radio-lg: 24px;
-
-  /* Espaciado en escala de 4 */
-  --e1: 0.25rem;  --e2: 0.5rem;   --e3: 0.75rem;  --e4: 1rem;
-  --e6: 1.5rem;   --e8: 2rem;     --e12: 3rem;    --e16: 4rem;
-  --e24: 6rem;    --e32: 8rem;
-
-  --transicion: 180ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* ── Tema oscuro (por defecto) ───────────────────────────── */
-:root, [data-tema="oscuro"] {
+  --ink: var(--cream);
+  --ink-mute: var(--s75);
   --bg: var(--just-black);
   --panel: var(--off-black);
-  --ink: var(--surface-white);
-  --ink-mute: var(--s75);
   --rule: var(--s25);
-  /* El tema aporta luminosidad y croma; el hue lo pone la fase. */
-  --acc-l: 72%;  --acc-c: 0.19;
-  --tint-l: 32%; --tint-c: 0.08;
-  --sombra: 0 1px 0 var(--rule);
+
+  /* Taxonomía de fase. Seis colores fijos, uno por fase, siempre el mismo.
+     No rotan ni se derivan: son los hex de gsap.com. El sexto sale de su
+     propio `Category Color Label`, que ya nombra un sexto (`Other`), así que
+     no se inventa ninguno. */
+  --f0: #00bae2;   /* Blue (UI)                 · Piso                    */
+  --f1: #9d95ff;   /* Lilac (Text)              · Aprender de los datos   */
+  --f2: #0ae448;   /* Shockingly Green (marca)  · Regresión               */
+  --f3: #ff8709;   /* Orangey (SVG)             · Clasificación           */
+  --f4: #fec5fb;   /* Pink (Scroll)             · Árboles y no supervisado*/
+  --f5: #abff84;   /* Light Green (Other)       · Redes neuronales        */
+
+  --fase: var(--f2);   /* default: el verde de la marca */
+
+  /* Estados. Salen de la misma paleta para no ampliarla a un séptimo color. */
+  --ok: var(--f2);
+  --err: var(--f3);
+
+  /* El único gradiente cromático del sistema. Reservado al borde del CTA
+     principal; nunca como relleno ni como texto. */
+  --grad-verde: linear-gradient(114.41deg, #0ae448 20.74%, #abff84 65.5%);
+
+  --font: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Escala fluida. El extremo superior de cada clamp es el valor exacto de
+     gsap.com; el inferior es lo que entra en un teléfono. */
+  --t-caption: 0.875rem;                                    /* 14 */
+  --t-body-sm: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);     /* 15 → 16 */
+  --t-body:    clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);  /* 17 → 19 */
+  --t-body-lg: clamp(1.1875rem, 1.05rem + 0.6vw, 1.4375rem);/* 19 → 23 */
+  --t-sub:     clamp(1.375rem, 1.1rem + 1.2vw, 2.125rem);   /* 22 → 34 */
+  --t-h3:      clamp(1.5rem, 1.2rem + 1.5vw, 2.75rem);      /* 24 → 44 */
+  --t-h2:      clamp(1.875rem, 1.3rem + 2.9vw, 4.125rem);   /* 30 → 66 */
+  --t-h1:      clamp(2.25rem, 1.4rem + 4.2vw, 6.3125rem);   /* 36 → 101 */
+  --t-display: clamp(3.75rem, 0.5rem + 15vw, 14rem);        /* 60 → 224 */
+
+  --medida: 68ch;
+
+  /* Radios: solo tres valores en todo el sistema. */
+  --r-card: 8px;
+  --r-pill: 100px;
+
+  /* Espaciado, base 4. Los nombres son el valor en px sobre 4. */
+  --e2: 8px;    --e3: 12px;   --e4: 16px;   --e5: 20px;
+  --e6: 24px;   --e8: 32px;   --e19: 76px;  --e24: 96px;  --e27: 108px;
+
+  --ancho: 1280px;
+
+  /* Sin bounce, sin elastic: no pertenecen a este tono y `impeccable` los
+     prohíbe. Todo sale con ease-out exponencial. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --tr: 400ms var(--ease-out);
+  --tr-rapida: 220ms var(--ease-out);
 }
 
-/* ── Tema claro ──────────────────────────────────────────── */
-[data-tema="claro"] {
-  --bg: var(--surface-white);
-  --panel: var(--surface-panel-lt);
-  --ink: var(--just-black);
-  --ink-mute: var(--s40);
-  --rule: var(--rule-lt);
-  --acc-l: 48%;  --acc-c: 0.16;
-  --tint-l: 94%; --tint-c: 0.05;
-  --sombra: 0 1px 0 var(--rule);
-}
-
-/* ── El acento se arma en CADA elemento, no en la raíz ───── */
-/* Esto no es un capricho de performance: si `--accent` se declarara arriba,
-   `oklch()` sustituiría `var(--fase-h)` una sola vez, con el valor de la
-   raíz, y lo que heredarían los descendientes sería el color YA RESUELTO.
-   Que `.fase-3` redefina `--fase-h` más abajo no cambiaría nada: las seis
-   fases saldrían todas del mismo color. Declarándolos en el selector
-   universal, se recalculan donde sea que `--fase-h` cambie — que es lo que
-   hacen `.fase-0`…`.fase-5`, `.callout.warn/.err/.ok` y `.ej-fb.no/.ok`. */
+/* `--fase-tint` se declara en el selector universal, no en `:root`, y no es
+   optimizable. Si viviera en la raíz, `color-mix()` sustituiría `var(--fase)`
+   una sola vez con el valor de la raíz, y lo que heredarían los descendientes
+   sería el color YA RESUELTO: que `.fase-3` redefina `--fase` más abajo no
+   cambiaría nada y las seis fases saldrían del mismo tinte. Declarándolo acá
+   se recalcula donde sea que `--fase` cambie, que es lo que hacen
+   `.fase-0`…`.fase-5`, `.callout.warn/.err/.ok` y `.ej-fb.no/.ok`.
+   El 10% es de gusto, no de contraste: deja `--cream` encima entre 15.56:1 y
+   16.43:1 en las seis fases. Si se toca, tocar `TINTE` en contraste.js. */
 *, *::before, *::after {
-  --accent: oklch(var(--acc-l) var(--acc-c) var(--fase-h));
-  --accent-tint: oklch(var(--tint-l) var(--tint-c) var(--fase-h));
+  --fase-tint: color-mix(in oklab, var(--fase) 10%, var(--just-black));
 }
 
-/* ── Hue por fase: el único knob que cambia ──────────────── */
-.fase-0 { --fase-h: 220; }   /* azul      */
-.fase-1 { --fase-h: 285; }   /* lila      */
-.fase-2 { --fase-h: 145; }   /* verde     */
-.fase-3 { --fase-h: 55;  }   /* tangerina */
-.fase-4 { --fase-h: 350; }   /* rosa      */
-.fase-5 { --fase-h: 330; }   /* magenta   */
+.fase-0 { --fase: var(--f0); }
+.fase-1 { --fase: var(--f1); }
+.fase-2 { --fase: var(--f2); }
+.fase-3 { --fase: var(--f3); }
+.fase-4 { --fase: var(--f4); }
+.fase-5 { --fase: var(--f5); }
 
 /* ── Base ────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
 
-html {
-  scroll-behavior: smooth;
-  -webkit-text-size-adjust: 100%;
-}
+/* Sin `scroll-behavior: smooth`: Lenis maneja el scroll y las dos cosas se
+   pelean por el mismo frame. Con movimiento reducido Lenis no se instancia y
+   el salto instantáneo es justamente lo que corresponde. */
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-display);
+  font-family: var(--font);
   font-size: var(--t-body);
   font-weight: 400;
-  line-height: 1.65;
+  /* gsap.com usa 1.15, que sirve para párrafos cortos de marketing. Acá el
+     cuerpo son bloques largos de teoría, y el texto claro sobre fondo oscuro
+     se lee más fino de lo que es: necesita más aire. Desvío consciente. */
+  line-height: 1.55;
+  letter-spacing: -0.01em;
   -webkit-font-smoothing: antialiased;
-  transition: background var(--transicion), color var(--transicion);
+  overflow-x: hidden;   /* el hero sangra hasta el borde a propósito */
 }
 
 h1, h2, h3 {
-  font-weight: 900;
-  line-height: 0.96;
-  letter-spacing: -0.035em;
+  font-weight: 600;
+  letter-spacing: -0.011em;
   margin: 0 0 var(--e4);
   text-wrap: balance;
 }
-h1 { font-size: var(--t-h1); }
-h2 { font-size: var(--t-h2); }
-h3 { font-size: var(--t-h3); letter-spacing: -0.02em; line-height: 1.15; }
+h1 { font-size: var(--t-h1); line-height: 1; }
+h2 { font-size: var(--t-h2); line-height: 1.1; }
+h3 { font-size: var(--t-h3); line-height: 1.2; }
 
 p { margin: 0 0 var(--e4); max-width: var(--medida); text-wrap: pretty; }
 
-a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a { color: var(--fase); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
 code, pre, .mono { font-family: var(--font-mono); }
 
-:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: 3px;
-}
+strong { font-weight: 600; }
+
+:focus-visible { outline: 2px solid var(--fase); outline-offset: 3px; border-radius: 2px; }
+
+::selection { background: var(--fase); color: var(--just-black); }
 
 @media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -141,355 +163,397 @@ code, pre, .mono { font-family: var(--font-mono); }
   }
 }
 
+/* ── Lenis ───────────────────────────────────────────────── */
+/* Lo mínimo que pide Lenis. `anim.js` pone `.lenis` en <html> solo si logró
+   instanciarlo, así que si el CDN falla ninguna de estas reglas aplica y el
+   scroll nativo queda intacto. */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-stopped { overflow: clip; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
 /* ── Layout ──────────────────────────────────────────────── */
-.envoltura { width: min(1180px, 100% - 2.5rem); margin-inline: auto; }
-.estrecho  { width: min(760px, 100% - 2.5rem); margin-inline: auto; }
+.envoltura { width: min(var(--ancho), 100% - 2.5rem); margin-inline: auto; }
 
 /* ── Navegación ──────────────────────────────────────────── */
 nav {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--e6);
-  padding: var(--e4) max(1.25rem, calc((100% - 1180px) / 2));
+  padding: var(--e3) max(1.25rem, calc((100% - var(--ancho)) / 2));
   background: color-mix(in oklab, var(--bg) 88%, transparent);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--rule);
 }
 .nav-brand {
-  font-weight: 900; letter-spacing: -0.03em; font-size: var(--t-small);
-  text-transform: uppercase; color: var(--ink); text-decoration: none;
+  font-weight: 600; font-size: var(--t-body-sm); letter-spacing: -0.01em;
+  color: var(--ink); text-decoration: none;
 }
-.nav-right { display: flex; align-items: center; gap: var(--e6); }
+/* Gap apretado: en gsap.com la nav es compacta y editorial, no un menú aireado. */
+.nav-right { display: flex; align-items: center; gap: var(--e4); }
 .nav-link {
-  font-size: var(--t-small); font-weight: 500; color: var(--ink-mute);
-  text-decoration: none; transition: color var(--transicion);
+  font-size: var(--t-body-sm); font-weight: 400; color: var(--ink-mute);
+  text-decoration: none; transition: color var(--tr-rapida);
 }
 .nav-link:hover { color: var(--ink); }
-.nav-link.on { color: var(--accent); font-weight: 700; }
-.theme-tog {
-  background: none; border: 1px solid var(--rule); color: var(--ink);
-  border-radius: 999px; width: 34px; height: 34px; cursor: pointer;
-  font-size: 15px; line-height: 1; transition: border-color var(--transicion);
-}
-.theme-tog:hover { border-color: var(--accent); }
+/* El activo va en el color de la fase de esa página, sin subrayado. */
+.nav-link.on { color: var(--fase); }
 
 /* ── Pie ─────────────────────────────────────────────────── */
-.pie { padding-block: var(--e16); border-top: 1px solid var(--rule); font-size: var(--t-small); color: var(--ink-mute); }
+/* Un paso de superficie más claro que el canvas: eso es el terminador. */
+.pie {
+  background: var(--panel);
+  border-top: 1px solid var(--rule);
+  margin-top: var(--e27);
+  padding-block: var(--e19);
+  font-size: var(--t-body-sm); color: var(--ink-mute);
+}
+.pie p { margin: 0; }
 
-/* Barra de progreso de lectura */
 .barra-progreso {
   position: fixed; top: 0; left: 0; height: 2px; width: 0%;
-  background: var(--accent); z-index: 60; transition: width 80ms linear;
+  background: var(--fase); z-index: 60; transition: width 80ms linear;
+}
+
+/* ── Anotación entre llaves ──────────────────────────────── */
+/* La firma del sistema: abre toda sección, todo hero, todo bloque de fase.
+   Las llaves van en el HTML, no acá: son parte del texto y se leen en voz
+   alta. `verificar.js` exige que el contenido sea `{ … }`. */
+.eyebrow {
+  font-size: var(--t-body-sm); font-weight: 400;
+  color: var(--fase); margin-bottom: var(--e4);
 }
 
 /* ── Hero ────────────────────────────────────────────────── */
-.hero, .hero-c { padding-block: var(--e24) var(--e16); }
-.eyebrow {
-  font-family: var(--font-mono); font-size: var(--t-small);
-  text-transform: uppercase; letter-spacing: 0.14em;
-  color: var(--accent); margin-bottom: var(--e4);
-}
-.hero .w1, .hero .w2 { display: block; font-size: var(--t-display); line-height: 0.9; }
-.hero .w1 { font-weight: 900; letter-spacing: -0.045em; }
-.hero .w2 { font-weight: 400; letter-spacing: -0.03em; color: var(--ink-mute); }
-.lede { font-size: clamp(1.1rem, 1rem + 0.6vw, 1.4rem); color: var(--ink-mute); max-width: 58ch; }
-.progreso-global { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
-.progreso-global strong { color: var(--accent); }
-.regla { height: 1px; background: var(--rule); border: 0; margin-block: var(--e8); }
+.hero { padding-block: var(--e24) var(--e19); }
+.hero-c { padding-block: var(--e19) var(--e8); }
 
-.breadcrumb {
-  font-family: var(--font-mono); font-size: var(--t-small);
-  color: var(--ink-mute); margin-bottom: var(--e6);
-}
+/* El display sangra hasta el borde del viewport a propósito: sin contenedor,
+   sin centrar. Es la decisión más visible que se copia de gsap.com. */
+.hero h1 { font-size: var(--t-display); line-height: 0.9; letter-spacing: -0.02em; margin-bottom: var(--e6); }
+.hero .w1, .hero .w2 { display: block; }
+.hero .w2 { color: var(--ink-mute); }
+
+.lede { font-size: var(--t-body-lg); line-height: 1.45; color: var(--ink-mute); max-width: 46ch; }
+.progreso-global { font-size: var(--t-body-sm); color: var(--ink-mute); }
+.progreso-global strong { color: var(--fase); font-weight: 600; }
+.regla { height: 1px; background: var(--rule); border: 0; margin-block: var(--e8); }
+.breadcrumb { font-size: var(--t-body-sm); color: var(--ink-mute); margin-bottom: var(--e5); }
 .breadcrumb a { color: var(--ink-mute); }
+.breadcrumb a:hover { color: var(--ink); }
 
 /* ── Secciones numeradas ─────────────────────────────────── */
+/* Filete de 1px a ancho completo, sin padding alrededor: el único separador
+   del sistema. */
 .section {
-  display: grid; grid-template-columns: 4.5rem 1fr;
-  gap: var(--e8); padding-block: var(--e16);
+  display: grid; grid-template-columns: 5rem 1fr;
+  gap: var(--e8); padding-block: var(--e19);
   border-top: 1px solid var(--rule);
 }
 .sec-no {
-  font-family: var(--font-mono); font-size: var(--t-small); font-weight: 700;
-  color: var(--accent); position: sticky; top: 5.5rem; align-self: start;
+  font-size: var(--t-body-sm); font-weight: 600;
+  color: var(--fase); position: sticky; top: 5rem; align-self: start;
 }
 .sec-body > :last-child { margin-bottom: 0; }
 @media (max-width: 720px) {
-  .section { grid-template-columns: 1fr; gap: var(--e4); }
+  .section { grid-template-columns: 1fr; gap: var(--e3); padding-block: var(--e8); }
   .sec-no { position: static; }
 }
 
 /* ── Callouts ────────────────────────────────────────────── */
+/* Borde completo, nunca `border-left`: el side-stripe está prohibido por el
+   doc de GSAP y por impeccable. */
 .callout {
-  border: 1px solid var(--accent);
-  background: var(--accent-tint);
-  padding: var(--e4) var(--e6);
-  border-radius: var(--radio);
-  margin-block: var(--e6);
+  border: 1px solid var(--fase);
+  background: var(--fase-tint);
+  padding: var(--e4) var(--e5);
+  border-radius: var(--r-card);
+  margin-block: var(--e5);
+  max-width: var(--medida);
 }
 .callout > :last-child { margin-bottom: 0; }
 .callout.formula {
-  font-family: var(--font-mono); font-size: 1.05rem;
-  text-align: center; padding-block: var(--e6);
+  font-family: var(--font-mono); font-size: var(--t-body);
+  text-align: center; padding-block: var(--e5); max-width: none;
 }
-.callout.warn { --fase-h: 55; }
-.callout.err  { --fase-h: 25; }
-.callout.ok   { --fase-h: 145; }
+/* Los tres sabores usan tres colores distintos de la MISMA paleta de seis: no
+   se agrega un séptimo. Que cada uno coincida con el de alguna fase es
+   inevitable con una taxonomía de seis y es deliberado — el rótulo (`Cuidado`,
+   `Error clásico`, `Clave`) es lo que porta el significado, nunca el color
+   solo. La paleta de gsap.com no tiene rojo, así que `err` va en rosa. */
+.callout.warn { --fase: var(--f3); }   /* naranja: "Cuidado", "Trampa"     */
+.callout.err  { --fase: var(--f4); }   /* rosa:    "Error clásico"         */
+.callout.ok   { --fase: var(--f2); }   /* verde:   "Clave"                 */
 .callout .etiqueta {
-  display: block; font-family: var(--font-mono); font-size: 0.75rem;
-  text-transform: uppercase; letter-spacing: 0.12em;
-  color: var(--accent); margin-bottom: var(--e2);
+  display: block; font-size: var(--t-caption); font-weight: 600;
+  color: var(--fase); margin-bottom: var(--e2);
 }
 
 /* ── Diagramas ───────────────────────────────────────────── */
 .diagram {
-  margin-block: var(--e12);
+  margin: var(--e8) 0;
   padding: var(--e8);
   background: var(--panel);
-  border: 1px solid var(--rule);
-  border-radius: var(--radio-lg);
+  border-radius: var(--r-card);
 }
+/* `overflow: visible` es lo que deja que las formas desborden el marco, que es
+   como se contienen en gsap.com: sueltas, pisando el texto vecino. */
 .diagram svg { width: 100%; height: auto; display: block; overflow: visible; }
 .diagram figcaption {
-  font-size: var(--t-small); color: var(--ink-mute);
-  margin-top: var(--e4); text-align: center;
+  font-size: var(--t-body-sm); color: var(--ink-mute);
+  margin-top: var(--e5); max-width: var(--medida);
 }
 
-/* Helpers para el SVG. Ninguno lleva color literal. */
-.dnode-bg { fill: var(--accent-tint); stroke: var(--accent); stroke-width: 2; }
-.dnode-solid { fill: var(--accent); }
-.dedge { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linecap: round; }
-.dedge-mute { stroke: var(--rule); stroke-width: 1.5; fill: none; }
-.daxis { stroke: var(--ink-mute); stroke-width: 1.5; fill: none; }
-.dtxt { fill: var(--ink); font-family: var(--font-mono); font-size: 13px; }
-.dtxt-mute { fill: var(--ink-mute); font-family: var(--font-mono); font-size: 11px; }
-.dlabel {
-  fill: var(--accent); font-family: var(--font-mono); font-size: 12px;
-  font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
-}
+/* Helpers para el SVG. Ninguno lleva color literal: `verificar.js` falla si
+   aparece un hex dentro de un <svg>. */
+.dnode-bg { fill: var(--fase-tint); stroke: var(--fase); stroke-width: 2; }
+.dnode-solid { fill: var(--fase); }
+.dedge { stroke: var(--fase); stroke-width: 2; fill: none; stroke-linecap: round; }
+.dedge-mute { stroke: var(--s50); stroke-width: 1.5; fill: none; }
+.daxis { stroke: var(--s50); stroke-width: 1.5; fill: none; }
+.dtxt { fill: var(--ink); font-family: var(--font); font-size: 14px; }
+.dtxt-mute { fill: var(--ink-mute); font-family: var(--font-mono); font-size: 12px; }
+.dlabel { fill: var(--fase); font-family: var(--font); font-size: 13px; font-weight: 600; }
 
-/* ── Roadmap ─────────────────────────────────────────────── */
-.rm-phase {
-  display: grid; grid-template-columns: 15rem 1fr; gap: var(--e8);
-  padding-block: var(--e12); border-top: 1px solid var(--rule);
-}
-.rm-phase-meta { position: sticky; top: 6rem; align-self: start; }
-.rm-phase-n {
-  font-family: var(--font-mono); font-size: 3rem; font-weight: 700;
-  color: var(--accent); line-height: 1;
-}
-.rm-phase-hint { font-size: var(--t-small); color: var(--ink-mute); max-width: 26ch; }
-.rm-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--e4); }
+/* Relleno de gradiente para las formas orgánicas. Es el vocabulario de imagen
+   de gsap.com: profundidad por gradiente interno, nunca por sombra. */
+.dfill { fill: url(#grad-fase); }
 
-.rm-card {
-  display: block; padding: var(--e6); text-decoration: none; color: var(--ink);
-  background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio);
-  transition: transform var(--transicion), border-color var(--transicion);
+/* ── Pill ghost: el único control del sistema ────────────── */
+/* Nunca relleno. En hover baja la opacidad del borde; no cambia de fondo. */
+.pill, .ej-opt, .sync-salir {
+  font: inherit;
+  font-size: var(--t-body-sm);
+  background: none;
+  color: var(--ink);
+  border: 1px solid var(--cream);
+  border-radius: var(--r-pill);
+  padding: var(--e3) var(--e6);
+  cursor: pointer;
+  transition: border-color var(--tr-rapida), color var(--tr-rapida), opacity var(--tr-rapida);
 }
-.rm-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-.rm-card-n { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
-.rm-card-t { font-weight: 700; letter-spacing: -0.02em; margin-top: var(--e2); }
-.rm-card-estado {
-  display: inline-block; margin-top: var(--e3);
-  font-family: var(--font-mono); font-size: 0.7rem;
-  text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-mute);
-}
-.rm-card.en-progreso { border-color: var(--accent); }
-.rm-card.en-progreso .rm-card-estado { color: var(--accent); }
-.rm-card.completa { background: var(--accent-tint); border-color: var(--accent); }
-.rm-card.completa .rm-card-estado { color: var(--accent); font-weight: 700; }
-.rm-card.proximamente { opacity: 0.45; cursor: default; pointer-events: none; }
-
-@media (max-width: 860px) {
-  .rm-phase { grid-template-columns: 1fr; }
-  .rm-phase-meta { position: static; }
-}
-
-/* ── Navegación entre conceptos ──────────────────────────── */
-.concept-nav {
-  display: flex; justify-content: space-between; gap: var(--e6);
-  padding-block: var(--e12); border-top: 1px solid var(--rule);
-}
-.concept-nav a { text-decoration: none; color: var(--ink); max-width: 45%; }
-.concept-nav .cn-dir {
-  display: block; font-family: var(--font-mono); font-size: var(--t-small);
-  color: var(--ink-mute);
-}
-.concept-nav .cn-t { font-weight: 700; letter-spacing: -0.02em; }
-.concept-nav .cn-next { text-align: right; margin-left: auto; }
-.concept-nav .cn-pronto { opacity: 0.4; }
-
-/* ── Reveal on scroll (lo aplica shared.js) ──────────────── */
-/* El estado oculto vive detrás de `.js`, que shared.js pone en <html> en su
-   primera línea. Si el JS no carga, no corre, o está deshabilitado, la regla
-   nunca aplica y el contenido queda visible. Ocultar por defecto y confiar en
-   que el JS lo revele deja la página en blanco ante cualquier falla. */
-.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms ease, transform 600ms ease; }
-.js .reveal.visible { opacity: 1; transform: none; }
-@media (prefers-reduced-motion: reduce) {
-  .js .reveal { opacity: 1; transform: none; }
-}
-
-/* ── Control de animación de diagramas (lo inyecta anim.js) ─ */
-.diag-ctrl {
-  display: block; margin: var(--e4) auto 0;
-  font-family: var(--font-mono); font-size: var(--t-small);
-  background: none; color: var(--accent);
-  border: 1px solid var(--rule); border-radius: 999px;
-  padding: var(--e2) var(--e4); cursor: pointer;
-  transition: border-color var(--transicion);
-}
-.diag-ctrl:hover { border-color: var(--accent); }
+.pill:hover:not(:disabled),
+.ej-opt:hover:not(:disabled),
+.sync-salir:hover { border-color: color-mix(in oklab, var(--cream) 80%, transparent); }
 
 /* ── Ejercicios ──────────────────────────────────────────── */
 .ej {
-  padding: var(--e6); margin-block: var(--e6);
-  background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio);
+  padding: var(--e6); margin-block: var(--e5);
+  background: var(--panel); border-radius: var(--r-card);
 }
-.ej-q { font-weight: 500; margin-bottom: var(--e4); }
-.ej-opts { display: grid; gap: var(--e2); }
-.ej-opt {
-  text-align: left; font: inherit; font-size: var(--t-small);
-  padding: var(--e3) var(--e4); cursor: pointer;
-  background: var(--bg); color: var(--ink);
-  border: 1px solid var(--rule); border-radius: var(--radio);
-  transition: border-color var(--transicion), background var(--transicion);
-}
-.ej-opt:hover:not(:disabled) { border-color: var(--accent); }
+.ej-q { font-weight: 400; margin-bottom: var(--e4); }
+.ej-opts { display: grid; gap: var(--e2); justify-items: start; }
+.ej-opt { text-align: left; width: auto; }
 .ej-opt:disabled { cursor: default; }
-.ej-opt.ok { border-color: var(--accent); background: var(--accent-tint); font-weight: 700; }
-.ej-opt.no { opacity: 0.55; text-decoration: line-through; }
+.ej-opt.ok { border-color: var(--ok); color: var(--ok); font-weight: 600; }
+.ej-opt.no { opacity: 0.45; }
 
 .ej-fila { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; }
 .ej-input {
-  font-family: var(--font-mono); font-size: 1rem; width: 10rem;
-  padding: var(--e2) var(--e3); background: var(--bg); color: var(--ink);
-  border: 1px solid var(--rule); border-radius: var(--radio);
+  font-family: var(--font-mono); font-size: var(--t-body-sm); width: 9rem;
+  padding: var(--e3) var(--e4); background: var(--bg); color: var(--ink);
+  border: 1px solid var(--s25); border-radius: var(--r-pill);
+  transition: border-color var(--tr-rapida);
 }
-.ej-unidad { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
+.ej-input:hover { border-color: var(--s50); }
+.ej-unidad { font-size: var(--t-body-sm); color: var(--ink-mute); }
+
+/* El CTA principal: la única escalación cromática permitida. Ghost con borde
+   de gradiente, nunca relleno.
+   El borde crema es el estado base y funciona solo; el gradiente se aplica
+   encima solo si el navegador soporta `mask-composite`. Al revés (gradiente
+   por defecto, crema de fallback) un navegador sin mask dejaría el botón sin
+   borde visible. */
 .ej-enviar {
-  font: inherit; font-size: var(--t-small); font-weight: 700; cursor: pointer;
-  padding: var(--e2) var(--e6); border-radius: 999px;
-  background: var(--accent); color: var(--bg); border: 0;
+  position: relative;
+  font: inherit; font-size: var(--t-body-sm); font-weight: 600;
+  background: none; color: var(--cream);
+  border: 1.5px solid var(--cream); border-radius: var(--r-pill);
+  padding: var(--e3) var(--e6); cursor: pointer;
+  transition: opacity var(--tr-rapida);
+}
+.ej-enviar:hover { opacity: 0.8; }
+
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .ej-enviar { border-color: transparent; }
+  .ej-enviar::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    border-radius: inherit; padding: 1.5px;
+    background: var(--grad-verde);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
 }
 
+/* Borde completo de 1px, jamás `border-left`. */
 .ej-fb {
   margin-top: var(--e4); padding: var(--e3) var(--e4);
-  font-size: var(--t-small); border-radius: var(--radio);
-  border-left: 3px solid var(--accent); background: var(--accent-tint);
+  font-size: var(--t-body-sm); border-radius: var(--r-card);
+  border: 1px solid var(--fase); background: var(--fase-tint);
 }
-.ej-fb.no { --fase-h: 25; }
-.ej-fb.ok { --fase-h: 145; }
+.ej-fb.no { --fase: var(--err); }
+.ej-fb.ok { --fase: var(--ok); }
 
 /* ── Parsons ─────────────────────────────────────────────── */
 .pa-lista { list-style: none; margin: 0 0 var(--e4); padding: 0; display: grid; gap: var(--e2); }
 .pa-item {
   display: flex; align-items: center; justify-content: space-between; gap: var(--e4);
   padding: var(--e2) var(--e3); cursor: grab;
-  background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radio);
+  background: var(--bg); border: 1px solid var(--s25); border-radius: var(--r-card);
 }
-.pa-item.arrastrando { opacity: 0.4; border-color: var(--accent); }
+.pa-item.arrastrando { opacity: 0.4; border-color: var(--fase); }
 .pa-item.descartada { opacity: 0.35; }
 .pa-item.descartada .pa-txt { text-decoration: line-through; }
-.pa-txt { font-family: var(--font-mono); font-size: var(--t-small); white-space: pre; }
-.pa-ctrl { display: flex; gap: var(--e1); flex-shrink: 0; }
+.pa-txt { font-family: var(--font-mono); font-size: var(--t-body-sm); white-space: pre; }
+.pa-ctrl { display: flex; gap: 4px; flex-shrink: 0; }
 .pa-b {
-  width: 26px; height: 26px; cursor: pointer; line-height: 1;
+  width: 28px; height: 28px; cursor: pointer; line-height: 1; font: inherit;
   background: none; color: var(--ink-mute);
-  border: 1px solid var(--rule); border-radius: 6px;
+  border: 1px solid var(--s25); border-radius: 50%;
+  transition: color var(--tr-rapida), border-color var(--tr-rapida);
 }
-.pa-b:hover { color: var(--accent); border-color: var(--accent); }
+.pa-b:hover { color: var(--fase); border-color: var(--fase); }
+
+/* ── Roadmap ─────────────────────────────────────────────── */
+.rm-phase {
+  display: grid; grid-template-columns: 16rem 1fr; gap: var(--e8);
+  padding-block: var(--e19); border-top: 1px solid var(--rule);
+}
+.rm-phase-meta { position: sticky; top: 6rem; align-self: start; }
+.rm-phase-n { font-size: var(--t-h2); font-weight: 600; color: var(--fase); line-height: 1; }
+.rm-phase-hint { font-size: var(--t-body-sm); color: var(--ink-mute); max-width: 26ch; }
+.rm-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--e6); }
+
+/* Sin borde en reposo, sin sombra nunca: la separación la dan el radio y el
+   gap, que es como lo hace gsap.com. */
+.rm-card {
+  display: block; padding: var(--e6); text-decoration: none; color: var(--ink);
+  background: var(--panel); border: 1px solid transparent; border-radius: var(--r-card);
+  transition: transform var(--tr), border-color var(--tr), background var(--tr);
+}
+.rm-card:hover { transform: translateY(-2px); border-color: var(--fase); }
+.rm-card-n { font-size: var(--t-body-sm); color: var(--ink-mute); }
+.rm-card-t { font-weight: 600; font-size: var(--t-body-lg); line-height: 1.2; margin-top: var(--e2); }
+.rm-card-estado { display: inline-block; margin-top: var(--e3); font-size: var(--t-caption); color: var(--ink-mute); }
+.rm-card.en-progreso { border-color: var(--fase); }
+.rm-card.en-progreso .rm-card-estado { color: var(--fase); }
+.rm-card.completa { background: var(--fase-tint); border-color: var(--fase); }
+.rm-card.completa .rm-card-estado { color: var(--fase); font-weight: 600; }
+.rm-card.proximamente { opacity: 0.4; cursor: default; pointer-events: none; }
+
+@media (max-width: 860px) {
+  .rm-phase { grid-template-columns: 1fr; gap: var(--e5); padding-block: var(--e8); }
+  .rm-phase-meta { position: static; }
+}
+
+/* ── Navegación entre conceptos ──────────────────────────── */
+.concept-nav {
+  display: flex; justify-content: space-between; gap: var(--e6);
+  padding-block: var(--e19); border-top: 1px solid var(--rule);
+}
+.concept-nav a { text-decoration: none; color: var(--ink); max-width: 45%; }
+.concept-nav a:hover .cn-t { color: var(--fase); }
+.concept-nav .cn-dir { display: block; font-size: var(--t-body-sm); color: var(--ink-mute); }
+.concept-nav .cn-t { font-weight: 600; font-size: var(--t-sub); line-height: 1.2; transition: color var(--tr-rapida); }
+.concept-nav .cn-next { text-align: right; margin-left: auto; }
+.concept-nav .cn-pronto { opacity: 0.4; }
+
+/* ── Reveal on scroll ────────────────────────────────────── */
+/* Contrato con el JS: el estado oculto vive detrás de `.js`, que shared.js
+   pone en <html> en su primera línea. Si el JS no carga, no corre, o está
+   deshabilitado, la regla nunca aplica y el contenido queda visible. Ocultar
+   por defecto y confiar en que el JS lo revele deja la página en blanco ante
+   cualquier falla. */
+.js .reveal { opacity: 0; transform: translateY(24px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+.js .reveal.visible { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { opacity: 1; transform: none; }
+}
 
 /* ── Tabla de cálculo ────────────────────────────────────── */
 /* El wrapper con scroll propio, no la tabla: si la tabla scrollea sola con
-   `display:block` pierde el `border-collapse`, y los bordes entre celdas
-   se duplican. */
-.tabla-scroll { overflow-x: auto; margin-block: var(--e6); }
-.tabla-calc { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--t-small); }
+   `display:block` pierde el `border-collapse` y los bordes se duplican. */
+.tabla-scroll { overflow-x: auto; margin-block: var(--e5); }
+.tabla-calc { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--t-body-sm); }
 .tabla-calc th, .tabla-calc td { padding: var(--e2) var(--e3); border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
 .tabla-calc th:first-child, .tabla-calc td:first-child { text-align: left; }
-.tabla-calc thead th { color: var(--ink-mute); font-weight: 500; }
-.tabla-calc tfoot td { font-weight: 700; border-top: 2px solid var(--accent); border-bottom: 0; color: var(--accent); }
+.tabla-calc thead th { color: var(--ink-mute); font-weight: 400; }
+.tabla-calc tfoot td { font-weight: 700; border-top: 1px solid var(--fase); border-bottom: 0; color: var(--fase); }
 .tabla-calc tfoot td:first-child { color: var(--ink); }
 
 /* ── Simulador ───────────────────────────────────────────── */
-.sim-ctrl { display: grid; gap: var(--e3); margin-top: var(--e6); }
-.sim-ctrl label { display: grid; grid-template-columns: 7rem 1fr 3.5rem; align-items: center; gap: var(--e3); font-size: var(--t-small); }
+.sim-ctrl { display: grid; gap: var(--e3); margin-top: var(--e5); }
+.sim-ctrl label { display: grid; grid-template-columns: 7rem 1fr 3.5rem; align-items: center; gap: var(--e3); font-size: var(--t-body-sm); }
 .sim-ctrl output { font-family: var(--font-mono); text-align: right; }
-.sim-ctrl input[type="range"] { accent-color: var(--accent); }
-.sim-error { font-size: var(--t-small); color: var(--ink-mute); }
-.sim-error strong { font-family: var(--font-mono); color: var(--accent); }
+.sim-ctrl input[type="range"] { accent-color: var(--fase); }
+.sim-error { font-size: var(--t-body-sm); color: var(--ink-mute); }
+.sim-error strong { font-family: var(--font-mono); color: var(--fase); }
 
 /* ── Python vivo ─────────────────────────────────────────── */
 .py-editor {
-  width: 100%; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.6;
+  width: 100%; font-family: var(--font-mono); font-size: var(--t-body-sm); line-height: 1.6;
   padding: var(--e4); margin-bottom: var(--e3); resize: vertical; tab-size: 4;
   background: var(--bg); color: var(--ink);
-  border: 1px solid var(--rule); border-radius: var(--radio);
+  border: 1px solid var(--s25); border-radius: var(--r-card);
 }
 .py-salida {
-  font-family: var(--font-mono); font-size: 0.8125rem; white-space: pre-wrap;
+  font-family: var(--font-mono); font-size: var(--t-body-sm); white-space: pre-wrap;
   margin-top: var(--e4); padding: var(--e4); max-height: 22rem; overflow: auto;
-  background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radio);
+  background: var(--bg); border: 1px solid var(--s25); border-radius: var(--r-card);
 }
-.py-estado { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
+.py-estado { font-size: var(--t-body-sm); color: var(--ink-mute); }
 
 /* ── Sincronización con Google ──────────────────────────── */
 .sync { display: flex; align-items: center; gap: var(--e3); }
-.sync-estado { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
-.sync-salir {
-  font: inherit; font-size: 0.75rem; cursor: pointer; color: var(--ink-mute);
-  background: none; border: 1px solid var(--rule); border-radius: 999px;
-  padding: 2px var(--e3);
-}
+.sync-estado { font-size: var(--t-caption); color: var(--fase); }
+.sync-salir { font-size: var(--t-caption); color: var(--ink-mute); padding: 4px var(--e3); border-color: var(--s25); }
 
 /* ── Pilares ─────────────────────────────────────────────── */
-.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--e4); }
-.pilar { padding: var(--e6); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio); }
-.pilar h3 { color: var(--accent); }
-.pilar-e, .pilar-s { font-size: var(--t-small); color: var(--ink-mute); margin-bottom: var(--e2); }
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--e6); }
+.pilar { padding: var(--e6); background: var(--panel); border-radius: var(--r-card); }
+.pilar h3 { color: var(--fase); font-size: var(--t-sub); }
+.pilar-e, .pilar-s { font-size: var(--t-body-sm); color: var(--ink-mute); margin-bottom: var(--e2); }
 
 /* ── Línea de tiempo ─────────────────────────────────────── */
 .timeline { list-style: none; margin: 0; padding: 0 0 0 var(--e8); border-left: 1px solid var(--rule); }
-.tl-item { position: relative; display: grid; grid-template-columns: 5rem 1fr; gap: var(--e4); padding-block: var(--e6); }
+.tl-item { position: relative; display: grid; grid-template-columns: 5rem 1fr; gap: var(--e4); padding-block: var(--e5); }
 .tl-item::before {
   content: ""; position: absolute; left: calc(var(--e8) * -1 - 4px); top: var(--e8);
-  width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+  width: 7px; height: 7px; border-radius: 50%; background: var(--fase);
 }
-.tl-anio { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
-.tl-item h3 { margin-bottom: var(--e2); }
-.tl-item p { font-size: var(--t-small); color: var(--ink-mute); margin: 0; }
+.tl-anio { font-family: var(--font-mono); font-weight: 700; color: var(--fase); }
+.tl-item h3 { margin-bottom: var(--e2); font-size: var(--t-sub); }
+.tl-item p { font-size: var(--t-body-sm); color: var(--ink-mute); margin: 0; }
 
 /* ── Lista de conceptos ──────────────────────────────────── */
-.fase-bloque { margin-bottom: var(--e12); }
-.fase-tit { font-size: var(--t-h3); color: var(--accent); margin-bottom: var(--e4); }
+.fase-bloque { margin-bottom: var(--e19); }
+.fase-tit { font-size: var(--t-sub); color: var(--fase); margin-bottom: var(--e4); }
 .concept-list { list-style: none; margin: 0; padding: 0; }
 .ci {
   display: grid; grid-template-columns: 3rem 1fr auto; align-items: baseline; gap: var(--e4);
   padding-block: var(--e3); border-bottom: 1px solid var(--rule);
 }
-.ci-n { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
-.ci-t { font-weight: 500; }
-.ci-ver { font-size: var(--t-small); opacity: 0; transition: opacity var(--transicion); }
+.ci-n { font-size: var(--t-body-sm); color: var(--ink-mute); }
+.ci-t { font-weight: 400; }
+.ci-ver { font-size: var(--t-body-sm); opacity: 0; transition: opacity var(--tr-rapida); }
 .ci:hover .ci-ver, .ci-ver:focus-visible { opacity: 1; }
 .ci-pronto { opacity: 0.4; color: var(--ink-mute); }
 
-/* En tactil no hay hover: sin esto el unico link accionable de la pagina
-   queda invisible. Revelar por hover es un lujo de escritorio. */
-@media (hover: none) {
-  .ci-ver { opacity: 1; }
-}
+/* En táctil no hay hover: sin esto el único link accionable de la página queda
+   invisible. Revelar por hover es un lujo de escritorio. */
+@media (hover: none) { .ci-ver { opacity: 1; } }
 
 /* ── Distinciones ────────────────────────────────────────── */
-.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e4); }
-.dist { padding: var(--e6); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio); }
-.dist-vs { font-family: var(--font-mono); font-weight: 400; color: var(--accent); font-size: 0.8em; }
-.dist-trampa { font-size: var(--t-small); }
-.dist-truco { font-size: var(--t-small); color: var(--ink-mute); margin: 0; }
+.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e6); }
+.dist { padding: var(--e6); background: var(--panel); border-radius: var(--r-card); }
+.dist-vs { color: var(--fase); font-size: 0.8em; font-weight: 400; }
+.dist-trampa { font-size: var(--t-body-sm); }
+.dist-truco { font-size: var(--t-body-sm); color: var(--ink-mute); margin: 0; }
 
 .aviso-error {
   padding: var(--e6); margin-block: var(--e8);
-  border: 1px solid var(--rule); border-radius: var(--radio);
-  background: var(--panel); color: var(--ink-mute); font-size: var(--t-small);
+  border: 1px solid var(--s25); border-radius: var(--r-card);
+  background: var(--panel); color: var(--ink-mute); font-size: var(--t-body-sm);
 }

@@ -69,6 +69,36 @@ function _chequearEscrito(temas, existentes) {
   return errores;
 }
 
+/* Todo tema escrito tiene que declarar cuántos ejercicios corregibles tiene.
+   Sin el campo, `Progreso.estadoTema` lo lee como "tema sin escribir" y el tema
+   nunca llega a "completo" por más que se resuelvan todos los ejercicios — en
+   silencio, que es lo peor. Antes esto vivía en un registro manual en index.js
+   y era el paso más fácil de olvidar de los cuatro que pide agregar un tema. */
+function _chequearEjercicios(temas) {
+  const errores = [];
+  for (const t of temas) {
+    if (t.escrito !== true) continue;
+    if (typeof t.ejercicios !== "number" || !Number.isInteger(t.ejercicios) || t.ejercicios < 0) {
+      errores.push(`${t.slug}: escrito:true pero le falta "ejercicios": <entero> en temario.json`);
+    }
+  }
+  return errores;
+}
+
+/* La anotación entre llaves es la firma tipográfica del sistema (ver DESIGN.md).
+   Va en el HTML y no en un `::before` porque es parte del texto y se lee en voz
+   alta — lo cual la hace fácil de olvidar al copiar la plantilla. */
+function _chequearEyebrow(html, archivo) {
+  const errores = [];
+  for (const [, contenido] of html.matchAll(/<p class="eyebrow">([\s\S]*?)<\/p>/g)) {
+    const txt = contenido.replace(/<[^>]*>/g, "").trim();
+    if (!/^\{\s.*\s\}$/.test(txt)) {
+      errores.push(`${archivo}: .eyebrow sin las llaves de la firma: "${txt}"`);
+    }
+  }
+  return errores;
+}
+
 function _chequearNav(html, archivo) {
   const errores = [];
   const links = [...html.matchAll(/<a\s+href="([^"]+)"\s+class="nav-link([^"]*)"/g)];
@@ -123,7 +153,7 @@ function verificar() {
   }
 
   const temas = temario.fases.flatMap(f => f.temas);
-  const errores = [..._chequearTemas(temas)];
+  const errores = [..._chequearTemas(temas), ..._chequearEjercicios(temas)];
 
   // Cada tema declarado debe tener su HTML, si ya fue escrito
   for (const t of temas) {
@@ -147,6 +177,7 @@ function verificar() {
     if (archivo === "muestra.html") continue;
     const html = fs.readFileSync(path.join(RAIZ, archivo), "utf8");
     errores.push(..._chequearNav(html, archivo));
+    errores.push(..._chequearEyebrow(html, archivo));
     errores.push(..._chequearEnlaces(html, archivo, existentes, declarados));
   }
 
@@ -171,4 +202,4 @@ if (require.main === module) {
   console.log("✓ verificación OK");
 }
 
-module.exports = { verificar, _chequearEscrito, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces };
+module.exports = { verificar, _chequearEscrito, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow };

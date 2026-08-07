@@ -5,36 +5,76 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Muestra del design system</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="shared.css">
   <script src="shared.js"></script>
 </head>
-<body>
+<body class="fase-2">
   <div class="barra-progreso"></div>
   <nav>
     <a href="index.html" class="nav-brand">ML · Muestra</a>
     <div class="nav-right">
       <a href="index.html" class="nav-link">Inicio</a>
       <a href="temas.html" class="nav-link">Temas</a>
-      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
     </div>
   </nav>
 
   <main class="envoltura">
     <header class="hero">
-      <p class="eyebrow">Design system</p>
+      <p class="eyebrow">{ Design system }</p>
       <h1><span class="w1">Muestra</span><span class="w2">de componentes</span></h1>
       <p class="lede">Todos los tokens y componentes, en las seis fases, para revisar de un vistazo. Esta página no se enlaza desde la navegación: es control interno.</p>
     </header>
 
+    <section class="section">
+      <div class="sec-no">→</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Tipografía }</p>
+        <h2>La escala, de arriba abajo</h2>
+        <p>Una sola familia, dos pesos. El contraste lo hace la escala, no la mezcla de familias: es lo que sostiene el tono de gsap.com. Los extremos superiores de cada <code>clamp()</code> son los valores exactos del sitio de referencia.</p>
+        <p style="font-size: var(--t-h1); font-weight: 600; line-height: 1; max-width: none;">Heading 101</p>
+        <p style="font-size: var(--t-h2); font-weight: 600; line-height: 1.1; max-width: none;">Heading 66</p>
+        <p style="font-size: var(--t-h3); font-weight: 600; line-height: 1.2;">Heading 44</p>
+        <p style="font-size: var(--t-sub); font-weight: 600; line-height: 1.2;">Subheading 34</p>
+        <p style="font-size: var(--t-body-lg);">Body large 23 — el escalón de párrafo destacado.</p>
+        <p>Body 19 — el cuerpo por defecto, con interlineado 1.55 en vez del 1.15 de gsap.com: acá los bloques de teoría son largos y el texto claro sobre fondo oscuro se lee más fino de lo que es.</p>
+        <p style="font-size: var(--t-body-sm); color: var(--ink-mute);">Body small 16 — texto secundario, en <code>--s75</code>.</p>
+        <p style="font-size: var(--t-caption); color: var(--ink-mute);">Caption 14 — el piso. Nada baja de acá.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sec-no">→</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Controles }</p>
+        <h2>Outlined, siempre</h2>
+        <p>El sistema no tiene botones rellenos. La única escalación cromática permitida es el borde de gradiente del CTA principal, y va uno por vista.</p>
+        <p style="display: flex; gap: var(--e4); flex-wrap: wrap; align-items: center; max-width: none;">
+          <button class="pill" type="button">Pill ghost</button>
+          <button class="ej-enviar" type="button">CTA con borde de gradiente</button>
+        </p>
+        <p>Las opciones de ejercicio son el mismo pill, en sus tres estados:</p>
+        <div class="ej-opts">
+          <button class="ej-opt" type="button">Opción en reposo</button>
+          <button class="ej-opt ok" type="button" disabled>Opción correcta</button>
+          <button class="ej-opt no" type="button" disabled>Opción descartada</button>
+        </div>
+        <div class="ej-fb ok">Feedback correcto: borde completo de 1px, nunca <code>border-left</code>.</div>
+        <div class="ej-fb no">Feedback incorrecto: el mismo componente, otro color de estado.</div>
+      </div>
+    </section>
+
     <section class="section fase-0">
       <div class="sec-no">00</div>
       <div class="sec-body">
-        <h2>Fase 0 · Piso</h2>
-        <p>Nadie toca un modelo antes de saber qué es un vector. Este párrafo chequea medida de lectura, interlineado y color de cuerpo sobre el fondo: <code>var(--ink)</code> sobre <code>var(--bg)</code>, nunca el acento de fase.</p>
-        <div class="callout"><span class="etiqueta">Nota</span>Callout normal, fondo <code>--accent-tint</code> y borde <code>--accent</code>.</div>
+        <p class="eyebrow">{ Fase 0 }</p>
+        <h2>Piso</h2>
+        <p>Nadie toca un modelo antes de saber qué es un vector. Este párrafo chequea medida de lectura, interlineado y color de cuerpo: <code>var(--ink)</code> sobre <code>var(--bg)</code>, nunca el color de fase.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal, fondo <code>--fase-tint</code> y borde <code>--fase</code>.</div>
         <div class="callout formula">y = β₀ + β₁x + ε</div>
-        <div class="callout warn"><span class="etiqueta">Cuidado</span>Callout de advertencia — siempre tangerina, sin importar la fase.</div>
-        <div class="callout ok"><span class="etiqueta">Clave</span>Callout de confirmación — siempre verde, sin importar la fase.</div>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Advertencia — siempre naranja, sin importar la fase.</div>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Confirmación — siempre verde, sin importar la fase.</div>
         <figure class="diagram">
           <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de flujo x a f de x">
             <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
@@ -53,10 +93,11 @@
     <section class="section fase-1">
       <div class="sec-no">01</div>
       <div class="sec-body">
-        <h2>Fase 1 · Aprender de los datos</h2>
-        <p>Qué significa que una máquina aprenda. El acento de esta fase es el lila; compará su intensidad contra el piso azul de arriba en ambos temas.</p>
-        <div class="callout"><span class="etiqueta">Nota</span>El mismo componente, otro hue: solo cambia <code>--fase-h</code>.</div>
-        <div class="callout err"><span class="etiqueta">Error</span>Callout de error — fijo en un rojo-naranja, distinto del warn.</div>
+        <p class="eyebrow">{ Fase 1 }</p>
+        <h2>Aprender de los datos</h2>
+        <p>Qué significa que una máquina aprenda. El color de esta fase es el lila; compará su intensidad contra el azul de arriba.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>El mismo componente, otro color: solo cambia <code>--fase</code>.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>La paleta de gsap.com no tiene rojo, así que este sabor va en rosa. El rótulo es lo que porta la severidad, no el color.</div>
         <figure class="diagram">
           <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de nodo sólido y arista muda">
             <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
@@ -75,23 +116,29 @@
     <section class="section fase-2">
       <div class="sec-no">02</div>
       <div class="sec-body">
-        <h2>Fase 2 · Regresión</h2>
-        <p>Predecir un número. El verde de esta fase es también el verde por defecto de <code>:root</code> — confirmá que igual se distingue del <code>ok</code> de los callouts, que usa el mismo hue a propósito.</p>
+        <p class="eyebrow">{ Fase 2 }</p>
+        <h2>Regresión</h2>
+        <p>Predecir un número. El verde de esta fase es el verde de marca de GSAP y también el default de <code>:root</code>. Coincide con el <code>ok</code> de los callouts a propósito.</p>
         <div class="callout"><span class="etiqueta">Nota</span>Callout normal en verde de fase.</div>
         <div class="callout formula">ŷ = Xβ</div>
-        <figure class="diagram">
-          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de dos entradas combinadas">
-            <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
-            <circle class="dnode-bg" cx="80" cy="40" r="22"/>
-            <text class="dtxt" x="80" y="45" text-anchor="middle">x₁</text>
-            <circle class="dnode-bg" cx="80" cy="90" r="22"/>
-            <text class="dtxt" x="80" y="95" text-anchor="middle">x₂</text>
-            <path class="dedge" d="M102 40 L 250 62"/>
-            <path class="dedge" d="M102 90 L 250 68"/>
-            <rect class="dnode-bg" x="250" y="40" width="90" height="52" rx="10"/>
-            <text class="dtxt" x="295" y="70" text-anchor="middle">ŷ</text>
+        <figure class="diagram" id="d-formas">
+          <svg viewBox="0 0 400 180" role="img" aria-label="Domo, píldora y blob con gradiente interno: el vocabulario de formas del sistema">
+            <!-- El gradiente se define por SVG y toma los colores de la fase
+                 vía `stop-color`. Sin hex literales: verificar.js los rechaza. -->
+            <defs>
+              <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="var(--fase)"/>
+                <stop offset="100%" stop-color="var(--fase-tint)"/>
+              </linearGradient>
+            </defs>
+            <path class="dfill" d="M40 130 A 55 55 0 0 1 150 130 Z"/>
+            <rect class="dfill" x="175" y="60" width="60" height="70" rx="30"/>
+            <ellipse class="dfill" cx="310" cy="95" rx="55" ry="42"/>
+            <text class="dtxt-mute" x="95" y="155" text-anchor="middle">domo</text>
+            <text class="dtxt-mute" x="205" y="155" text-anchor="middle">píldora</text>
+            <text class="dtxt-mute" x="310" y="155" text-anchor="middle">blob</text>
           </svg>
-          <figcaption>Dos aristas convergiendo en un nodo.</figcaption>
+          <figcaption>Las tres formas base. Profundidad por gradiente interno, nunca por sombra: es el vocabulario de imagen de gsap.com, acá puesto a portar datos en vez de a decorar.</figcaption>
         </figure>
       </div>
     </section>
@@ -99,10 +146,11 @@
     <section class="section fase-3">
       <div class="sec-no">03</div>
       <div class="sec-body">
-        <h2>Fase 3 · Clasificación</h2>
-        <p>Predecir una categoría. La tangerina de esta fase coincide con el hue fijo del callout <code>warn</code>: son el mismo naranja por diseño, no un accidente de contraste.</p>
+        <p class="eyebrow">{ Fase 3 }</p>
+        <h2>Clasificación</h2>
+        <p>Predecir una categoría. El naranja de esta fase coincide con el del callout <code>warn</code>: son el mismo naranja por diseño, no un accidente.</p>
         <div class="callout"><span class="etiqueta">Nota</span>Callout normal — mismo naranja que un warning, pero por ser la fase, no la severidad.</div>
-        <div class="callout ok"><span class="etiqueta">Clave</span>El callout <code>ok</code> sigue siendo verde acá, no tangerina.</div>
+        <div class="callout ok"><span class="etiqueta">Clave</span>El callout <code>ok</code> sigue siendo verde acá, no naranja.</div>
         <figure class="diagram">
           <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de frontera de decisión">
             <rect class="dnode-bg" x="20" y="20" width="360" height="100" rx="10"/>
@@ -121,8 +169,9 @@
     <section class="section fase-4">
       <div class="sec-no">04</div>
       <div class="sec-body">
-        <h2>Fase 4 · Árboles y no supervisado</h2>
-        <p>Decidir por ramas, y aprender sin etiquetas. El rosa de esta fase debería leerse claramente distinto de la magenta de la fase siguiente.</p>
+        <p class="eyebrow">{ Fase 4 }</p>
+        <h2>Árboles y no supervisado</h2>
+        <p>Decidir por ramas, y aprender sin etiquetas. El rosa de esta fase es el mismo que usa el callout <code>err</code>.</p>
         <div class="callout"><span class="etiqueta">Nota</span>Callout normal en rosa de fase.</div>
         <div class="callout formula">Gini = 1 − Σ pᵢ²</div>
         <figure class="diagram">
@@ -144,10 +193,11 @@
     <section class="section fase-5">
       <div class="sec-no">05</div>
       <div class="sec-body">
-        <h2>Fase 5 · Redes neuronales</h2>
-        <p>De una neurona a una red que aprende sola. Última fase: confirmá que las seis se distinguen entre sí puestas una debajo de la otra, en los dos temas.</p>
-        <div class="callout"><span class="etiqueta">Nota</span>Callout normal en magenta de fase.</div>
-        <div class="callout warn"><span class="etiqueta">Cuidado</span>El warning sigue siendo tangerina acá también, no magenta.</div>
+        <p class="eyebrow">{ Fase 5 }</p>
+        <h2>Redes neuronales</h2>
+        <p>De una neurona a una red que aprende sola. Última fase, en verde claro. Es el par más cercano de los seis contra el verde de la fase 2 — confirmá que se distinguen puestos uno debajo del otro.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal en verde claro de fase.</div>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>El warning sigue siendo naranja acá también.</div>
         <figure class="diagram">
           <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de capa de neuronas">
             <circle class="dnode-bg" cx="70" cy="35" r="16"/>
@@ -173,10 +223,12 @@
     <section class="section">
       <div class="sec-no">06</div>
       <div class="sec-body">
-        <h2>Roadmap y navegación entre conceptos</h2>
+        <p class="eyebrow">{ Navegación }</p>
+        <h2>Roadmap y paso entre conceptos</h2>
         <p>El resto de los componentes compartidos, fuera del patrón por fase: tarjetas de roadmap con sus tres estados, y la navegación anterior/siguiente entre páginas de concepto.</p>
-        <div class="rm-phase">
+        <div class="rm-phase fase-2">
           <div class="rm-phase-meta">
+            <p class="eyebrow">{ Fase 2 }</p>
             <div class="rm-phase-n">02</div>
             <p class="rm-phase-hint">Predecir un número</p>
           </div>
@@ -184,20 +236,23 @@
             <a class="rm-card completa" href="#">
               <div class="rm-card-n">09</div>
               <div class="rm-card-t">Regresión lineal simple</div>
-              <div class="rm-card-estado">Completo</div>
+              <div class="rm-card-estado">✓ completo</div>
             </a>
             <a class="rm-card en-progreso" href="#">
               <div class="rm-card-n">10</div>
               <div class="rm-card-t">Descenso de gradiente</div>
-              <div class="rm-card-estado">En progreso</div>
+              <div class="rm-card-estado">en progreso</div>
             </a>
             <a class="rm-card" href="#">
               <div class="rm-card-n">11</div>
               <div class="rm-card-t">Ridge y Lasso</div>
-              <div class="rm-card-estado">Sin empezar</div>
+              <div class="rm-card-estado">sin empezar</div>
             </a>
           </div>
         </div>
+        <!-- Escrita a mano a propósito: shared.js monta la nav real buscando el
+             archivo actual en el temario, y muestra.html no es un tema, así que
+             sale antes de tocar nada y este ejemplo sobrevive. -->
         <nav class="concept-nav">
           <a href="#">
             <span class="cn-dir">← Anterior</span>
@@ -212,13 +267,21 @@
     </section>
   </main>
 
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Muestra interna · <span data-anio></span></p>
+    </div>
+  </footer>
+
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
   <script src="anim.js"></script>
   <script>
     Anim.dibujar(".fase-0 .diagram");
     Anim.aparecer(".fase-0 .diagram");
+    Anim.aparecer("#d-formas");
   </script>
 </body>
 </html>
