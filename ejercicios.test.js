@@ -89,3 +89,33 @@ test("parsons con cantidad de líneas equivocada no rompe", () => {
   assert.strictEqual(r.ok, false);
   assert.ok(Number.isFinite(r.puntaje));
 });
+
+test("mezclar no deja líneas de largo parecido en orden alfabético sin mezclar", () => {
+  const lineas = ["    aaa()", "    bbb()", "    ccc()"];
+  const r = E.mezclar([...lineas], "p1", lineas);
+  assert.notDeepStrictEqual(r, lineas);
+});
+
+test("mezclar es determinística: mismo id y mismo pool dan mismo resultado", () => {
+  const r1 = E.mezclar([...parsons.lineas, ...parsons.distractores], parsons.id, parsons.lineas);
+  const r2 = E.mezclar([...parsons.lineas, ...parsons.distractores], parsons.id, parsons.lineas);
+  assert.deepStrictEqual(r1, r2);
+});
+
+test("mezclar da resultados distintos para ids distintos", () => {
+  const pool = ["a1()", "b2()", "c3()", "d4()", "e5()"];
+  const r1 = E.mezclar([...pool], "p1", pool);
+  const r2 = E.mezclar([...pool], "p2", pool);
+  assert.notDeepStrictEqual(r1, r2);
+});
+
+test("mezclar no pierde ni inventa elementos", () => {
+  const pool = [...parsons.lineas, ...parsons.distractores];
+  const r = E.mezclar([...pool], parsons.id, parsons.lineas);
+  assert.deepStrictEqual([...r].sort(), [...pool].sort());
+});
+
+test("mezclar con un solo elemento no rompe", () => {
+  const r = E.mezclar(["única()"], "p1", ["única()"]);
+  assert.deepStrictEqual(r, ["única()"]);
+});
