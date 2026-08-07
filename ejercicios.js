@@ -259,7 +259,115 @@ const Ejercicios = (() => {
     return li;
   }
 
-  const constructores = { mcq: montarMcq, num: montarNum, parsons: montarParsons };
+  /* ── Pyodide, cargado una sola vez por página ─────────── */
+  const PYODIDE_CDN = "https://cdn.jsdelivr.net/pyodide/v314.0.4/full/";
+  let promesaPyodide = null;
+  const paquetesCargados = new Set();
+
+  async function cargarPyodide(paquetes = []) {
+    if (!promesaPyodide) {
+      promesaPyodide = (async () => {
+        if (typeof loadPyodide === "undefined") {
+          await new Promise((ok, err) => {
+            const s = document.createElement("script");
+            s.src = PYODIDE_CDN + "pyodide.js";
+            s.onload = ok;
+            s.onerror = () => err(new Error("no se pudo cargar Pyodide"));
+            document.head.append(s);
+          });
+        }
+        return loadPyodide({ indexURL: PYODIDE_CDN });
+      })();
+    }
+    const py = await promesaPyodide;
+    const faltantes = paquetes.filter(p => !paquetesCargados.has(p));
+    if (faltantes.length) {
+      await py.loadPackage(faltantes);
+      faltantes.forEach(p => paquetesCargados.add(p));
+    }
+    return py;
+  }
+
+  function montarPython(def, slug) {
+    const raiz = nodo("div", "ej ej-python");
+    raiz.append(nodo("p", "ej-q", def.q));
+
+    const editor = nodo("textarea", "py-editor");
+    editor.value = def.inicial;
+    editor.spellcheck = false;
+    editor.rows = Math.max(6, def.inicial.split("\n").length + 2);
+    editor.setAttribute("aria-label", "Editor de Python");
+
+    const fila = nodo("div", "ej-fila");
+    const correr = nodo("button", "ej-enviar", "▶ Ejecutar");
+    correr.type = "button";
+    const reset = nodo("button", "diag-ctrl", "↻ Reiniciar");
+    reset.type = "button";
+    reset.addEventListener("click", () => { editor.value = def.inicial; });
+
+    const estado = nodo("span", "py-estado");
+    const salida = nodo("pre", "py-salida");
+    salida.hidden = true;
+    const fb = nodo("div", "ej-fb");
+    fb.hidden = true;
+
+    correr.addEventListener("click", async () => {
+      correr.disabled = true;
+      const pesado = (def.paquetes || []).length > 0;
+      estado.textContent = paquetesCargados.size || promesaPyodide
+        ? "Ejecutando…"
+        : `Descargando Python${pesado ? " y sus paquetes" : ""}. Solo la primera vez.`;
+
+      try {
+        const py = await cargarPyodide(def.paquetes || []);
+        estado.textContent = "Ejecutando…";
+
+        // Capturar stdout y stderr sin ensuciar el intérprete del usuario.
+        py.runPython(`
+import sys, io
+_buf = io.StringIO()
+sys.stdout = _buf
+sys.stderr = _buf
+`);
+        let error = null;
+        try {
+          await py.runPythonAsync(editor.value);
+        } catch (e) {
+          error = e;
+        }
+        const impreso = py.runPython("sys.stdout.getvalue()");
+        py.runPython("sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__");
+
+        salida.hidden = false;
+        salida.textContent = error ? `${impreso}\n${error.message}` : (impreso || "(sin salida)");
+        estado.textContent = "";
+
+        if (error) {
+          Progreso.registrar(slug, def.id, 0);
+          pintarResultado(fb, { ok: false, puntaje: 0, msg: "El código tiró un error. Leelo arriba: Python suele decir bastante bien qué pasó." });
+        } else {
+          // Se compara la salida, no el código: hay muchas formas correctas de escribir lo mismo.
+          const ok = impreso.trim() === def.esperado.trim();
+          const res = ok
+            ? { ok: true, puntaje: 100, msg: def.expl }
+            : { ok: false, puntaje: 30, msg: `Corrió sin errores, pero la salida no es la esperada.\nEsperaba:\n${def.esperado}` };
+          Progreso.registrar(slug, def.id, res.puntaje);
+          pintarResultado(fb, res);
+        }
+      } catch (e) {
+        estado.textContent = "";
+        pintarResultado(fb, { ok: false, puntaje: 0, msg: `No se pudo cargar Python: ${e.message}. Probá recargar la página.` });
+      } finally {
+        correr.disabled = false;
+      }
+    });
+
+    fila.append(correr, reset, estado);
+    raiz.append(editor, fila, salida, fb);
+    return raiz;
+  }
+
+  const constructores = { mcq: montarMcq, num: montarNum, parsons: montarParsons, python: montarPython };
 
   function montar(contenedor, defs, slug) {
     const raiz = typeof contenedor === "string" ? document.querySelector(contenedor) : contenedor;
@@ -291,7 +399,7 @@ const Ejercicios = (() => {
     addEventListener("ejercicio-respondido", revisar);
   }
 
-  return { corregir, montar, mezclar };
+  return { corregir, montar, mezclar, cargarPyodide };
 })();
 
 if (typeof module !== "undefined") module.exports = Ejercicios;

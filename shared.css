@@ -393,3 +393,17 @@ nav {
   border: 1px solid var(--rule); border-radius: 6px;
 }
 .pa-b:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── Python vivo ─────────────────────────────────────────── */
+.py-editor {
+  width: 100%; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.6;
+  padding: var(--e4); margin-bottom: var(--e3); resize: vertical; tab-size: 4;
+  background: var(--bg); color: var(--ink);
+  border: 1px solid var(--rule); border-radius: var(--radio);
+}
+.py-salida {
+  font-family: var(--font-mono); font-size: 0.8125rem; white-space: pre-wrap;
+  margin-top: var(--e4); padding: var(--e4); max-height: 22rem; overflow: auto;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radio);
+}
+.py-estado { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
