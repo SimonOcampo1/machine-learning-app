@@ -158,9 +158,7 @@ const Ejercicios = (() => {
     lista.setAttribute("aria-label", "Líneas de código: arrastralas o usá los botones para ordenarlas");
 
     // Mezcla determinística por id: la misma página da siempre el mismo desorden.
-    const pool = [...def.lineas, ...(def.distractores || [])];
-    const semilla = [...def.id].reduce((a, c) => a + c.charCodeAt(0), 0);
-    pool.sort((a, b) => ((a.length * 31 + semilla) % 97) - ((b.length * 31 + semilla) % 97) || a.localeCompare(b));
+    const pool = mezclar([...def.lineas, ...(def.distractores || [])], def.id, def.lineas);
 
     for (const texto of pool) lista.append(itemParsons(texto, lista));
 
@@ -191,6 +189,36 @@ const Ejercicios = (() => {
     return raiz;
   }
 
+  /* Mezcla determinística: la misma página muestra siempre el mismo desorden,
+     pero un desorden de verdad. Ordenar por longitud no servía: la semilla se
+     sumaba igual a todos los elementos, así que nunca alteraba el orden
+     relativo entre líneas del mismo largo — esas caían al `localeCompare` y
+     quedaban alfabéticas. Un ejercicio con líneas parejas ya ordenadas se
+     renderizaba resuelto. Acá va un PRNG sembrado con el id y un Fisher-Yates,
+     más un chequeo final: si la mezcla devolvió el orden correcto, se rompe. */
+  function prng(semilla) {
+    let a = semilla >>> 0;
+    return () => {
+      a = (a + 0x6d2b79f5) >>> 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  function mezclar(pool, id, ordenCorrecto) {
+    const semilla = [...id].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+    const rnd = prng(semilla);
+    const out = pool.slice();
+    for (let i = out.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    const yaResuelto = ordenCorrecto.every((l, i) => out[i] === l);
+    if (yaResuelto && out.length > 1) [out[0], out[1]] = [out[1], out[0]];
+    return out;
+  }
+
   function itemParsons(texto, lista) {
     const li = nodo("li", "pa-item");
     li.dataset.linea = texto;
@@ -216,7 +244,12 @@ const Ejercicios = (() => {
       const sig = li.nextElementSibling;
       if (sig) lista.insertBefore(sig, li);
     });
-    fuera.addEventListener("click", () => { li.classList.toggle("descartada"); });
+    fuera.addEventListener("click", () => {
+      li.classList.toggle("descartada");
+      fuera.setAttribute("aria-label", li.classList.contains("descartada")
+        ? "Restaurar esta línea al algoritmo"
+        : "Descartar esta línea, no va en el algoritmo");
+    });
 
     ctrl.append(arriba, abajo, fuera);
     li.append(pre, ctrl);
@@ -258,7 +291,7 @@ const Ejercicios = (() => {
     addEventListener("ejercicio-respondido", revisar);
   }
 
-  return { corregir, montar };
+  return { corregir, montar, mezclar };
 })();
 
 if (typeof module !== "undefined") module.exports = Ejercicios;
