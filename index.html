@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Machine Learning · Estudio</title>
+  <meta name="description" content="Machine learning desde cero: teoría, diagramas animados y ejercicios interactivos.">
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link on">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+      <!-- Estudio y Práctica se agregan en la Etapa 6. -->
+      <div class="sync" id="sync"></div>
+      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero">
+      <p class="eyebrow">De cero a redes neuronales</p>
+      <h1><span class="w1">Machine</span><span class="w2">Learning</span></h1>
+      <p class="lede">Veinticuatro temas, seis fases. Empieza en "qué es una variable" y termina en una red que aprende sola. Cada concepto se ve moverse y se practica antes de pasar al siguiente.</p>
+      <p class="progreso-global">Progreso: <strong id="pct">0</strong>% · <span id="completos">0</span> de 24 temas</p>
+    </header>
+
+    <section id="roadmap" aria-label="Roadmap de aprendizaje"></section>
+
+    <section class="section reveal">
+      <div class="sec-no">→</div>
+      <div class="sec-body">
+        <h2>Cómo estudiar esto</h2>
+        <p>Los temas están en orden y el orden importa: cada uno da por sentado lo que viene antes. Leé la teoría, mirá los diagramas moverse, y resolvé los ejercicios del final antes de avanzar — quedarte solo con la lectura es la manera más rápida de olvidarse todo en una semana.</p>
+        <p>El progreso se guarda solo, en este navegador. Si querés tenerlo también en otra máquina, iniciá sesión con Google arriba a la derecha.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="envoltura pie">
+    <p>Hecho para David y Abel · <span data-anio></span></p>
+  </footer>
+
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="progreso.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>
