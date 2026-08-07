@@ -374,3 +374,22 @@ nav {
 }
 .ej-fb.no { --fase-h: 25; }
 .ej-fb.ok { --fase-h: 145; }
+
+/* ── Parsons ─────────────────────────────────────────────── */
+.pa-lista { list-style: none; margin: 0 0 var(--e4); padding: 0; display: grid; gap: var(--e2); }
+.pa-item {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--e4);
+  padding: var(--e2) var(--e3); cursor: grab;
+  background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radio);
+}
+.pa-item.arrastrando { opacity: 0.4; border-color: var(--accent); }
+.pa-item.descartada { opacity: 0.35; }
+.pa-item.descartada .pa-txt { text-decoration: line-through; }
+.pa-txt { font-family: var(--font-mono); font-size: var(--t-small); white-space: pre; }
+.pa-ctrl { display: flex; gap: var(--e1); flex-shrink: 0; }
+.pa-b {
+  width: 26px; height: 26px; cursor: pointer; line-height: 1;
+  background: none; color: var(--ink-mute);
+  border: 1px solid var(--rule); border-radius: 6px;
+}
+.pa-b:hover { color: var(--accent); border-color: var(--accent); }
