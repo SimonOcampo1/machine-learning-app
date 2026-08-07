@@ -12,6 +12,17 @@
 </head>
 <body class="fase-2">
   <div class="barra-progreso"></div>
+  <!-- El gradiente de las formas, declarado una vez para toda la página. Toma
+       los colores por `stop-color: var(...)`, así que sigue a la fase sola y no
+       hay ningún hex literal: verificar.js los rechaza dentro de un <svg>. -->
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
   <nav>
     <a href="index.html" class="nav-brand">ML · Muestra</a>
     <div class="nav-right">
@@ -123,14 +134,6 @@
         <div class="callout formula">ŷ = Xβ</div>
         <figure class="diagram" id="d-formas">
           <svg viewBox="0 0 400 180" role="img" aria-label="Domo, píldora y blob con gradiente interno: el vocabulario de formas del sistema">
-            <!-- El gradiente se define por SVG y toma los colores de la fase
-                 vía `stop-color`. Sin hex literales: verificar.js los rechaza. -->
-            <defs>
-              <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0%" stop-color="var(--fase)"/>
-                <stop offset="100%" stop-color="var(--fase-tint)"/>
-              </linearGradient>
-            </defs>
             <path class="dfill" d="M40 130 A 55 55 0 0 1 150 130 Z"/>
             <rect class="dfill" x="175" y="60" width="60" height="70" rx="30"/>
             <ellipse class="dfill" cx="310" cy="95" rx="55" ry="42"/>

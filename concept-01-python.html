@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Python esencial · ML</title>
+  <meta name="description" content="Lo mínimo de Python para hacer machine learning: variables, listas, bucles, funciones y diccionarios, con ejercicios que corren en el navegador.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-0">
+  <div class="barra-progreso"></div>
+  <!-- El gradiente de las formas, declarado una vez para toda la página. Toma
+       los colores por `stop-color: var(...)`, así que sigue a la fase sola y no
+       hay ningún hex literal: verificar.js los rechaza dentro de un <svg>. -->
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 0</p>
+      <p class="eyebrow">{ Tema 01 · Piso }</p>
+      <h1>Python esencial</h1>
+      <p class="lede">No hace falta ser programador para hacer machine learning, pero sí hace falta leer código sin asustarse. Esto es lo mínimo, y alcanza para los veintitrés temas que siguen.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Por qué este lenguaje }</p>
+        <h2>Python es el idioma del rubro</h2>
+        <p>Casi todo el machine learning del mundo se escribe en Python. No porque sea el lenguaje más rápido —no lo es, ni cerca— sino porque las librerías que hacen el trabajo pesado están ahí: NumPy para las cuentas, scikit-learn para los modelos clásicos, PyTorch y TensorFlow para las redes neuronales. Elegir otro lenguaje es elegir escribir a mano lo que acá ya está escrito.</p>
+        <p>La consecuencia práctica es que vas a leer mucho más código del que vas a escribir. La mayoría de las veces tu trabajo va a ser armar cinco o seis líneas que le pasan tus datos a una función que otro escribió. Por eso este tema no busca que sepas programar: busca que puedas leer esas cinco líneas y entender exactamente qué hace cada una.</p>
+        <p>Todos los ejercicios de este sitio corren Python de verdad, dentro de tu navegador. No hay nada que instalar.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo primero }</p>
+        <h2>Variables: nombres pegados a valores</h2>
+        <p>Una variable es un nombre que apunta a un valor. El signo <code>=</code> no significa "es igual a" como en matemática: significa "de ahora en más, este nombre apunta a esto".</p>
+        <div class="callout formula">precio = 1500</div>
+        <p>Después de esa línea, cada vez que escribas <code>precio</code>, Python va a buscar el 1500. Y si más adelante escribís <code>precio = 2000</code>, el nombre se despega del 1500 y se pega al 2000. El valor viejo se pierde. Esto es lo que hace que la línea <code>x = x + 1</code>, que en matemática sería un absurdo, en programación sea perfectamente normal: "tomá lo que hay en x, sumale uno, y volvé a pegar el nombre x a ese resultado nuevo".</p>
+        <figure class="diagram" id="d-variables">
+          <svg viewBox="0 0 640 220" role="img" aria-label="Tres nombres apuntando a tres valores: precio a 1500, nombre a la palabra casa, y activo al valor verdadero">
+            <text class="dlabel" x="90" y="30" text-anchor="middle">nombres</text>
+            <text class="dlabel" x="460" y="30" text-anchor="middle">valores</text>
+            <text class="dtxt" x="90" y="75" text-anchor="middle">precio</text>
+            <text class="dtxt" x="90" y="130" text-anchor="middle">nombre</text>
+            <text class="dtxt" x="90" y="185" text-anchor="middle">activo</text>
+            <path class="dedge" d="M150 70 H 330"/>
+            <path class="dedge" d="M150 125 H 330"/>
+            <path class="dedge" d="M150 180 H 330"/>
+            <rect class="dnode-bg" x="340" y="50" width="240" height="40" rx="8"/>
+            <text class="dtxt" x="460" y="76" text-anchor="middle">1500</text>
+            <rect class="dnode-bg" x="340" y="105" width="240" height="40" rx="8"/>
+            <text class="dtxt" x="460" y="131" text-anchor="middle">"casa"</text>
+            <rect class="dnode-bg" x="340" y="160" width="240" height="40" rx="8"/>
+            <text class="dtxt" x="460" y="186" text-anchor="middle">True</text>
+          </svg>
+          <figcaption>Tres tipos que vas a ver todo el tiempo: un número, un texto (entre comillas, se llama <em>string</em>) y un valor de verdad (<code>True</code> o <code>False</code>, con mayúscula).</figcaption>
+        </figure>
+        <div class="callout"><span class="etiqueta">Nota</span>Python distingue mayúsculas de minúsculas: <code>precio</code> y <code>Precio</code> son dos variables distintas. Es la fuente número uno de errores de tipeo.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Muchos valores juntos }</p>
+        <h2>Listas</h2>
+        <p>Una lista guarda varios valores en orden, entre corchetes y separados por comas. Es la estructura que más vas a usar: un conjunto de datos es, en el fondo, una lista de listas.</p>
+        <div class="callout formula">precios = [1500, 2000, 1800, 2400]</div>
+        <p>Para sacar un elemento se usan corchetes con su posición. Y acá viene lo único verdaderamente contraintuitivo de esta sección: <strong>se cuenta desde cero</strong>. El primer elemento es el <code>0</code>, el segundo es el <code>1</code>, y así. Una lista de cuatro elementos tiene posiciones 0, 1, 2 y 3, y pedir la posición 4 da error.</p>
+        <figure class="diagram" id="d-listas">
+          <svg viewBox="0 0 640 200" role="img" aria-label="Una lista de cuatro precios con sus índices desde cero por arriba y sus índices negativos por abajo">
+            <rect class="dnode-bg" x="60" y="60" width="120" height="60" rx="8"/>
+            <text class="dtxt" x="120" y="97" text-anchor="middle">1500</text>
+            <rect class="dnode-bg" x="190" y="60" width="120" height="60" rx="8"/>
+            <text class="dtxt" x="250" y="97" text-anchor="middle">2000</text>
+            <rect class="dnode-bg" x="320" y="60" width="120" height="60" rx="8"/>
+            <text class="dtxt" x="380" y="97" text-anchor="middle">1800</text>
+            <rect class="dnode-bg" x="450" y="60" width="120" height="60" rx="8"/>
+            <text class="dtxt" x="510" y="97" text-anchor="middle">2400</text>
+            <text class="dlabel" x="120" y="45" text-anchor="middle">0</text>
+            <text class="dlabel" x="250" y="45" text-anchor="middle">1</text>
+            <text class="dlabel" x="380" y="45" text-anchor="middle">2</text>
+            <text class="dlabel" x="510" y="45" text-anchor="middle">3</text>
+            <text class="dtxt-mute" x="120" y="145" text-anchor="middle">-4</text>
+            <text class="dtxt-mute" x="250" y="145" text-anchor="middle">-3</text>
+            <text class="dtxt-mute" x="380" y="145" text-anchor="middle">-2</text>
+            <text class="dtxt-mute" x="510" y="145" text-anchor="middle">-1</text>
+            <text class="dtxt-mute" x="320" y="180" text-anchor="middle">los índices negativos cuentan desde el final</text>
+          </svg>
+          <figcaption><code>precios[0]</code> da 1500. <code>precios[-1]</code> da 2400, el último, sin necesidad de saber cuántos hay.</figcaption>
+        </figure>
+        <p>Dos operaciones que vas a usar a cada rato: <code>len(precios)</code> devuelve cuántos elementos hay (acá, 4), y <code>precios.append(3000)</code> agrega uno al final. También podés pedir un pedazo con dos puntos: <code>precios[1:3]</code> devuelve <code>[2000, 1800]</code> — desde la posición 1, hasta la 3 <em>sin incluirla</em>. Ese "sin incluirla" es la segunda fuente de confusión más común después del cero.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Repetir sin repetirse }</p>
+        <h2>Bucles y la sangría que manda</h2>
+        <p>Un bucle <code>for</code> recorre una lista y ejecuta lo mismo para cada elemento. La variable que va después del <code>for</code> es un nombre que vos elegís: en cada vuelta se pega a un elemento distinto.</p>
+        <div class="callout formula">for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;print(p * 2)</div>
+        <p>Eso imprime cada precio duplicado, uno por línea. Fijate en dos cosas. Primero, los dos puntos al final de la línea del <code>for</code>. Segundo, y mucho más importante: <strong>la sangría</strong>.</p>
+        <p>En casi todos los lenguajes, la sangría es decoración. En Python <em>es</em> el código. Lo que está indentado abajo del <code>for</code> es lo que se repite; lo que vuelve al margen ya está afuera del bucle y se ejecuta una sola vez. No hay llaves ni palabras de cierre: la única forma de saber dónde termina un bloque es mirar dónde vuelve el margen.</p>
+        <figure class="diagram" id="d-sangria">
+          <svg viewBox="0 0 640 240" role="img" aria-label="Dos versiones del mismo bucle: en una el print está indentado y corre cuatro veces, en la otra está al margen y corre una sola vez">
+            <text class="dlabel" x="30" y="30">adentro del bucle</text>
+            <rect class="dnode-bg" x="30" y="45" width="250" height="30" rx="6"/>
+            <text class="dtxt" x="42" y="66">for p in precios:</text>
+            <rect class="dnode-solid" x="60" y="82" width="220" height="30" rx="6"/>
+            <text class="dtxt-mute" x="72" y="103">····print(p)</text>
+            <path class="dedge" d="M295 97 H 340"/>
+            <text class="dtxt" x="350" y="102">corre 4 veces</text>
+
+            <line class="dedge-mute" x1="30" y1="140" x2="610" y2="140"/>
+
+            <text class="dlabel" x="30" y="175">afuera del bucle</text>
+            <rect class="dnode-bg" x="30" y="190" width="250" height="30" rx="6"/>
+            <text class="dtxt" x="42" y="211">for p in precios:</text>
+            <rect class="dnode-bg" x="30" y="227" width="250" height="8" rx="4"/>
+            <path class="dedge" d="M295 205 H 340"/>
+            <text class="dtxt" x="350" y="210">corre 1 vez</text>
+          </svg>
+          <figcaption>El mismo <code>print</code>, cuatro espacios de diferencia, dos programas distintos. Cuatro espacios es la convención; lo importante es ser consistente.</figcaption>
+        </figure>
+        <p>El otro bloque indentado que vas a ver es el <code>if</code>, que ejecuta algo solo si una condición se cumple. Se lee casi como inglés: <code>if precio &gt; 2000:</code> y abajo, indentado, lo que pasa en ese caso.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Un solo <code>=</code> asigna, dos <code>==</code> comparan. <code>if x = 5</code> es un error de sintaxis; <code>if x == 5</code> es la pregunta "¿x vale 5?". Es el error de tipeo más frecuente de quien arranca.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Empaquetar una idea }</p>
+        <h2>Funciones</h2>
+        <p>Una función es un pedazo de código con nombre, al que le podés pasar valores y que te devuelve un resultado. Se define con <code>def</code>, y lo que devuelve sale por <code>return</code>.</p>
+        <div class="callout formula">def promedio(numeros):<br>&nbsp;&nbsp;&nbsp;&nbsp;return sum(numeros) / len(numeros)</div>
+        <p>Definirla no hace nada todavía: es como escribir una receta. Recién cuando la <em>llamás</em> —<code>promedio([1500, 2000, 1800])</code>— se ejecuta y devuelve 1766.67.</p>
+        <p>La palabra <code>return</code> hace dos cosas a la vez: entrega el valor y termina la función ahí mismo. Cualquier línea que venga después no se ejecuta nunca. Y una función sin <code>return</code> devuelve <code>None</code>, que es el valor especial de Python para "nada": si alguna vez ves un <code>None</code> donde esperabas un número, casi siempre es un <code>return</code> olvidado.</p>
+        <figure class="diagram" id="d-funcion">
+          <svg viewBox="0 0 640 200" role="img" aria-label="Una función como una caja: entran los argumentos, adentro ocurre el cuerpo, sale el valor de return">
+            <text class="dtxt" x="60" y="105" text-anchor="middle">[1500,</text>
+            <text class="dtxt" x="60" y="125" text-anchor="middle">2000, …]</text>
+            <path class="dedge" d="M120 110 H 210"/>
+            <text class="dlabel" x="165" y="95" text-anchor="middle">entra</text>
+            <rect class="dfill" x="220" y="55" width="200" height="110" rx="16"/>
+            <text class="dtxt" x="320" y="105" text-anchor="middle">promedio</text>
+            <text class="dtxt-mute" x="320" y="130" text-anchor="middle">sum / len</text>
+            <path class="dedge" d="M430 110 H 520"/>
+            <text class="dlabel" x="475" y="95" text-anchor="middle">return</text>
+            <text class="dtxt" x="575" y="116" text-anchor="middle">1766.67</text>
+          </svg>
+          <figcaption>Es la forma que tienen casi todas las librerías que vas a usar: le pasás datos, te devuelve un resultado, y qué pasa adentro no te hace falta saberlo para usarla.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Buscar por nombre }</p>
+        <h2>Diccionarios</h2>
+        <p>Una lista guarda cosas en orden y las buscás por posición. Un diccionario las guarda por etiqueta y las buscás por nombre. Se escribe con llaves, y cada entrada es <code>clave: valor</code>.</p>
+        <div class="callout formula">casa = {"m2": 85, "precio": 2400, "barrio": "Flores"}</div>
+        <p>Y se lee con corchetes, igual que una lista, pero pasando la clave en vez de un número: <code>casa["m2"]</code> devuelve 85. El orden acá no importa y no se usa nunca; lo que importa es el nombre.</p>
+        <p>Los vas a encontrar en todos lados: los resultados de un modelo, sus parámetros de configuración y la mayoría de las respuestas de librerías vienen como diccionarios. Cuando veas <code>modelo.get_params()</code> devolviendo algo con llaves y dos puntos, es esto.</p>
+        <div class="callout"><span class="etiqueta">Clave</span>La regla rápida para elegir: si vas a recorrer todo en orden, lista. Si vas a buscar un valor puntual por su nombre, diccionario.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios: dos conceptuales, uno de cuentas, uno de armar una función línea por línea, y uno de escribir Python de verdad. El último corre en tu navegador, así que la primera vez tarda unos segundos en descargar el intérprete.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe al principio</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Contar desde uno.</strong> <code>precios[1]</code> no es el primer precio, es el segundo. Y en una lista de cuatro elementos, <code>precios[4]</code> no existe: tira <code>IndexError</code>. Si un bucle te falla justo en la última vuelta, casi siempre es esto.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Mezclar tabs y espacios.</strong> Se ven idénticos en pantalla y Python los cuenta distinto, así que el error (<code>IndentationError</code>) señala una línea que a la vista está perfecta. Usá siempre espacios; cualquier editor lo hace solo.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Modificar una lista mientras la recorrés.</strong> Si dentro de un <code>for</code> hacés <code>append</code> o borrás elementos de la misma lista que estás recorriendo, el bucle se saltea elementos o no termina nunca, porque las posiciones se corren debajo suyo mientras avanza. La solución es siempre la misma: armá una lista nueva con lo que querés conservar, en vez de tocar la original.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Una variable es un nombre pegado a un valor, y <code>=</code> pega, no compara: comparar es <code>==</code>. Una lista guarda valores en orden y se indexa desde cero, con los negativos contando desde el final. Un bucle <code>for</code> repite un bloque para cada elemento, y en Python la sangría no es estética: es lo único que define qué está adentro del bloque y qué está afuera. Una función empaqueta una idea con un nombre, recibe argumentos y devuelve un valor con <code>return</code>; sin <code>return</code> devuelve <code>None</code>. Un diccionario guarda valores por nombre en vez de por posición, y es la forma en que casi todas las librerías te devuelven sus resultados. Con eso alcanza para leer el código de los veintitrés temas que siguen. El próximo, NumPy, agrega la única estructura que falta: el array, que es una lista que sabe hacer cuentas sobre todos sus elementos a la vez.</p>
+      </div>
+    </section>
+
+    <!-- Se llena desde data/temario.json: un tema sin escribir sale atenuado y
+         sin href. shared.js la monta sola, deduciendo el tema del nombre del
+         archivo. -->
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="python.js"></script>
+</body>
+</html>

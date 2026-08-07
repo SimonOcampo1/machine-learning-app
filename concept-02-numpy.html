@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NumPy y pensar en vectores · ML</title>
+  <meta name="description" content="El array de NumPy: operar sobre todos los datos a la vez en vez de uno por uno. Broadcasting, ejes y por qué esto es la base de todo lo que sigue.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-0">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 0</p>
+      <p class="eyebrow">{ Tema 02 · Piso }</p>
+      <h1>NumPy y pensar en vectores</h1>
+      <p class="lede">El cambio mental más importante de esta fase: dejar de pensar "para cada dato, hacé esto" y empezar a pensar "hacé esto sobre todos los datos". Es lo que hace que el machine learning sea viable.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>Una lista no sabe hacer cuentas</h2>
+        <p>En el tema anterior vimos que una lista guarda valores en orden. Lo que una lista <em>no</em> sabe hacer es operar sobre todos a la vez. Si tenés los precios de cuatro casas y querés subirlos todos un 10%, con listas hay que recorrerlas:</p>
+        <div class="callout formula">nuevos = []<br>for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;nuevos.append(p * 1.1)</div>
+        <p>Funciona, y con cuatro casas no se nota nada. El problema aparece con las cantidades reales del rubro: un conjunto de datos chico tiene decenas de miles de filas, y entrenar un modelo implica recorrerlas cientos de veces. Ese bucle, escrito en Python puro, es entre cincuenta y cien veces más lento que lo que vamos a ver ahora, y esa diferencia es la que separa "entrena en dos minutos" de "entrena en tres horas".</p>
+        <p>Peor todavía, y esto pesa más que la velocidad: escribir bucles anidados para cada operación vuelve el código imposible de leer. La fórmula de la regresión lineal cabe en una línea; escrita con bucles ocupa quince y no se parece en nada a la fórmula.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La solución }</p>
+        <h2>El array</h2>
+        <p>NumPy es la librería que resuelve esto. Su estructura es el <strong>array</strong>: se parece a una lista, pero sabe hacer cuentas sobre todos sus elementos de una sola vez.</p>
+        <div class="callout formula">import numpy as np<br>precios = np.array([1500, 2000, 1800, 2400])<br>nuevos = precios * 1.1</div>
+        <p>Tres líneas, sin bucle, y el resultado es un array con los cuatro precios aumentados. Esa multiplicación se aplica a cada elemento por separado: es lo que se llama una <strong>operación vectorizada</strong>.</p>
+        <p>El <code>import numpy as np</code> de la primera línea es una convención universal: absolutamente todo el código de machine learning del mundo escribe <code>np</code>. No es obligatorio, pero escribir otra cosa es como hablar con acento raro.</p>
+        <figure class="diagram" id="d-vectorizado">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Comparación entre recorrer una lista elemento por elemento y aplicar la operación al array completo de una vez">
+            <text class="dlabel" x="30" y="28">con un bucle: uno por uno</text>
+            <rect class="dnode-bg" x="30" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="75" y="71" text-anchor="middle">1500</text>
+            <rect class="dnode-bg" x="130" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="175" y="71" text-anchor="middle">2000</text>
+            <rect class="dnode-bg" x="230" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="275" y="71" text-anchor="middle">1800</text>
+            <rect class="dnode-bg" x="330" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="375" y="71" text-anchor="middle">2400</text>
+            <path class="dedge-mute" d="M75 95 V 110 H 175 V 95"/>
+            <path class="dedge-mute" d="M175 110 H 275 V 95"/>
+            <path class="dedge-mute" d="M275 110 H 375 V 95"/>
+            <text class="dtxt-mute" x="225" y="130" text-anchor="middle">4 vueltas, una detrás de otra</text>
+
+            <line class="dedge-mute" x1="30" y1="155" x2="610" y2="155"/>
+
+            <text class="dlabel" x="30" y="185">vectorizado: todos a la vez</text>
+            <rect class="dfill" x="30" y="200" width="390" height="40" rx="8"/>
+            <text class="dtxt" x="225" y="226" text-anchor="middle">precios * 1.1</text>
+            <path class="dedge" d="M435 220 H 500"/>
+            <text class="dtxt" x="565" y="226" text-anchor="middle">una sola</text>
+          </svg>
+          <figcaption>La operación vectorizada no es un bucle escondido en Python: NumPy la ejecuta en código compilado, sobre memoria contigua. De ahí sale la diferencia de velocidad.</figcaption>
+        </figure>
+        <div class="callout"><span class="etiqueta">Nota</span>Un array tiene un solo tipo de dato para todos sus elementos, a diferencia de una lista, que puede mezclar números y textos. Esa restricción es justamente lo que le permite ser rápido: sabe de antemano cuánto ocupa cada elemento.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dos dimensiones }</p>
+        <h2>Filas, columnas y la forma</h2>
+        <p>Hasta acá el array fue una fila de números. Pero los datos de verdad son tablas: una fila por observación, una columna por característica. Eso es un array de dos dimensiones, y se arma con una lista de listas.</p>
+        <div class="callout formula">X = np.array([[85, 3], [120, 4], [60, 2], [95, 3]])</div>
+        <p>Cuatro casas, dos características cada una: metros cuadrados y ambientes. La propiedad <code>X.shape</code> devuelve <code>(4, 2)</code>: cuatro filas, dos columnas. Es lo primero que hay que mirar cuando algo no funciona, y vas a escribirlo cientos de veces.</p>
+        <p>La convención del rubro es tan firme que conviene aprenderla ya: <strong>la matriz de datos se llama <code>X</code>, en mayúscula, y el vector de respuestas se llama <code>y</code>, en minúscula.</strong> La mayúscula es porque es una matriz y la minúscula porque es un vector. Vas a ver <code>modelo.fit(X, y)</code> en todos los temas que siguen.</p>
+        <figure class="diagram" id="d-shape">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Una matriz X de cuatro filas por dos columnas junto a un vector y de cuatro elementos, con los ejes marcados">
+            <text class="dlabel" x="150" y="30" text-anchor="middle">X · forma (4, 2)</text>
+            <text class="dtxt-mute" x="90" y="55" text-anchor="middle">m2</text>
+            <text class="dtxt-mute" x="180" y="55" text-anchor="middle">amb</text>
+            <rect class="dnode-bg" x="50" y="65" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="90" y="92" text-anchor="middle">85</text>
+            <rect class="dnode-bg" x="140" y="65" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="180" y="92" text-anchor="middle">3</text>
+            <rect class="dnode-bg" x="50" y="115" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="90" y="142" text-anchor="middle">120</text>
+            <rect class="dnode-bg" x="140" y="115" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="180" y="142" text-anchor="middle">4</text>
+            <rect class="dnode-bg" x="50" y="165" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="90" y="192" text-anchor="middle">60</text>
+            <rect class="dnode-bg" x="140" y="165" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="180" y="192" text-anchor="middle">2</text>
+            <rect class="dnode-bg" x="50" y="215" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="90" y="242" text-anchor="middle">95</text>
+            <rect class="dnode-bg" x="140" y="215" width="80" height="42" rx="6"/>
+            <text class="dtxt" x="180" y="242" text-anchor="middle">3</text>
+
+            <path class="dedge" d="M255 80 V 245"/>
+            <text class="dlabel" x="300" y="150" text-anchor="middle">axis=0</text>
+            <text class="dtxt-mute" x="300" y="170" text-anchor="middle">recorre filas</text>
+            <path class="dedge" d="M50 275 H 220"/>
+            <text class="dlabel" x="135" y="272" text-anchor="middle">axis=1 · recorre columnas</text>
+
+            <text class="dlabel" x="500" y="30" text-anchor="middle">y · forma (4,)</text>
+            <rect class="dfill" x="450" y="65" width="100" height="42" rx="6"/>
+            <text class="dtxt" x="500" y="92" text-anchor="middle">2400</text>
+            <rect class="dfill" x="450" y="115" width="100" height="42" rx="6"/>
+            <text class="dtxt" x="500" y="142" text-anchor="middle">3100</text>
+            <rect class="dfill" x="450" y="165" width="100" height="42" rx="6"/>
+            <text class="dtxt" x="500" y="192" text-anchor="middle">1700</text>
+            <rect class="dfill" x="450" y="215" width="100" height="42" rx="6"/>
+            <text class="dtxt" x="500" y="242" text-anchor="middle">2600</text>
+          </svg>
+          <figcaption>Cada fila de <code>X</code> es una casa; cada columna, una característica. <code>y</code> tiene el precio de cada una, en el mismo orden. Que el orden coincida es responsabilidad tuya, y romperlo es un error silencioso.</figcaption>
+        </figure>
+        <p>El <code>axis</code> del diagrama es el argumento que más confunde. <code>X.mean()</code> sin más promedia los ocho números juntos. <code>X.mean(axis=0)</code> devuelve dos números: el promedio de cada columna, o sea el m² promedio y los ambientes promedio. <code>X.mean(axis=1)</code> devuelve cuatro: el promedio de cada fila, que acá no significa nada útil.</p>
+        <div class="callout"><span class="etiqueta">Clave</span>La regla para no equivocarse: <code>axis</code> nombra la dimensión que <em>desaparece</em>. Con <code>axis=0</code> sobre una forma (4, 2), se colapsan las 4 filas y queda (2,). Con <code>axis=1</code> se colapsan las 2 columnas y queda (4,).</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Formas que no coinciden }</p>
+        <h2>Broadcasting</h2>
+        <p>Cuando escribiste <code>precios * 1.1</code>, un array de cuatro elementos se multiplicó por un solo número. Estrictamente, esas dos cosas no tienen la misma forma. NumPy lo resolvió estirando el 1.1 hasta cubrir los cuatro elementos, sin copiar nada en memoria. Eso es <strong>broadcasting</strong>.</p>
+        <p>Funciona también entre arrays. Si <code>X</code> tiene forma (4, 2) y le restás un array de forma (2,), NumPy repite ese par de valores en las cuatro filas. Esto no es una curiosidad: es exactamente la operación de estandarizar datos, que vas a hacer en casi todos los temas.</p>
+        <div class="callout formula">X_centrada = X - X.mean(axis=0)</div>
+        <p>Esa línea le resta a cada columna su propio promedio. Con bucles serían cuatro líneas y dos índices; acá es una, y se lee casi como la frase en castellano.</p>
+        <figure class="diagram" id="d-broadcast">
+          <svg viewBox="0 0 640 220" role="img" aria-label="Un array de forma cuatro por dos menos un array de forma dos: la fila de dos valores se repite en las cuatro filas">
+            <text class="dlabel" x="80" y="30" text-anchor="middle">(4, 2)</text>
+            <rect class="dnode-bg" x="30" y="45" width="100" height="150" rx="8"/>
+            <text class="dtxt-mute" x="80" y="128" text-anchor="middle">X</text>
+            <text class="dtxt" x="160" y="128" text-anchor="middle">−</text>
+            <text class="dlabel" x="245" y="30" text-anchor="middle">(2,)</text>
+            <rect class="dfill" x="195" y="105" width="100" height="34" rx="6"/>
+            <text class="dtxt" x="320" y="128" text-anchor="middle">=</text>
+            <text class="dlabel" x="450" y="30" text-anchor="middle">(4, 2)</text>
+            <rect class="dnode-bg" x="360" y="45" width="180" height="34" rx="6"/>
+            <rect class="dnode-bg" x="360" y="84" width="180" height="34" rx="6"/>
+            <rect class="dnode-bg" x="360" y="123" width="180" height="34" rx="6"/>
+            <rect class="dnode-bg" x="360" y="162" width="180" height="34" rx="6"/>
+            <path class="dedge-mute" d="M300 122 C 330 90, 340 70, 355 62"/>
+            <path class="dedge-mute" d="M300 122 C 330 110, 340 105, 355 101"/>
+            <path class="dedge-mute" d="M300 122 C 330 130, 340 136, 355 140"/>
+            <path class="dedge-mute" d="M300 122 C 330 150, 340 170, 355 179"/>
+            <text class="dtxt-mute" x="450" y="215" text-anchor="middle">la misma fila, aplicada a las cuatro</text>
+          </svg>
+          <figcaption>El array chico no se copia: NumPy lo recorre repetidamente. Por eso broadcasting es gratis en memoria además de cómodo.</figcaption>
+        </figure>
+        <p>La regla formal es que las formas se comparan de derecha a izquierda y cada par de dimensiones tiene que ser igual o valer 1. En la práctica vas a usar dos casos: array con número, y matriz con fila. El resto conviene chequearlo con <code>.shape</code> antes de pelearse.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Elegir sin buscar }</p>
+        <h2>Máscaras booleanas</h2>
+        <p>La última herramienta imprescindible. Comparar un array con un número no devuelve <code>True</code> o <code>False</code>: devuelve un array de <code>True</code> y <code>False</code>, uno por elemento.</p>
+        <div class="callout formula">precios &gt; 1900&nbsp;&nbsp;→&nbsp;&nbsp;[False, True, False, True]</div>
+        <p>Y ese array de booleanos se puede usar como índice, para quedarse solo con los elementos donde dio <code>True</code>:</p>
+        <div class="callout formula">caros = precios[precios &gt; 1900]&nbsp;&nbsp;→&nbsp;&nbsp;[2000, 2400]</div>
+        <p>Se lee de adentro hacia afuera y termina sonando natural: "precios, donde precios sea mayor a 1900". Es la forma estándar de filtrar datos, y también de contar: como <code>True</code> vale 1, <code>(precios &gt; 1900).sum()</code> devuelve 2, la cantidad de casos que cumplen. Ese truco de sumar booleanos aparece en todas las métricas de clasificación de la fase 3.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre el mismo conjunto de cuatro casas: dos conceptuales, uno de cuentas sobre ejes, uno de armar código, y uno de escribir NumPy de verdad.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Confundir los ejes.</strong> <code>axis=0</code> promedia hacia abajo, por columna; <code>axis=1</code> promedia hacia el costado, por fila. La confusión no tira error: devuelve números plausibles pero equivocados, que es mucho peor. La regla del eje que desaparece es la que salva.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que un corte es una copia.</strong> <code>b = a[0:2]</code> no copia: <code>b</code> es una ventana sobre la misma memoria, y modificar <code>b</code> modifica <code>a</code>. Es lo contrario de lo que hacen las listas de Python. Si querés una copia de verdad, <code>a[0:2].copy()</code>.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Desalinear <code>X</code> e <code>y</code>.</strong> Si ordenás, filtrás o mezclás <code>X</code> sin aplicarle exactamente lo mismo a <code>y</code>, cada fila queda con la respuesta de otra casa. El código no falla, el modelo entrena igual, y las predicciones salen basura sin ninguna señal de que algo anduvo mal. Por eso lo estándar es filtrar con una misma máscara aplicada a los dos: <code>X[m], y[m]</code>.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Un array de NumPy es una lista que sabe hacer cuentas sobre todos sus elementos a la vez, sin bucles, y esa es la única forma de que el machine learning sea viable en Python. Los datos se organizan en una matriz <code>X</code> de forma (observaciones, características) y un vector <code>y</code> con la respuesta de cada fila; <code>.shape</code> es lo primero que hay que mirar cuando algo no cierra. El argumento <code>axis</code> nombra la dimensión que se colapsa, y confundirlo devuelve números plausibles y equivocados, no un error. Broadcasting estira automáticamente las formas que no coinciden, y es lo que permite escribir <code>X - X.mean(axis=0)</code> en una línea. Las máscaras booleanas filtran y cuentan sin recorrer nada. Con esto ya se puede leer el código de cualquier tema que siga; el próximo, álgebra lineal, le pone nombre matemático a las mismas operaciones que acabás de escribir.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="numpy.js"></script>
+</body>
+</html>
