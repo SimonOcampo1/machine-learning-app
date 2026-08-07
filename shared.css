@@ -443,3 +443,41 @@ nav {
   background: none; border: 1px solid var(--rule); border-radius: 999px;
   padding: 2px var(--e3);
 }
+
+/* ── Pilares ─────────────────────────────────────────────── */
+.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--e4); }
+.pilar { padding: var(--e6); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio); }
+.pilar h3 { color: var(--accent); }
+.pilar-e, .pilar-s { font-size: var(--t-small); color: var(--ink-mute); margin-bottom: var(--e2); }
+
+/* ── Línea de tiempo ─────────────────────────────────────── */
+.timeline { list-style: none; margin: 0; padding: 0 0 0 var(--e8); border-left: 1px solid var(--rule); }
+.tl-item { position: relative; display: grid; grid-template-columns: 5rem 1fr; gap: var(--e4); padding-block: var(--e6); }
+.tl-item::before {
+  content: ""; position: absolute; left: calc(var(--e8) * -1 - 4px); top: var(--e8);
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent);
+}
+.tl-anio { font-family: var(--font-mono); font-weight: 700; color: var(--accent); }
+.tl-item h3 { margin-bottom: var(--e2); }
+.tl-item p { font-size: var(--t-small); color: var(--ink-mute); margin: 0; }
+
+/* ── Lista de conceptos ──────────────────────────────────── */
+.fase-bloque { margin-bottom: var(--e12); }
+.fase-tit { font-size: var(--t-h3); color: var(--accent); margin-bottom: var(--e4); }
+.concept-list { list-style: none; margin: 0; padding: 0; }
+.ci {
+  display: grid; grid-template-columns: 3rem 1fr auto; align-items: baseline; gap: var(--e4);
+  padding-block: var(--e3); border-bottom: 1px solid var(--rule);
+}
+.ci-n { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
+.ci-t { font-weight: 500; }
+.ci-ver { font-size: var(--t-small); opacity: 0; transition: opacity var(--transicion); }
+.ci:hover .ci-ver, .ci-ver:focus-visible { opacity: 1; }
+.ci-pronto { opacity: 0.4; color: var(--ink-mute); }
+
+/* ── Distinciones ────────────────────────────────────────── */
+.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e4); }
+.dist { padding: var(--e6); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio); }
+.dist-vs { font-family: var(--font-mono); font-weight: 400; color: var(--accent); font-size: 0.8em; }
+.dist-trampa { font-size: var(--t-small); }
+.dist-truco { font-size: var(--t-small); color: var(--ink-mute); margin: 0; }
