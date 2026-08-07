@@ -56,26 +56,94 @@ async function verificarToken(token, clientId, allowlist) {
   return payload;
 }
 
-/*
- * Handler de Vercel. La Tarea 14 completa la lectura/escritura en Redis;
- * acá solo queda cableada la verificación del token contra las variables
- * de entorno del proyecto.
- */
+const LIMITE_BYTES = 64 * 1024;
+
+function _validarCuerpo(cuerpo) {
+  if (!cuerpo || typeof cuerpo !== "object" || Array.isArray(cuerpo)) {
+    return { ok: false, codigo: 400, msg: "cuerpo inválido" };
+  }
+  if (!cuerpo.temas || typeof cuerpo.temas !== "object" || Array.isArray(cuerpo.temas)) {
+    return { ok: false, codigo: 400, msg: "falta el objeto temas" };
+  }
+  if (Buffer.byteLength(JSON.stringify(cuerpo), "utf8") > LIMITE_BYTES) {
+    return { ok: false, codigo: 413, msg: "el progreso excede 64 KB" };
+  }
+  return { ok: true };
+}
+
+/* Upstash por REST: sin cliente de Redis, solo fetch. */
+function configRedis() {
+  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) throw new Error("faltan las variables de entorno de Redis");
+  return { url: url.replace(/\/$/, ""), token };
+}
+
+async function redisGet(clave) {
+  const { url, token } = configRedis();
+  const r = await fetch(`${url}/get/${encodeURIComponent(clave)}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!r.ok) throw new Error(`Redis GET falló: ${r.status}`);
+  const { result } = await r.json();
+  return result ? JSON.parse(result) : null;
+}
+
+async function redisSet(clave, valor) {
+  const { url, token } = configRedis();
+  const r = await fetch(`${url}/set/${encodeURIComponent(clave)}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "text/plain" },
+    body: JSON.stringify(valor)
+  });
+  if (!r.ok) throw new Error(`Redis SET falló: ${r.status}`);
+}
+
 async function handler(req, res) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const permitidos = (process.env.EMAILS_PERMITIDOS || "").split(",").map(s => s.trim()).filter(Boolean);
+  if (!clientId || !permitidos.length) {
+    return res.status(500).json({ error: "servidor mal configurado" });
+  }
+
+  const auth = req.headers.authorization || "";
+  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
+  if (!token) return res.status(401).json({ error: "falta el token" });
+
+  let usuario;
   try {
-    const auth = req.headers.authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.slice(7) : null;
-    if (!token) {
-      res.status(401).json({ error: "falta el token" });
-      return;
+    usuario = await verificarToken(token, clientId, permitidos);
+  } catch (e) {
+    // Sin detalle al cliente: no le decimos a un atacante qué chequeo falló.
+    console.warn("token rechazado:", e.message);
+    return res.status(401).json({ error: "no autorizado" });
+  }
+
+  const clave = `ml:progress:${usuario.sub}`;
+
+  try {
+    if (req.method === "GET") {
+      const datos = await redisGet(clave);
+      return datos ? res.status(200).json(datos) : res.status(204).end();
     }
-    const clientId = process.env.GOOGLE_CLIENT_ID;
-    const allowlist = (process.env.EMAILS_PERMITIDOS || "").split(",").map(e => e.trim()).filter(Boolean);
-    await verificarToken(token, clientId, allowlist);
-    res.status(501).json({ error: "todavía no implementado (Tarea 14)" });
-  } catch (err) {
-    res.status(401).json({ error: err.message });
+
+    if (req.method === "POST") {
+      const cuerpo = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      const v = _validarCuerpo(cuerpo);
+      if (!v.ok) return res.status(v.codigo).json({ error: v.msg });
+      await redisSet(clave, cuerpo);
+      return res.status(200).json({ ok: true });
+    }
+
+    res.setHeader("Allow", "GET, POST");
+    return res.status(405).json({ error: "método no permitido" });
+  } catch (e) {
+    console.error("error del almacenamiento:", e);
+    return res.status(500).json({ error: "no se pudo acceder al almacenamiento" });
   }
 }
 
-module.exports = { verificarToken, _setClavesParaTest, handler };
+module.exports = handler;
+module.exports.verificarToken = verificarToken;
+module.exports._setClavesParaTest = _setClavesParaTest;
+module.exports._validarCuerpo = _validarCuerpo;
