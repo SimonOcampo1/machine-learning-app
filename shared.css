@@ -428,3 +428,12 @@ nav {
   background: var(--bg); border: 1px solid var(--rule); border-radius: var(--radio);
 }
 .py-estado { font-family: var(--font-mono); font-size: var(--t-small); color: var(--ink-mute); }
+
+/* ── Sincronización con Google ──────────────────────────── */
+.sync { display: flex; align-items: center; gap: var(--e3); }
+.sync-estado { font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); }
+.sync-salir {
+  font: inherit; font-size: 0.75rem; cursor: pointer; color: var(--ink-mute);
+  background: none; border: 1px solid var(--rule); border-radius: 999px;
+  padding: 2px var(--e3);
+}

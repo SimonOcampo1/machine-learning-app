@@ -98,3 +98,113 @@ const Progreso = (() => {
 })();
 
 if (typeof module !== "undefined") module.exports = Progreso;
+
+/* ── Sincronización con el servidor ──────────────────────── */
+const Sync = (() => {
+  const CLAVE_CRED = "ml-cred";
+  let cred = null;
+  let temporizador = null;
+
+  const sesionActiva = () => Boolean(cred);
+
+  async function pedir(metodo, cuerpo) {
+    const r = await fetch("/api/progress", {
+      method: metodo,
+      headers: {
+        Authorization: `Bearer ${cred}`,
+        ...(cuerpo ? { "Content-Type": "application/json" } : {})
+      },
+      ...(cuerpo ? { body: JSON.stringify(cuerpo) } : {})
+    });
+    if (r.status === 401) { salir(); throw new Error("sesión vencida"); }
+    if (!r.ok && r.status !== 204) throw new Error(`el servidor respondió ${r.status}`);
+    return r.status === 204 ? null : r.json();
+  }
+
+  /* Debounce: escribir un ejercicio no dispara un POST por tecla. */
+  function encolar(estado) {
+    if (!sesionActiva()) return;
+    clearTimeout(temporizador);
+    temporizador = setTimeout(() => {
+      // Si falla, no se avisa: el dato ya está en localStorage y el próximo
+      // guardado lo reintenta. No vale la pena una cola de reintentos acá.
+      pedir("POST", estado).catch(e => console.warn("no se pudo sincronizar:", e.message));
+    }, 2000);
+  }
+
+  async function entrar(credential) {
+    cred = credential;
+    sessionStorage.setItem(CLAVE_CRED, credential);
+    try {
+      const remoto = await pedir("GET");
+      const fusionado = Progreso.fusionar(Progreso.leer(), remoto);
+      Progreso.guardar(fusionado);           // guardar() vuelve a llamar a encolar()
+      await pedir("POST", fusionado);        // y además sube ya, sin esperar el debounce
+      pintar();
+      dispatchEvent(new CustomEvent("progreso-actualizado"));
+    } catch (e) {
+      console.warn("no se pudo traer el progreso remoto:", e.message);
+      pintar();
+    }
+  }
+
+  function salir() {
+    cred = null;
+    sessionStorage.removeItem(CLAVE_CRED);
+    if (window.google?.accounts?.id) google.accounts.id.disableAutoSelect();
+    pintar();
+  }
+
+  let contenedor = null;
+  let clientIdGuardado = null;
+
+  function pintar() {
+    if (!contenedor) return;
+    contenedor.replaceChildren();
+    if (sesionActiva()) {
+      const p = document.createElement("span");
+      p.className = "sync-estado";
+      p.textContent = "✓ progreso sincronizado";
+      const b = document.createElement("button");
+      b.className = "sync-salir";
+      b.type = "button";
+      b.textContent = "Salir";
+      b.addEventListener("click", salir);
+      contenedor.append(p, b);
+    } else {
+      const d = document.createElement("div");
+      d.id = "g-boton";
+      contenedor.append(d);
+      if (window.google?.accounts?.id) {
+        google.accounts.id.initialize({
+          client_id: clientIdGuardado,
+          callback: (resp) => entrar(resp.credential)
+        });
+        google.accounts.id.renderButton(d, { theme: "outline", size: "medium", text: "signin", locale: "es" });
+      }
+    }
+  }
+
+  function montar(sel, clientId) {
+    contenedor = document.querySelector(sel);
+    clientIdGuardado = clientId;
+    const guardada = sessionStorage.getItem(CLAVE_CRED);
+    if (guardada) {
+      // Se reusa la credencial de la pestaña; si venció, el 401 la limpia sola.
+      cred = guardada;
+      pedir("GET")
+        .then(remoto => {
+          if (remoto) {
+            Progreso.guardar(Progreso.fusionar(Progreso.leer(), remoto));
+            dispatchEvent(new CustomEvent("progreso-actualizado"));
+          }
+        })
+        .catch(() => {});
+    }
+    pintar();
+  }
+
+  return { montar, encolar, entrar, salir, sesionActiva };
+})();
+
+if (typeof module !== "undefined") module.exports.Sync = Sync;
