@@ -1,7 +1,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
 const crypto = require("node:crypto");
-const { verificarToken, _setClavesParaTest } = require("./progress.js");
+const { verificarToken, _setClavesParaTest, _validarCuerpo } = require("./progress.js");
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
 const jwk = { ...publicKey.export({ format: "jwk" }), kid: "test-kid", alg: "RS256", use: "sig" };
@@ -81,4 +81,24 @@ test("rechaza un kid desconocido", async () => {
 
 test("rechaza basura que no es un JWT", async () => {
   await assert.rejects(() => verificarToken("no-soy-un-token", CLIENT_ID, PERMITIDOS), /formato/);
+});
+
+test("_validarCuerpo acepta un estado normal", () => {
+  const est = { v: 1, temas: { rl: { leido: true, quiz: true, ejercicios: { e1: 100 } } } };
+  assert.strictEqual(_validarCuerpo(est).ok, true);
+});
+
+test("_validarCuerpo rechaza lo que no es un estado", () => {
+  assert.strictEqual(_validarCuerpo(null).ok, false);
+  assert.strictEqual(_validarCuerpo("hola").ok, false);
+  assert.strictEqual(_validarCuerpo({ sin: "temas" }).ok, false);
+  assert.strictEqual(_validarCuerpo({ v: 1, temas: [] }).ok, false);
+});
+
+test("_validarCuerpo rechaza un cuerpo demasiado grande", () => {
+  const gordo = { v: 1, temas: {} };
+  for (let i = 0; i < 20000; i++) gordo.temas["t" + i] = { leido: true, quiz: true, ejercicios: {} };
+  const r = _validarCuerpo(gordo);
+  assert.strictEqual(r.ok, false);
+  assert.strictEqual(r.codigo, 413);
 });
