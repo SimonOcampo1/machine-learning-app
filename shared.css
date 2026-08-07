@@ -333,6 +333,7 @@ nav {
   padding: var(--e2) var(--e4); cursor: pointer;
   transition: border-color var(--transicion);
 }
+.diag-ctrl:hover { border-color: var(--accent); }
 
 /* ── Ejercicios ──────────────────────────────────────────── */
 .ej {
@@ -373,4 +374,3 @@ nav {
 }
 .ej-fb.no { --fase-h: 25; }
 .ej-fb.ok { --fase-h: 145; }
-.diag-ctrl:hover { border-color: var(--accent); }

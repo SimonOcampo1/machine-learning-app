@@ -46,6 +46,12 @@ const Ejercicios = (() => {
     return n;
   }
 
+  /* OJO con el orden: este dispatch es SÍNCRONO, así que `vigilarQuiz` lee el
+     progreso en el acto. Por eso `Progreso.registrar` va SIEMPRE antes de
+     llamar a esta función: si se invirtiera, al responder la última conceptual
+     el listener leería un estado que todavía no la incluye, no marcaría el
+     quiz, y como el MCQ se bloquea tras un clic no habría segunda oportunidad.
+     El tema nunca llegaría a "completo". */
   function pintarResultado(caja, res) {
     caja.className = `ej-fb ${res.ok ? "ok" : "no"}`;
     caja.textContent = res.msg;
@@ -71,8 +77,8 @@ const Ejercicios = (() => {
         b.classList.add(res.ok ? "ok" : "no");
         if (!res.ok) lista.children[def.c].classList.add("ok");
         lista.querySelectorAll(".ej-opt").forEach(x => { x.disabled = true; });
-        pintarResultado(fb, res);
         Progreso.registrar(slug, def.id, res.puntaje);
+        pintarResultado(fb, res);
       });
       lista.append(b);
     });
@@ -99,8 +105,8 @@ const Ejercicios = (() => {
 
     const enviar = () => {
       const res = corregirNum(def, input.valueAsNumber);
-      pintarResultado(fb, res);
       Progreso.registrar(slug, def.id, res.puntaje);
+      pintarResultado(fb, res);
     };
     boton.addEventListener("click", enviar);
     input.addEventListener("keydown", e => { if (e.key === "Enter") enviar(); });
