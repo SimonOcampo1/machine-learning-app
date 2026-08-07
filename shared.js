@@ -7,7 +7,11 @@ document.documentElement.classList.add("js");
 const CLAVE_TEMA = "ml-tema";
 
 function temaInicial() {
-  const guardado = localStorage.getItem(CLAVE_TEMA);
+  // localStorage tira excepción en iframes sandboxeados, con storage
+  // deshabilitado por política, y en algunos modos privados. Si eso escapara,
+  // abortaría el resto del script y el reveal nunca se montaría.
+  let guardado = null;
+  try { guardado = localStorage.getItem(CLAVE_TEMA); } catch { /* sin storage */ }
   if (guardado === "claro" || guardado === "oscuro") return guardado;
   return matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "oscuro";
 }
@@ -23,12 +27,9 @@ function aplicarTema(t) {
 
 function toggleTheme() {
   const t = document.documentElement.dataset.tema === "oscuro" ? "claro" : "oscuro";
-  localStorage.setItem(CLAVE_TEMA, t);
+  try { localStorage.setItem(CLAVE_TEMA, t); } catch { /* sin storage: el tema no persiste */ }
   aplicarTema(t);
 }
-
-// Se corre inmediatamente, no en DOMContentLoaded: evita el flash de tema equivocado.
-aplicarTema(temaInicial());
 
 /* ── Reveal on scroll ────────────────────────────────────── */
 /* Contrato con el CSS: `.js .reveal` es lo que oculta. La clase `.js` se puso
@@ -72,13 +73,22 @@ function montarAnio() {
   document.querySelectorAll("[data-anio]").forEach(el => { el.textContent = new Date().getFullYear(); });
 }
 
-/* montarReveal va PRIMERO y aislado: es el único que puede dejar la página
-   en blanco si falla. Si reventara un montador anterior, este nunca correría
-   y el contenido quedaría oculto. Cada uno en su propio try/catch para que
-   un error en la barra de progreso no se lleve puesto al resto. */
+/* El listener se registra ANTES que cualquier otro trabajo de nivel superior.
+   Si una línea posterior tirara una excepción, el script se abortaría y este
+   listener nunca existiría — y sin él nadie sacaría la clase `js`, dejando
+   todo el contenido oculto. Registrarlo primero hace que el salvavidas del
+   reveal sea lo único que no puede perderse.
+
+   montarReveal va PRIMERO y aislado dentro del listener: es el único que
+   puede dejar la página en blanco si falla. Cada montador va en su propio
+   try/catch para que un error en la barra de progreso no se lleve puesto
+   al resto. */
 addEventListener("DOMContentLoaded", () => {
   try { montarReveal(); } catch (e) { mostrarTodo(); console.warn("reveal:", e); }
   for (const montar of [() => aplicarTema(document.documentElement.dataset.tema || temaInicial()), montarBarra, montarAnio]) {
     try { montar(); } catch (e) { console.warn("montaje:", e); }
   }
 });
+
+// Se corre inmediatamente, no en DOMContentLoaded: evita el flash de tema equivocado.
+try { aplicarTema(temaInicial()); } catch (e) { console.warn("tema inicial:", e); }
