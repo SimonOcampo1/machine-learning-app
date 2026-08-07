@@ -1,6 +1,13 @@
 /* Requiere: gsap, ScrollTrigger, DrawSVGPlugin ya cargados. */
 const Anim = (() => {
-  const listo = typeof gsap !== "undefined";
+  /* Se chequean los tres por separado. Un <script> que falla no impide que
+     sus hermanos corran, así que gsap puede existir y un plugin no. Nombrar
+     un identificador inexistente tira ReferenceError acá mismo, y eso
+     abortaría este IIFE: `Anim` quedaría sin definir y cualquier script
+     posterior que lo use moriría con él — incluidos los ejercicios. */
+  const listo = typeof gsap !== "undefined"
+    && typeof ScrollTrigger !== "undefined"
+    && typeof DrawSVGPlugin !== "undefined";
   if (listo) gsap.registerPlugin(ScrollTrigger, DrawSVGPlugin);
 
   const reducido = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
