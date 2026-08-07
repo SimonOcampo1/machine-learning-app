@@ -2,8 +2,8 @@
   "fases": [
     { "n": 0, "nombre": "Piso", "hint": "Nadie toca un modelo antes de saber qué es un vector", "hue": 220,
       "temas": [
-        { "n": 1, "titulo": "Python esencial", "slug": "python", "archivo": "concept-01-python.html" },
-        { "n": 2, "titulo": "NumPy y pensar en vectores", "slug": "numpy", "archivo": "concept-02-numpy.html" },
+        { "n": 1, "titulo": "Python esencial", "slug": "python", "archivo": "concept-01-python.html", "escrito": true, "ejercicios": 5 },
+        { "n": 2, "titulo": "NumPy y pensar en vectores", "slug": "numpy", "archivo": "concept-02-numpy.html", "escrito": true, "ejercicios": 5 },
         { "n": 3, "titulo": "Álgebra lineal mínima", "slug": "algebra", "archivo": "concept-03-algebra.html" },
         { "n": 4, "titulo": "Probabilidad y estadística mínima", "slug": "probabilidad", "archivo": "concept-04-probabilidad.html" }
       ] },

@@ -318,7 +318,9 @@ const Ejercicios = (() => {
     const fila = nodo("div", "ej-fila");
     const correr = nodo("button", "ej-enviar", "▶ Ejecutar");
     correr.type = "button";
-    const reset = nodo("button", "diag-ctrl", "↻ Reiniciar");
+    // `.pill` es el control secundario del sistema; el primario de esta fila es
+    // `correr`, que lleva el borde de gradiente. Uno solo por vista.
+    const reset = nodo("button", "pill", "↻ Reiniciar");
     reset.type = "button";
     reset.addEventListener("click", () => { editor.value = def.inicial; });
 

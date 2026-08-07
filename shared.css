@@ -319,6 +319,14 @@ nav {
    de gsap.com: profundidad por gradiente interno, nunca por sombra. */
 .dfill { fill: url(#grad-fase); }
 
+/* El gradiente se declara UNA vez por página, en un <svg> aparte al principio
+   del body, y todos los diagramas lo referencian. Declararlo dentro de cada
+   diagrama daría varios elementos con el mismo id en el documento — HTML
+   inválido — y el color saldría del primero igual, así que la duplicación no
+   compraría nada. Tiene que quedar en el flujo (no `display:none`) porque un
+   paint server dentro de un subárbol oculto no se aplica en todos los motores. */
+.svg-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+
 /* ── Pill ghost: el único control del sistema ────────────── */
 /* Nunca relleno. En hover baja la opacidad del borde; no cambia de fondo. */
 .pill, .ej-opt, .sync-salir {
