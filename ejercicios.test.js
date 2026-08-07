@@ -55,3 +55,37 @@ test("la tolerancia funciona cuando la respuesta es cero", () => {
   assert.strictEqual(E.corregir(cero, 0.005).puntaje, 100);
   assert.strictEqual(E.corregir(cero, 1).puntaje, 0);
 });
+
+const parsons = {
+  tipo: "parsons", id: "p1", q: "Armá el bucle",
+  lineas: ["for i in range(n):", "    grad = derivada(w)", "    w -= lr * grad"],
+  distractores: ["    w += lr * grad"],
+  expl: "El gradiente apunta hacia arriba, por eso se resta."
+};
+
+test("parsons correcto da 100", () => {
+  assert.strictEqual(E.corregir(parsons, parsons.lineas.slice()).puntaje, 100);
+});
+
+test("parsons con orden equivocado da parcial y no 100", () => {
+  const r = E.corregir(parsons, ["    grad = derivada(w)", "for i in range(n):", "    w -= lr * grad"]);
+  assert.strictEqual(r.ok, false);
+  assert.ok(r.puntaje > 0 && r.puntaje < 100, `puntaje fuera de rango: ${r.puntaje}`);
+});
+
+test("parsons distingue la indentación", () => {
+  const r = E.corregir(parsons, ["for i in range(n):", "grad = derivada(w)", "    w -= lr * grad"]);
+  assert.strictEqual(r.ok, false);
+  assert.match(r.msg, /indent/i);
+});
+
+test("parsons con un distractor usado no da 100", () => {
+  const r = E.corregir(parsons, ["for i in range(n):", "    grad = derivada(w)", "    w += lr * grad"]);
+  assert.strictEqual(r.ok, false);
+});
+
+test("parsons con cantidad de líneas equivocada no rompe", () => {
+  const r = E.corregir(parsons, ["for i in range(n):"]);
+  assert.strictEqual(r.ok, false);
+  assert.ok(Number.isFinite(r.puntaje));
+});

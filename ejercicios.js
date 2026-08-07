@@ -29,10 +29,38 @@ const Ejercicios = (() => {
     return { ok: false, puntaje: 0, msg: `No es. La respuesta es ${def.resp}. ${def.expl}` };
   }
 
+  function corregirParsons(def, dispuestas) {
+    const esperadas = def.lineas;
+    const n = esperadas.length;
+
+    if (!Array.isArray(dispuestas) || dispuestas.length !== n) {
+      return {
+        ok: false, puntaje: 0,
+        msg: `El algoritmo tiene ${n} líneas y pusiste ${Array.isArray(dispuestas) ? dispuestas.length : 0}.`
+      };
+    }
+
+    let correctas = 0;
+    let soloIndent = false;
+    for (let i = 0; i < n; i++) {
+      if (dispuestas[i] === esperadas[i]) { correctas++; continue; }
+      if (dispuestas[i].trim() === esperadas[i].trim()) soloIndent = true;
+    }
+
+    if (correctas === n) return { ok: true, puntaje: 100, msg: def.expl };
+
+    const puntaje = Math.round((correctas / n) * 100);
+    const pista = soloIndent
+      ? "Alguna línea tiene la indentación equivocada: en Python la sangría define qué está adentro del bucle."
+      : "El orden no es el correcto todavía.";
+    return { ok: false, puntaje, msg: `${correctas} de ${n} líneas en su lugar. ${pista}` };
+  }
+
   function corregir(def, respuesta) {
     switch (def.tipo) {
       case "mcq": return corregirMcq(def, respuesta);
       case "num": return corregirNum(def, respuesta);
+      case "parsons": return corregirParsons(def, respuesta);
       default: throw new Error(`tipo de ejercicio desconocido: ${def.tipo}`);
     }
   }
@@ -122,7 +150,83 @@ const Ejercicios = (() => {
     return raiz;
   }
 
-  const constructores = { mcq: montarMcq, num: montarNum };
+  function montarParsons(def, slug) {
+    const raiz = nodo("div", "ej ej-parsons");
+    raiz.append(nodo("p", "ej-q", def.q));
+
+    const lista = nodo("ol", "pa-lista");
+    lista.setAttribute("aria-label", "Líneas de código: arrastralas o usá los botones para ordenarlas");
+
+    // Mezcla determinística por id: la misma página da siempre el mismo desorden.
+    const pool = [...def.lineas, ...(def.distractores || [])];
+    const semilla = [...def.id].reduce((a, c) => a + c.charCodeAt(0), 0);
+    pool.sort((a, b) => ((a.length * 31 + semilla) % 97) - ((b.length * 31 + semilla) % 97) || a.localeCompare(b));
+
+    for (const texto of pool) lista.append(itemParsons(texto, lista));
+
+    lista.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const arrastrando = lista.querySelector(".arrastrando");
+      if (!arrastrando) return;
+      const hermanos = [...lista.querySelectorAll(".pa-item:not(.arrastrando)")];
+      const siguiente = hermanos.find(li => e.clientY < li.getBoundingClientRect().top + li.offsetHeight / 2);
+      lista.insertBefore(arrastrando, siguiente || null);
+    });
+
+    const boton = nodo("button", "ej-enviar", "Comprobar");
+    boton.type = "button";
+    const fb = nodo("div", "ej-fb");
+    fb.hidden = true;
+
+    boton.addEventListener("click", () => {
+      const puestas = [...lista.querySelectorAll(".pa-item")]
+        .filter(li => !li.classList.contains("descartada"))
+        .map(li => li.dataset.linea);
+      const res = corregirParsons(def, puestas);
+      Progreso.registrar(slug, def.id, res.puntaje);
+      pintarResultado(fb, res);
+    });
+
+    raiz.append(lista, boton, fb);
+    return raiz;
+  }
+
+  function itemParsons(texto, lista) {
+    const li = nodo("li", "pa-item");
+    li.dataset.linea = texto;
+    li.draggable = true;
+
+    const pre = nodo("code", "pa-txt", texto);
+    pre.style.paddingLeft = `${(texto.length - texto.trimStart().length) * 0.5}rem`;
+
+    const ctrl = nodo("div", "pa-ctrl");
+    const arriba = nodo("button", "pa-b", "↑");
+    const abajo = nodo("button", "pa-b", "↓");
+    const fuera = nodo("button", "pa-b", "×");
+    arriba.type = abajo.type = fuera.type = "button";
+    arriba.setAttribute("aria-label", "Subir esta línea");
+    abajo.setAttribute("aria-label", "Bajar esta línea");
+    fuera.setAttribute("aria-label", "Descartar esta línea, no va en el algoritmo");
+
+    arriba.addEventListener("click", () => {
+      const prev = li.previousElementSibling;
+      if (prev) lista.insertBefore(li, prev);
+    });
+    abajo.addEventListener("click", () => {
+      const sig = li.nextElementSibling;
+      if (sig) lista.insertBefore(sig, li);
+    });
+    fuera.addEventListener("click", () => { li.classList.toggle("descartada"); });
+
+    ctrl.append(arriba, abajo, fuera);
+    li.append(pre, ctrl);
+
+    li.addEventListener("dragstart", () => li.classList.add("arrastrando"));
+    li.addEventListener("dragend", () => li.classList.remove("arrastrando"));
+    return li;
+  }
+
+  const constructores = { mcq: montarMcq, num: montarNum, parsons: montarParsons };
 
   function montar(contenedor, defs, slug) {
     const raiz = typeof contenedor === "string" ? document.querySelector(contenedor) : contenedor;
