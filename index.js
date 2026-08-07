@@ -8,7 +8,21 @@ const EJERCICIOS_POR_TEMA = {
 };
 
 async function pintarRoadmap() {
-  const temario = await fetch("data/temario.json").then(r => r.json());
+  let temario;
+  try {
+    temario = await fetch("data/temario.json").then(r => r.json());
+  } catch {
+    // Una pagina vacia sin explicacion es el peor fallo posible: los usuarios
+    // del sitio no programan y no tienen como saber que paso.
+    const cont = document.getElementById("roadmap");
+    if (cont) {
+      const aviso = document.createElement("p");
+      aviso.className = "aviso-error";
+      aviso.textContent = "No se pudo cargar el temario. Si abriste el archivo directamente, probá servirlo con `npx serve` — el navegador bloquea la lectura de datos con file://.";
+      cont.replaceChildren(aviso);
+    }
+    return;
+  }
   const estado = Progreso.leer();
   const cont = document.getElementById("roadmap");
   cont.replaceChildren();

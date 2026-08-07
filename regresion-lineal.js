@@ -144,6 +144,13 @@ modelo = LinearRegression()
 function montarProgresoLectura() {
   const sintesis = document.getElementById("sintesis");
   if (!sintesis) return;
+  // Sin el guard, la excepcion abortaria el resto del archivo — y abajo esta
+  // montarConceptNav. Si no hay observer, se marca leido directo: es preferible
+  // a que el tema nunca pueda completarse.
+  if (typeof IntersectionObserver === "undefined") {
+    Progreso.marcarLeido("regresion-lineal");
+    return;
+  }
   new IntersectionObserver((es, obs) => {
     if (es[0].isIntersecting) {
       Progreso.marcarLeido("regresion-lineal");

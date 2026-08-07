@@ -475,9 +475,21 @@ nav {
 .ci:hover .ci-ver, .ci-ver:focus-visible { opacity: 1; }
 .ci-pronto { opacity: 0.4; color: var(--ink-mute); }
 
+/* En tactil no hay hover: sin esto el unico link accionable de la pagina
+   queda invisible. Revelar por hover es un lujo de escritorio. */
+@media (hover: none) {
+  .ci-ver { opacity: 1; }
+}
+
 /* ── Distinciones ────────────────────────────────────────── */
 .dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e4); }
 .dist { padding: var(--e6); background: var(--panel); border: 1px solid var(--rule); border-radius: var(--radio); }
 .dist-vs { font-family: var(--font-mono); font-weight: 400; color: var(--accent); font-size: 0.8em; }
 .dist-trampa { font-size: var(--t-small); }
 .dist-truco { font-size: var(--t-small); color: var(--ink-mute); margin: 0; }
+
+.aviso-error {
+  padding: var(--e6); margin-block: var(--e8);
+  border: 1px solid var(--rule); border-radius: var(--radio);
+  background: var(--panel); color: var(--ink-mute); font-size: var(--t-small);
+}
