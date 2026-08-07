@@ -244,10 +244,11 @@
       </div>
     </section>
 
-    <nav class="concept-nav">
-      <a href="concept-08-sesgo-varianza.html"><span class="cn-dir">← Anterior</span><span class="cn-t">Sesgo, varianza y overfitting</span></a>
-      <a href="concept-10-gradiente.html" class="cn-next"><span class="cn-dir">Siguiente →</span><span class="cn-t">Regresión múltiple y descenso de gradiente</span></a>
-    </nav>
+    <!-- Se llena desde data/temario.json: un tema sin escribir sale atenuado y
+         sin href. Enlazar a un 404 es peor que no ofrecer el enlace, y en el
+         despliegue secuencial casi todos los "siguiente" apuntan a temas que
+         todavía no existen. -->
+    <nav class="concept-nav"></nav>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>

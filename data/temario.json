@@ -16,7 +16,7 @@
       ] },
     { "n": 2, "nombre": "Regresión", "hint": "Predecir un número", "hue": 145,
       "temas": [
-        { "n": 9, "titulo": "Regresión lineal simple", "slug": "regresion-lineal", "archivo": "concept-09-regresion-lineal.html" },
+        { "n": 9, "titulo": "Regresión lineal simple", "slug": "regresion-lineal", "archivo": "concept-09-regresion-lineal.html", "escrito": true },
         { "n": 10, "titulo": "Regresión múltiple y descenso de gradiente", "slug": "gradiente", "archivo": "concept-10-gradiente.html" },
         { "n": 11, "titulo": "Regularización: Ridge y Lasso", "slug": "regularizacion", "archivo": "concept-11-regularizacion.html" }
       ] },

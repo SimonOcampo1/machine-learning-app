@@ -157,6 +157,7 @@ function montarProgresoLectura() {
 montarSimulador();
 montarEjercicios();
 montarProgresoLectura();
+montarConceptNav("regresion-lineal");
 
 /* ═══ 4. Animaciones — decorativas, van al final ═══ */
 /* Si algo de acá abajo fallara, se pierde una animación, no el contenido. */

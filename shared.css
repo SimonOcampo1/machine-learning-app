@@ -312,6 +312,7 @@ nav {
 }
 .concept-nav .cn-t { font-weight: 700; letter-spacing: -0.02em; }
 .concept-nav .cn-next { text-align: right; margin-left: auto; }
+.concept-nav .cn-pronto { opacity: 0.4; }
 
 /* ── Reveal on scroll (lo aplica shared.js) ──────────────── */
 /* El estado oculto vive detrás de `.js`, que shared.js pone en <html> en su
