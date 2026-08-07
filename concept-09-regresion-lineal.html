@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Regresión lineal simple · ML</title>
   <meta name="description" content="Cómo una recta aprende a predecir: mínimos cuadrados explicados desde cero, con ejercicios.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="shared.css">
   <script src="shared.js"></script>
 </head>
@@ -17,14 +19,13 @@
       <a href="temas.html" class="nav-link">Temas</a>
       <!-- Estudio y Práctica se agregan en la Etapa 6, cuando esas páginas
            existan. Un link de navegación a un 404 es peor que su ausencia. -->
-      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
     </div>
   </nav>
 
   <main class="envoltura">
     <header class="hero-c">
       <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 2</p>
-      <p class="eyebrow">Tema 09 · Regresión</p>
+      <p class="eyebrow">{ Tema 09 · Regresión }</p>
       <h1>Regresión lineal simple</h1>
       <p class="lede">La forma más vieja y más útil de que una máquina aprenda: encontrar la recta que menos se equivoca.</p>
       <!-- Sin <hr>: la primera .section ya abre con su propio border-top y
@@ -252,9 +253,16 @@
     <nav class="concept-nav"></nav>
   </main>
 
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>

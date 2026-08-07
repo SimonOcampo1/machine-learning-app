@@ -3,33 +3,9 @@
    antes de esta línea, todo el contenido queda visible en vez de invisible. */
 document.documentElement.classList.add("js");
 
-/* ── Tema ────────────────────────────────────────────────── */
-const CLAVE_TEMA = "ml-tema";
-
-function temaInicial() {
-  // localStorage tira excepción en iframes sandboxeados, con storage
-  // deshabilitado por política, y en algunos modos privados. Si eso escapara,
-  // abortaría el resto del script y el reveal nunca se montaría.
-  let guardado = null;
-  try { guardado = localStorage.getItem(CLAVE_TEMA); } catch { /* sin storage */ }
-  if (guardado === "claro" || guardado === "oscuro") return guardado;
-  return matchMedia("(prefers-color-scheme: light)").matches ? "claro" : "oscuro";
-}
-
-function aplicarTema(t) {
-  document.documentElement.dataset.tema = t;
-  const b = document.getElementById("theme-tog");
-  if (b) {
-    b.textContent = t === "oscuro" ? "☾" : "☀";
-    b.setAttribute("aria-label", t === "oscuro" ? "Cambiar a tema claro" : "Cambiar a tema oscuro");
-  }
-}
-
-function toggleTheme() {
-  const t = document.documentElement.dataset.tema === "oscuro" ? "claro" : "oscuro";
-  try { localStorage.setItem(CLAVE_TEMA, t); } catch { /* sin storage: el tema no persiste */ }
-  aplicarTema(t);
-}
+/* El tema claro y su toggle se eliminaron en el rediseño: gsap.com es de un
+   solo canvas y su propio doc de estilo prohíbe romper el par crema sobre
+   negro. Si alguna vez vuelve, vuelve con su fila en `contraste.js`. */
 
 /* ── Reveal on scroll ────────────────────────────────────── */
 /* Contrato con el CSS: `.js .reveal` es lo que oculta. La clase `.js` se puso
@@ -71,10 +47,16 @@ function montarBarra() {
 /* ── Navegación entre conceptos ──────────────────────────── */
 /* Se arma desde data/temario.json, que es la única fuente de verdad de qué
    temas están escritos (campo `escrito`). Así las 24 páginas comparten un
-   solo mecanismo y ninguna enlaza a un archivo inexistente. */
-async function montarConceptNav(slugActual) {
+   solo mecanismo y ninguna enlaza a un archivo inexistente.
+
+   El tema actual se deduce del nombre de archivo, no se pasa por parámetro.
+   Antes cada página llamaba a esto con su slug escrito a mano: si un tema se
+   lo olvidaba, quedaba un bloque vacío de ~6rem con una línea arriba y ningún
+   error. Con 23 temas por escribir eran 23 oportunidades de que pasara. */
+async function montarConceptNav() {
   const cont = document.querySelector(".concept-nav");
   if (!cont) return;
+  const archivo = location.pathname.split("/").pop() || "";
   let temario;
   try {
     temario = await fetch("data/temario.json").then(r => r.json());
@@ -82,7 +64,7 @@ async function montarConceptNav(slugActual) {
     return; // sin datos no se toca nada: mejor vacío que roto
   }
   const temas = temario.fases.flatMap(f => f.temas);
-  const i = temas.findIndex(t => t.slug === slugActual);
+  const i = temas.findIndex(t => t.archivo === archivo);
   if (i < 0) return;
 
   cont.replaceChildren();
@@ -123,10 +105,7 @@ function montarAnio() {
    al resto. */
 addEventListener("DOMContentLoaded", () => {
   try { montarReveal(); } catch (e) { mostrarTodo(); console.warn("reveal:", e); }
-  for (const montar of [() => aplicarTema(document.documentElement.dataset.tema || temaInicial()), montarBarra, montarAnio]) {
+  for (const montar of [montarBarra, montarAnio, montarConceptNav]) {
     try { montar(); } catch (e) { console.warn("montaje:", e); }
   }
 });
-
-// Se corre inmediatamente, no en DOMContentLoaded: evita el flash de tema equivocado.
-try { aplicarTema(temaInicial()); } catch (e) { console.warn("tema inicial:", e); }

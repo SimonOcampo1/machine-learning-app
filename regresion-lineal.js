@@ -164,7 +164,8 @@ function montarProgresoLectura() {
 montarSimulador();
 montarEjercicios();
 montarProgresoLectura();
-montarConceptNav("regresion-lineal");
+/* La nav prev/next ya no se llama desde acá: `shared.js` la monta sola,
+   deduciendo el tema del nombre del archivo. */
 
 /* ═══ 4. Animaciones — decorativas, van al final ═══ */
 /* Si algo de acá abajo fallara, se pierde una animación, no el contenido. */

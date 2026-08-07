@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces } = require("./verificar.js");
+const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow } = require("./verificar.js");
 
 test("el temario tiene 6 fases y 24 temas con slugs únicos", () => {
   const t = require("./data/temario.json");
@@ -216,4 +216,64 @@ test("_chequearNav normaliza el prefijo ./ al buscar el link propio", () => {
   const html = `<a href="./index.html" class="nav-link on">Inicio</a>
                 <a href="temas.html" class="nav-link">Temas</a>`;
   assert.deepStrictEqual(_chequearNav(html, "index.html"), []);
+});
+
+// --- _chequearEjercicios ---
+// Es el chequeo que reemplaza al registro manual EJERCICIOS_POR_TEMA. El modo
+// de falla que cubre es silencioso: sin el campo, el tema nunca llega a
+// "completo" por más que se resuelvan todos sus ejercicios.
+
+test("_chequearEjercicios: tema escrito sin el campo da error que lo nombra", () => {
+  const errs = _chequearEjercicios([{ slug: "knn", escrito: true }]);
+  assert.strictEqual(errs.length, 1);
+  assert.match(errs[0], /knn/);
+  assert.match(errs[0], /ejercicios/);
+});
+
+test("_chequearEjercicios: tema todavía sin escribir no necesita el campo", () => {
+  assert.deepStrictEqual(_chequearEjercicios([{ slug: "svm" }]), []);
+});
+
+test("_chequearEjercicios: cero ejercicios es válido, distinto de ausente", () => {
+  assert.deepStrictEqual(_chequearEjercicios([{ slug: "a", escrito: true, ejercicios: 0 }]), []);
+});
+
+test("_chequearEjercicios: rechaza un conteo que no sea entero no negativo", () => {
+  for (const malo of ["5", 2.5, -1, null, NaN]) {
+    const errs = _chequearEjercicios([{ slug: "a", escrito: true, ejercicios: malo }]);
+    assert.strictEqual(errs.length, 1, `deberia rechazar ${String(malo)}`);
+  }
+});
+
+// --- _chequearEyebrow ---
+// Las llaves son la firma tipográfica del sistema y van en el HTML, lo cual
+// las hace fáciles de perder al copiar la plantilla 23 veces.
+
+test("_chequearEyebrow: eyebrow sin llaves da error con el texto adentro", () => {
+  const errs = _chequearEyebrow(`<p class="eyebrow">Tema 09</p>`, "x.html");
+  assert.strictEqual(errs.length, 1);
+  assert.match(errs[0], /Tema 09/);
+});
+
+test("_chequearEyebrow: eyebrow con llaves pasa", () => {
+  assert.deepStrictEqual(_chequearEyebrow(`<p class="eyebrow">{ Tema 09 }</p>`, "x.html"), []);
+});
+
+test("_chequearEyebrow: ignora el markup interno al comparar", () => {
+  const html = `<p class="eyebrow">{ Tema <strong>09</strong> · Regresión }</p>`;
+  assert.deepStrictEqual(_chequearEyebrow(html, "x.html"), []);
+});
+
+test("_chequearEyebrow: una llave sola no alcanza", () => {
+  assert.strictEqual(_chequearEyebrow(`<p class="eyebrow">{ Tema 09</p>`, "x.html").length, 1);
+  assert.strictEqual(_chequearEyebrow(`<p class="eyebrow">Tema 09 }</p>`, "x.html").length, 1);
+});
+
+test("_chequearEyebrow: revisa todos los eyebrow del archivo, no solo el primero", () => {
+  const html = `<p class="eyebrow">{ Bien }</p><p class="eyebrow">Mal</p>`;
+  assert.strictEqual(_chequearEyebrow(html, "x.html").length, 1);
+});
+
+test("_chequearEyebrow: una página sin eyebrow no da error", () => {
+  assert.deepStrictEqual(_chequearEyebrow("<p>nada</p>", "x.html"), []);
 });
