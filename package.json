@@ -1,0 +1,10 @@
+{
+  "name": "ml-estudio",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "verificar": "node verificar.js",
+    "test": "node --test"
+  }
+}
