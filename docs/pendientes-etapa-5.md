@@ -1,7 +1,10 @@
 # Pendientes y notas para la Etapa 5
 
-Lo que queda abierto para quien escriba los 23 temas restantes. Nada de esto
+Lo que queda abierto para quien escriba los temas que faltan. Nada de esto
 bloquea el deploy.
+
+**Estado: 3 de 24 escritos** — 01 (Python), 02 (NumPy) y 09 (regresión lineal).
+Faltan 21. El orden natural es seguir por el 03 para terminar la fase 0.
 
 ## Antes de desplegar (requiere cuentas)
 
