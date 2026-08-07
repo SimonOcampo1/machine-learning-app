@@ -5,12 +5,21 @@ const Progreso = (() => {
 
   const temaVacio = () => ({ leido: false, quiz: false, ejercicios: {} });
 
+  // `temas` tiene que ser un objeto plano. Un array pasa `typeof === "object"`
+  // y es truthy, pero `JSON.stringify` de un array descarta las claves de
+  // texto: el progreso se guardaría y desaparecería al siguiente `guardar()`.
+  function _estadoValido(e) {
+    if (!e || typeof e !== "object") return false;
+    if (!e.temas || typeof e.temas !== "object" || Array.isArray(e.temas)) return false;
+    return true;
+  }
+
   function leer() {
     try {
       const crudo = localStorage.getItem(CLAVE);
       if (!crudo) return vacio();
       const e = JSON.parse(crudo);
-      if (!e || typeof e !== "object" || !e.temas) return vacio();
+      if (!_estadoValido(e)) return vacio();
       return e;
     } catch {
       // JSON corrupto: mejor arrancar limpio que romper toda la página.
@@ -62,6 +71,10 @@ const Progreso = (() => {
   }
 
   function estadoTema(estado, slug, totalEjercicios) {
+    // Un total ausente significa "este tema todavía no se escribió", que es
+    // distinto de "este tema no tiene ejercicios". Sin esta distinción, los 23
+    // temas pendientes se pintarían completos apenas alguien los marque leídos.
+    if (typeof totalEjercicios !== "number" || totalEjercicios < 0) return "sin-empezar";
     const t = (estado && estado.temas && estado.temas[slug]) || null;
     if (!t) return "sin-empezar";
     const resueltos = Object.values(t.ejercicios || {}).filter(p => p > 0).length;
@@ -73,13 +86,15 @@ const Progreso = (() => {
   function porcentaje(estado, temario, totalesPorSlug) {
     const temas = temario.fases.flatMap(f => f.temas);
     if (!temas.length) return 0;
+    // Se pasa el valor tal cual: si el slug no está en el mapa llega `undefined`,
+    // y `estadoTema` lo lee como "tema sin escribir" en vez de "cero ejercicios".
     const completos = temas.filter(
-      t => estadoTema(estado, t.slug, totalesPorSlug[t.slug] || 0) === "completa"
+      t => estadoTema(estado, t.slug, totalesPorSlug[t.slug]) === "completa"
     ).length;
     return Math.round((completos / temas.length) * 100);
   }
 
-  return { vacio, leer, guardar, marcarLeido, marcarQuiz, registrar, fusionar, estadoTema, porcentaje };
+  return { vacio, leer, guardar, marcarLeido, marcarQuiz, registrar, fusionar, estadoTema, porcentaje, _estadoValido };
 })();
 
 if (typeof module !== "undefined") module.exports = Progreso;
