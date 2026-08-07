@@ -323,3 +323,14 @@ nav {
 @media (prefers-reduced-motion: reduce) {
   .js .reveal { opacity: 1; transform: none; }
 }
+
+/* ── Control de animación de diagramas (lo inyecta anim.js) ─ */
+.diag-ctrl {
+  display: block; margin: var(--e4) auto 0;
+  font-family: var(--font-mono); font-size: var(--t-small);
+  background: none; color: var(--accent);
+  border: 1px solid var(--rule); border-radius: 999px;
+  padding: var(--e2) var(--e4); cursor: pointer;
+  transition: border-color var(--transicion);
+}
+.diag-ctrl:hover { border-color: var(--accent); }
