@@ -128,7 +128,14 @@ async function handler(req, res) {
     }
 
     if (req.method === "POST") {
-      const cuerpo = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      let cuerpo;
+      try {
+        cuerpo = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+      } catch {
+        // Un cuerpo ilegible es error del cliente, no del almacenamiento.
+        // Sin esta guarda caía en el catch de abajo y se reportaba un 500.
+        return res.status(400).json({ error: "cuerpo JSON inválido" });
+      }
       const v = _validarCuerpo(cuerpo);
       if (!v.ok) return res.status(v.codigo).json({ error: v.msg });
       await redisSet(clave, cuerpo);
