@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces } = require("./verificar.js");
+const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces } = require("./verificar.js");
 
 test("el temario tiene 6 fases y 24 temas con slugs únicos", () => {
   const t = require("./data/temario.json");
@@ -180,4 +180,40 @@ test("_chequearEnlaces: enlace a un archivo existente en disco no es un error", 
     new Set()
   );
   assert.deepStrictEqual(errores, []);
+});
+
+test("_chequearEscrito: escrito:true sin archivo en disco da error que lo nombra", () => {
+  const errs = _chequearEscrito(
+    [{ slug: "knn", archivo: "concept-14-knn.html", escrito: true }],
+    new Set()
+  );
+  assert.strictEqual(errs.length, 1);
+  assert.match(errs[0], /concept-14-knn\.html/);
+  assert.match(errs[0], /no existe/);
+});
+
+test("_chequearEscrito: archivo en disco sin escrito:true da error que lo nombra", () => {
+  const errs = _chequearEscrito(
+    [{ slug: "knn", archivo: "concept-14-knn.html" }],
+    new Set(["concept-14-knn.html"])
+  );
+  assert.strictEqual(errs.length, 1);
+  assert.match(errs[0], /escrito:true/);
+});
+
+test("_chequearEscrito: los dos casos coherentes no dan error", () => {
+  const errs = _chequearEscrito(
+    [
+      { slug: "a", archivo: "concept-01-a.html", escrito: true },
+      { slug: "b", archivo: "concept-02-b.html" }
+    ],
+    new Set(["concept-01-a.html"])
+  );
+  assert.deepStrictEqual(errs, []);
+});
+
+test("_chequearNav normaliza el prefijo ./ al buscar el link propio", () => {
+  const html = `<a href="./index.html" class="nav-link on">Inicio</a>
+                <a href="temas.html" class="nav-link">Temas</a>`;
+  assert.deepStrictEqual(_chequearNav(html, "index.html"), []);
 });

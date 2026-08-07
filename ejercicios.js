@@ -92,6 +92,9 @@ const Ejercicios = (() => {
     raiz.append(nodo("p", "ej-q", def.q));
     const lista = nodo("div", "ej-opts");
     const fb = nodo("div", "ej-fb");
+    // role="status" implica aria-live="polite": quien usa lector de pantalla
+    // se entera del resultado sin tener que ir a buscarlo.
+    fb.setAttribute("role", "status");
     fb.hidden = true;
     let respondido = false;
 
@@ -129,6 +132,9 @@ const Ejercicios = (() => {
     const boton = nodo("button", "ej-enviar", "Comprobar");
     boton.type = "button";
     const fb = nodo("div", "ej-fb");
+    // role="status" implica aria-live="polite": quien usa lector de pantalla
+    // se entera del resultado sin tener que ir a buscarlo.
+    fb.setAttribute("role", "status");
     fb.hidden = true;
 
     const enviar = () => {
@@ -174,6 +180,9 @@ const Ejercicios = (() => {
     const boton = nodo("button", "ej-enviar", "Comprobar");
     boton.type = "button";
     const fb = nodo("div", "ej-fb");
+    // role="status" implica aria-live="polite": quien usa lector de pantalla
+    // se entera del resultado sin tener que ir a buscarlo.
+    fb.setAttribute("role", "status");
     fb.hidden = true;
 
     boton.addEventListener("click", () => {
@@ -317,6 +326,9 @@ const Ejercicios = (() => {
     const salida = nodo("pre", "py-salida");
     salida.hidden = true;
     const fb = nodo("div", "ej-fb");
+    // role="status" implica aria-live="polite": quien usa lector de pantalla
+    // se entera del resultado sin tener que ir a buscarlo.
+    fb.setAttribute("role", "status");
     fb.hidden = true;
 
     correr.addEventListener("click", async () => {

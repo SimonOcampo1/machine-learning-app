@@ -50,6 +50,25 @@ function _chequearHuerfanos(archivosEnDisco, declarados) {
 // al archivo actual. Una página que no forma parte de la nav (ej. una
 // página de tema, que no tiene link a sí misma en Inicio/Temas) no debe
 // tener ningún link marcado.
+/* El invariante que sostiene toda la Etapa 5: `escrito: true` y la existencia
+   del archivo tienen que ir juntos. Si se separan, se rompen en silencio tres
+   cosas a la vez — el roadmap del home, el indice de temas y la navegacion
+   prev/next de la pagina vecina. Son los dos errores que se van a cometer 23
+   veces al escribir el resto de los temas. */
+function _chequearEscrito(temas, existentes) {
+  const errores = [];
+  for (const t of temas) {
+    const enDisco = existentes.has(t.archivo);
+    if (t.escrito === true && !enDisco) {
+      errores.push(`${t.slug}: marcado escrito:true pero ${t.archivo} no existe`);
+    }
+    if (t.escrito !== true && enDisco) {
+      errores.push(`${t.slug}: ${t.archivo} existe pero falta escrito:true en temario.json`);
+    }
+  }
+  return errores;
+}
+
 function _chequearNav(html, archivo) {
   const errores = [];
   const links = [...html.matchAll(/<a\s+href="([^"]+)"\s+class="nav-link([^"]*)"/g)];
@@ -57,11 +76,14 @@ function _chequearNav(html, archivo) {
   // Token exacto, no substring: una clase como "nav-link icon" no debe contar
   // como marcada. El chequeo cuida 24 paginas, conviene que no de falsos positivos.
   const marcados = links.filter(([, , extra]) => extra.trim().split(/\s+/).includes("on"));
-  const esPropioDeLaNav = links.some(([, href]) => href === archivo);
+  // Se normaliza el prefijo "./" igual que en _chequearEnlaces: sin esto una
+  // nav escrita como "./index.html" apagaria este chequeo en silencio.
+  const norm = (h) => h.replace(/^\.\//, "");
+  const esPropioDeLaNav = links.some(([, href]) => norm(href) === archivo);
   if (marcados.length > 1) {
     errores.push(`${archivo}: más de un link de nav marcado 'on'`);
-  } else if (marcados.length === 1 && marcados[0][1] !== archivo) {
-    errores.push(`${archivo}: marca 'on' en el link a ${marcados[0][1]}`);
+  } else if (marcados.length === 1 && norm(marcados[0][1]) !== archivo) {
+    errores.push(`${archivo}: marca 'on' en el link a ${norm(marcados[0][1])}`);
   } else if (marcados.length === 0 && esPropioDeLaNav) {
     errores.push(`${archivo}: le falta la marca 'on' en su propio link`);
   }
@@ -119,6 +141,8 @@ function verificar() {
   // Nav e enlaces: todas las páginas de la raíz, salvo muestra.html
   // (kitchen sink del design system: no está en la nav ni es una página de tema)
   const existentes = new Set(archivosEnDisco.filter(f => f.endsWith(".html")));
+  errores.push(..._chequearEscrito(temas, existentes));
+
   for (const archivo of existentes) {
     if (archivo === "muestra.html") continue;
     const html = fs.readFileSync(path.join(RAIZ, archivo), "utf8");
@@ -147,4 +171,4 @@ if (require.main === module) {
   console.log("✓ verificación OK");
 }
 
-module.exports = { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces };
+module.exports = { verificar, _chequearEscrito, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces };

@@ -1,7 +1,7 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
 const crypto = require("node:crypto");
-const { verificarToken, _setClavesParaTest, _validarCuerpo } = require("./progress.js");
+const { verificarToken, _setClavesParaTest, _validarCuerpo } = require("../../api/progress.js");
 
 const { publicKey, privateKey } = crypto.generateKeyPairSync("rsa", { modulusLength: 2048 });
 const jwk = { ...publicKey.export({ format: "jwk" }), kid: "test-kid", alg: "RS256", use: "sig" };
