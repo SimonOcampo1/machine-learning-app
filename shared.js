@@ -68,6 +68,44 @@ function montarBarra() {
   actualizar();
 }
 
+/* ── Navegación entre conceptos ──────────────────────────── */
+/* Se arma desde data/temario.json, que es la única fuente de verdad de qué
+   temas están escritos (campo `escrito`). Así las 24 páginas comparten un
+   solo mecanismo y ninguna enlaza a un archivo inexistente. */
+async function montarConceptNav(slugActual) {
+  const cont = document.querySelector(".concept-nav");
+  if (!cont) return;
+  let temario;
+  try {
+    temario = await fetch("data/temario.json").then(r => r.json());
+  } catch {
+    return; // sin datos no se toca nada: mejor vacío que roto
+  }
+  const temas = temario.fases.flatMap(f => f.temas);
+  const i = temas.findIndex(t => t.slug === slugActual);
+  if (i < 0) return;
+
+  cont.replaceChildren();
+  for (const [tema, rotulo, clase] of [
+    [temas[i - 1], "← Anterior", ""],
+    [temas[i + 1], "Siguiente →", "cn-next"]
+  ]) {
+    if (!tema) continue;
+    const escrito = tema.escrito === true;
+    const el = document.createElement(escrito ? "a" : "span");
+    el.className = `${clase}${escrito ? "" : " cn-pronto"}`.trim();
+    if (escrito) el.href = tema.archivo;
+    const dir = document.createElement("span");
+    dir.className = "cn-dir";
+    dir.textContent = escrito ? rotulo : `${rotulo} · próximamente`;
+    const tit = document.createElement("span");
+    tit.className = "cn-t";
+    tit.textContent = tema.titulo;
+    el.append(dir, tit);
+    cont.append(el);
+  }
+}
+
 /* ── Año del pie ─────────────────────────────────────────── */
 function montarAnio() {
   document.querySelectorAll("[data-anio]").forEach(el => { el.textContent = new Date().getFullYear(); });
