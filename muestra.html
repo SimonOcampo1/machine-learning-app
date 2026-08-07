@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Muestra del design system</title>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body>
+  <div class="barra-progreso"></div>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Muestra</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero">
+      <p class="eyebrow">Design system</p>
+      <h1><span class="w1">Muestra</span><span class="w2">de componentes</span></h1>
+      <p class="lede">Todos los tokens y componentes, en las seis fases, para revisar de un vistazo. Esta página no se enlaza desde la navegación: es control interno.</p>
+    </header>
+
+    <section class="section fase-0">
+      <div class="sec-no">00</div>
+      <div class="sec-body">
+        <h2>Fase 0 · Piso</h2>
+        <p>Nadie toca un modelo antes de saber qué es un vector. Este párrafo chequea medida de lectura, interlineado y color de cuerpo sobre el fondo: <code>var(--ink)</code> sobre <code>var(--bg)</code>, nunca el acento de fase.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal, fondo <code>--accent-tint</code> y borde <code>--accent</code>.</div>
+        <div class="callout formula">y = β₀ + β₁x + ε</div>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Callout de advertencia — siempre tangerina, sin importar la fase.</div>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Callout de confirmación — siempre verde, sin importar la fase.</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de flujo x a f de x">
+            <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
+            <circle class="dnode-bg" cx="90" cy="60" r="26"/>
+            <text class="dtxt" x="90" y="65" text-anchor="middle">x</text>
+            <path class="dedge" d="M118 60 H 250"/>
+            <rect class="dnode-bg" x="250" y="34" width="90" height="52" rx="10"/>
+            <text class="dtxt" x="295" y="65" text-anchor="middle">f(x)</text>
+            <text class="dlabel" x="184" y="48" text-anchor="middle">flujo</text>
+          </svg>
+          <figcaption>Cada color sale de una custom property.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section fase-1">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <h2>Fase 1 · Aprender de los datos</h2>
+        <p>Qué significa que una máquina aprenda. El acento de esta fase es el lila; compará su intensidad contra el piso azul de arriba en ambos temas.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>El mismo componente, otro hue: solo cambia <code>--fase-h</code>.</div>
+        <div class="callout err"><span class="etiqueta">Error</span>Callout de error — fijo en un rojo-naranja, distinto del warn.</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de nodo sólido y arista muda">
+            <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
+            <circle class="dnode-solid" cx="90" cy="60" r="20"/>
+            <text class="dtxt-mute" x="90" y="95" text-anchor="middle">entrada</text>
+            <path class="dedge-mute" d="M118 60 H 250"/>
+            <rect class="dnode-bg" x="250" y="34" width="90" height="52" rx="10"/>
+            <text class="dtxt" x="295" y="65" text-anchor="middle">modelo</text>
+            <text class="dlabel" x="184" y="48" text-anchor="middle">ajuste</text>
+          </svg>
+          <figcaption>Nodo sólido, arista muda y texto secundario: el resto de los helpers del diagrama.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section fase-2">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <h2>Fase 2 · Regresión</h2>
+        <p>Predecir un número. El verde de esta fase es también el verde por defecto de <code>:root</code> — confirmá que igual se distingue del <code>ok</code> de los callouts, que usa el mismo hue a propósito.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal en verde de fase.</div>
+        <div class="callout formula">ŷ = Xβ</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de dos entradas combinadas">
+            <line class="daxis" x1="30" y1="110" x2="370" y2="110"/>
+            <circle class="dnode-bg" cx="80" cy="40" r="22"/>
+            <text class="dtxt" x="80" y="45" text-anchor="middle">x₁</text>
+            <circle class="dnode-bg" cx="80" cy="90" r="22"/>
+            <text class="dtxt" x="80" y="95" text-anchor="middle">x₂</text>
+            <path class="dedge" d="M102 40 L 250 62"/>
+            <path class="dedge" d="M102 90 L 250 68"/>
+            <rect class="dnode-bg" x="250" y="40" width="90" height="52" rx="10"/>
+            <text class="dtxt" x="295" y="70" text-anchor="middle">ŷ</text>
+          </svg>
+          <figcaption>Dos aristas convergiendo en un nodo.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section fase-3">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <h2>Fase 3 · Clasificación</h2>
+        <p>Predecir una categoría. La tangerina de esta fase coincide con el hue fijo del callout <code>warn</code>: son el mismo naranja por diseño, no un accidente de contraste.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal — mismo naranja que un warning, pero por ser la fase, no la severidad.</div>
+        <div class="callout ok"><span class="etiqueta">Clave</span>El callout <code>ok</code> sigue siendo verde acá, no tangerina.</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de frontera de decisión">
+            <rect class="dnode-bg" x="20" y="20" width="360" height="100" rx="10"/>
+            <circle class="dnode-solid" cx="110" cy="55" r="8"/>
+            <circle class="dnode-solid" cx="150" cy="90" r="8"/>
+            <circle class="dnode-solid" cx="90" cy="95" r="8"/>
+            <path class="dedge" d="M210 25 L 260 115"/>
+            <text class="dlabel" x="330" y="45" text-anchor="middle">clase A</text>
+            <text class="dtxt-mute" x="90" y="115" text-anchor="middle">clase B</text>
+          </svg>
+          <figcaption>Recta separadora sobre región sombreada.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section fase-4">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <h2>Fase 4 · Árboles y no supervisado</h2>
+        <p>Decidir por ramas, y aprender sin etiquetas. El rosa de esta fase debería leerse claramente distinto de la magenta de la fase siguiente.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal en rosa de fase.</div>
+        <div class="callout formula">Gini = 1 − Σ pᵢ²</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de árbol de decisión">
+            <circle class="dnode-bg" cx="200" cy="30" r="20"/>
+            <text class="dtxt" x="200" y="35" text-anchor="middle">?</text>
+            <path class="dedge" d="M190 48 L 110 100"/>
+            <path class="dedge" d="M210 48 L 290 100"/>
+            <rect class="dnode-bg" x="75" y="100" width="70" height="34" rx="8"/>
+            <text class="dtxt" x="110" y="122" text-anchor="middle">sí</text>
+            <rect class="dnode-bg" x="255" y="100" width="70" height="34" rx="8"/>
+            <text class="dtxt" x="290" y="122" text-anchor="middle">no</text>
+          </svg>
+          <figcaption>Nodo de decisión con dos ramas.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section fase-5">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <h2>Fase 5 · Redes neuronales</h2>
+        <p>De una neurona a una red que aprende sola. Última fase: confirmá que las seis se distinguen entre sí puestas una debajo de la otra, en los dos temas.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Callout normal en magenta de fase.</div>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>El warning sigue siendo tangerina acá también, no magenta.</div>
+        <figure class="diagram">
+          <svg viewBox="0 0 400 140" role="img" aria-label="Diagrama de capa de neuronas">
+            <circle class="dnode-bg" cx="70" cy="35" r="16"/>
+            <circle class="dnode-bg" cx="70" cy="70" r="16"/>
+            <circle class="dnode-bg" cx="70" cy="105" r="16"/>
+            <circle class="dnode-solid" cx="220" cy="52" r="18"/>
+            <circle class="dnode-solid" cx="220" cy="88" r="18"/>
+            <path class="dedge-mute" d="M86 35 L 202 52"/>
+            <path class="dedge-mute" d="M86 35 L 202 88"/>
+            <path class="dedge-mute" d="M86 70 L 202 52"/>
+            <path class="dedge-mute" d="M86 70 L 202 88"/>
+            <path class="dedge-mute" d="M86 105 L 202 52"/>
+            <path class="dedge-mute" d="M86 105 L 202 88"/>
+            <path class="dedge" d="M238 52 L 330 70"/>
+            <path class="dedge" d="M238 88 L 330 70"/>
+            <circle class="dnode-bg" cx="345" cy="70" r="18"/>
+          </svg>
+          <figcaption>Capa de entrada, capa oculta, salida.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <h2>Roadmap y navegación entre conceptos</h2>
+        <p>El resto de los componentes compartidos, fuera del patrón por fase: tarjetas de roadmap con sus tres estados, y la navegación anterior/siguiente entre páginas de concepto.</p>
+        <div class="rm-phase">
+          <div class="rm-phase-meta">
+            <div class="rm-phase-n">02</div>
+            <p class="rm-phase-hint">Predecir un número</p>
+          </div>
+          <div class="rm-cards">
+            <a class="rm-card completa" href="#">
+              <div class="rm-card-n">09</div>
+              <div class="rm-card-t">Regresión lineal simple</div>
+              <div class="rm-card-estado">Completo</div>
+            </a>
+            <a class="rm-card en-progreso" href="#">
+              <div class="rm-card-n">10</div>
+              <div class="rm-card-t">Descenso de gradiente</div>
+              <div class="rm-card-estado">En progreso</div>
+            </a>
+            <a class="rm-card" href="#">
+              <div class="rm-card-n">11</div>
+              <div class="rm-card-t">Ridge y Lasso</div>
+              <div class="rm-card-estado">Sin empezar</div>
+            </a>
+          </div>
+        </div>
+        <nav class="concept-nav">
+          <a href="#">
+            <span class="cn-dir">← Anterior</span>
+            <span class="cn-t">Regresión lineal simple</span>
+          </a>
+          <a href="#" class="cn-next">
+            <span class="cn-dir">Siguiente →</span>
+            <span class="cn-t">Ridge y Lasso</span>
+          </a>
+        </nav>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

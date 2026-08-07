@@ -217,10 +217,10 @@ nav {
 
 /* ── Callouts ────────────────────────────────────────────── */
 .callout {
-  border-left: 3px solid var(--accent);
+  border: 1px solid var(--accent);
   background: var(--accent-tint);
   padding: var(--e4) var(--e6);
-  border-radius: 0 var(--radio) var(--radio) 0;
+  border-radius: var(--radio);
   margin-block: var(--e6);
 }
 .callout > :last-child { margin-bottom: 0; }
