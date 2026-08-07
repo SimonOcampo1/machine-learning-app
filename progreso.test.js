@@ -79,3 +79,28 @@ test("estadoTema marca completa un tema sin ejercicios corregibles si leido y qu
   const sinEjercicios = { v: 1, temas: { teoria: { leido: true, quiz: true, ejercicios: {} } } };
   assert.strictEqual(P.estadoTema(sinEjercicios, "teoria", 0), "completa");
 });
+
+test("estadoTema con totalEjercicios undefined (tema todavía no escrito) da sin-empezar aunque leido y quiz estén en true", () => {
+  const leidoYQuiz = { v: 1, temas: { fantasma: { leido: true, quiz: true, ejercicios: {} } } };
+  assert.strictEqual(P.estadoTema(leidoYQuiz, "fantasma", undefined), "sin-empezar");
+});
+
+test("porcentaje no cuenta como completo un slug ausente de totalesPorSlug aunque tenga leido y quiz", () => {
+  const temario = { fases: [{ n: 0, temas: [{ slug: "a" }, { slug: "fantasma" }] }] };
+  const totales = { a: 1 };
+  const est = {
+    v: 1, temas: {
+      a: { leido: true, quiz: true, ejercicios: { x: 100 } },
+      fantasma: { leido: true, quiz: true, ejercicios: {} }
+    }
+  };
+  assert.strictEqual(P.porcentaje(est, temario, totales), 50);
+});
+
+test("_estadoValido rechaza temas como array y acepta objetos planos", () => {
+  assert.strictEqual(P._estadoValido({ v: 1, temas: {} }), true);
+  assert.strictEqual(P._estadoValido(null), false);
+  assert.strictEqual(P._estadoValido("texto"), false);
+  assert.strictEqual(P._estadoValido({}), false);
+  assert.strictEqual(P._estadoValido({ temas: [] }), false);
+});
