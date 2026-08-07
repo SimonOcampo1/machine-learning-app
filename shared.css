@@ -12,7 +12,10 @@
   --surface-white: #fffce1;
   --s75: #bbbaa6;
   --s50: #7c7c6f;
+  --s40: #6b6b5f;   /* gris cálido para texto secundario en tema claro */
   --s25: #42433d;
+  --surface-panel-lt: #fffef4;
+  --rule-lt: #ddd9bd;
 
   /* Hue de fase por defecto: verde firma de GSAP */
   --fase-h: 145;
@@ -55,10 +58,10 @@
 /* ── Tema claro ──────────────────────────────────────────── */
 [data-tema="claro"] {
   --bg: var(--surface-white);
-  --panel: #fffef4;
+  --panel: var(--surface-panel-lt);
   --ink: var(--just-black);
-  --ink-mute: var(--s50);
-  --rule: #ddd9bd;
+  --ink-mute: var(--s40);
+  --rule: var(--rule-lt);
   --accent: oklch(48% 0.16 var(--fase-h));
   --accent-tint: oklch(94% 0.05 var(--fase-h));
   --sombra: 0 1px 0 var(--rule);
