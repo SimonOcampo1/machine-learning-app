@@ -101,12 +101,16 @@ test("verificar(): temario.json ilegible da un solo error, sin excepción", () =
 test("_chequearNav detecta la marca 'on' en el link equivocado", () => {
   const html = `<a href="index.html" class="nav-link on">Inicio</a>
                 <a href="temas.html" class="nav-link">Temas</a>`;
-  assert.strictEqual(_chequearNav(html, "temas.html").length, 1);
+  const errNav = _chequearNav(html, "temas.html");
+  assert.strictEqual(errNav.length, 1);
+  assert.match(errNav[0], /index\.html/, "el mensaje debe nombrar el link mal marcado");
   assert.strictEqual(_chequearNav(html, "index.html").length, 0);
 });
 
 test("_chequearNav detecta la ausencia total de nav", () => {
-  assert.ok(_chequearNav("<p>nada</p>", "index.html").length > 0);
+  const errSinNav = _chequearNav("<p>nada</p>", "index.html");
+  assert.strictEqual(errSinNav.length, 1);
+  assert.match(errSinNav[0], /navegaci/i, "el mensaje debe decir que falta la navegacion");
 });
 
 test("_chequearNav detecta que falta la marca 'on' en el propio link", () => {
