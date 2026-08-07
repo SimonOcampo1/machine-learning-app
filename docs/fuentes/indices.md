@@ -28,6 +28,11 @@ Preface vii
 1 Introduction 1
 2 Statistical Learning 15
   2.1 What Is Statistical Learning? 15
+    2.1.1 Why Estimate f? 17
+    2.1.2 How Do We Estimate f? 21
+    2.1.3 The Trade-Off Between Prediction Accuracy and Model Interpretability 24
+    2.1.4 Supervised Versus Unsupervised Learning 26
+    2.1.5 Regression Versus Classification Problems 28
   2.2 Assessing Model Accuracy 29
     2.2.1 Measuring the Quality of Fit 29
     2.2.2 The Bias-Variance Trade-Off 33
@@ -183,6 +188,12 @@ Páginas PDF extraídas: 12–19 (Contents).
 Contents
 1 Introduction 1
   1.2 Probability Theory 12
+    1.2.1 Probability densities 17
+    1.2.2 Expectations and covariances 19
+    1.2.3 Bayesian probabilities 21
+    1.2.4 The Gaussian distribution 24
+    1.2.5 Curve fitting re-visited 28
+    1.2.6 Bayesian curve fitting 30
 2 Probability Distributions 67
 3 Linear Models for Regression 137
 4 Linear Models for Classification 179
