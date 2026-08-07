@@ -188,6 +188,10 @@ const Sync = (() => {
   function montar(sel, clientId) {
     contenedor = document.querySelector(sel);
     clientIdGuardado = clientId;
+    // GIS invoca este hook cuando termina de cargar. Sin él, si el script de
+    // Google llega después de DOMContentLoaded el botón no se dibuja nunca y
+    // el usuario se queda sin forma de iniciar sesión.
+    window.onGoogleLibraryLoad = () => pintar();
     const guardada = sessionStorage.getItem(CLAVE_CRED);
     if (guardada) {
       // Se reusa la credencial de la pestaña; si venció, el 401 la limpia sola.
