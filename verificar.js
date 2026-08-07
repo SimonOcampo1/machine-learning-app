@@ -46,6 +46,49 @@ function _chequearHuerfanos(archivosEnDisco, declarados) {
   return errores;
 }
 
+// Bloque de navegación presente, y la marca 'on' en el link que corresponde
+// al archivo actual. Una página que no forma parte de la nav (ej. una
+// página de tema, que no tiene link a sí misma en Inicio/Temas) no debe
+// tener ningún link marcado.
+function _chequearNav(html, archivo) {
+  const errores = [];
+  const links = [...html.matchAll(/<a\s+href="([^"]+)"\s+class="nav-link([^"]*)"/g)];
+  if (!links.length) return [`${archivo}: no tiene bloque de navegación`];
+  const marcados = links.filter(([, , extra]) => extra.includes("on"));
+  const esPropioDeLaNav = links.some(([, href]) => href === archivo);
+  if (marcados.length > 1) {
+    errores.push(`${archivo}: más de un link de nav marcado 'on'`);
+  } else if (marcados.length === 1 && marcados[0][1] !== archivo) {
+    errores.push(`${archivo}: marca 'on' en el link a ${marcados[0][1]}`);
+  } else if (marcados.length === 0 && esPropioDeLaNav) {
+    errores.push(`${archivo}: le falta la marca 'on' en su propio link`);
+  }
+  return errores;
+}
+
+// Ids de ejercicio duplicados dentro de un mismo archivo JS
+function _chequearIds(js) {
+  const ids = [...js.matchAll(/\bid:\s*["']([^"']+)["']/g)].map(m => m[1]);
+  const vistos = new Set();
+  const dup = new Set();
+  for (const id of ids) { if (vistos.has(id)) dup.add(id); vistos.add(id); }
+  return [...dup].map(id => `id de ejercicio duplicado: ${id}`);
+}
+
+// Enlaces a .html que no existen en disco ni están declarados en el temario.
+// Un tema declarado pero todavía sin escribir no es un enlace roto, es un
+// tema pendiente: distinguirlo es lo que mantiene el chequeo útil durante
+// toda la Etapa 5, cuando faltan 23 archivos por escribir.
+function _chequearEnlaces(html, archivo, existentes, declarados) {
+  const errores = [];
+  for (const [, href] of html.matchAll(/href="([^"#?:]+\.html)[^"]*"/g)) {
+    if (existentes.has(href)) continue;
+    if (declarados.has(href)) continue;
+    errores.push(`${archivo}: enlace roto a ${href}`);
+  }
+  return errores;
+}
+
 function verificar() {
   let temario;
   try {
@@ -66,8 +109,27 @@ function verificar() {
     }
   }
 
+  const archivosEnDisco = fs.readdirSync(RAIZ);
   const declarados = new Set(temas.map(t => t.archivo));
-  errores.push(..._chequearHuerfanos(fs.readdirSync(RAIZ), declarados));
+  errores.push(..._chequearHuerfanos(archivosEnDisco, declarados));
+
+  // Nav e enlaces: todas las páginas de la raíz, salvo muestra.html
+  // (kitchen sink del design system: no está en la nav ni es una página de tema)
+  const existentes = new Set(archivosEnDisco.filter(f => f.endsWith(".html")));
+  for (const archivo of existentes) {
+    if (archivo === "muestra.html") continue;
+    const html = fs.readFileSync(path.join(RAIZ, archivo), "utf8");
+    errores.push(..._chequearNav(html, archivo));
+    errores.push(..._chequearEnlaces(html, archivo, existentes, declarados));
+  }
+
+  // Ids de ejercicio duplicados en cada archivo JS (salvo los de test)
+  for (const archivo of archivosEnDisco) {
+    if (archivo.endsWith(".js") && !archivo.endsWith(".test.js")) {
+      const js = fs.readFileSync(path.join(RAIZ, archivo), "utf8");
+      errores.push(..._chequearIds(js));
+    }
+  }
 
   return errores;
 }
@@ -82,4 +144,4 @@ if (require.main === module) {
   console.log("✓ verificación OK");
 }
 
-module.exports = { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos };
+module.exports = { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces };

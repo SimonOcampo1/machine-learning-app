@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos } = require("./verificar.js");
+const { verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces } = require("./verificar.js");
 
 test("el temario tiene 6 fases y 24 temas con slugs únicos", () => {
   const t = require("./data/temario.json");
@@ -94,4 +94,86 @@ test("verificar(): temario.json ilegible da un solo error, sin excepción", () =
   } finally {
     fs.writeFileSync(p, original, "utf8");
   }
+});
+
+// --- _chequearNav ---
+
+test("_chequearNav detecta la marca 'on' en el link equivocado", () => {
+  const html = `<a href="index.html" class="nav-link on">Inicio</a>
+                <a href="temas.html" class="nav-link">Temas</a>`;
+  assert.strictEqual(_chequearNav(html, "temas.html").length, 1);
+  assert.strictEqual(_chequearNav(html, "index.html").length, 0);
+});
+
+test("_chequearNav detecta la ausencia total de nav", () => {
+  assert.ok(_chequearNav("<p>nada</p>", "index.html").length > 0);
+});
+
+test("_chequearNav detecta que falta la marca 'on' en el propio link", () => {
+  const html = `<a href="index.html" class="nav-link">Inicio</a>
+                <a href="temas.html" class="nav-link">Temas</a>`;
+  const errores = _chequearNav(html, "index.html");
+  assert.strictEqual(errores.length, 1);
+  assert.ok(errores[0].includes("falta"));
+});
+
+test("_chequearNav no marca error en una página que no forma parte de la nav (sin link a sí misma)", () => {
+  const html = `<a href="index.html" class="nav-link">Inicio</a>
+                <a href="temas.html" class="nav-link">Temas</a>`;
+  assert.deepStrictEqual(_chequearNav(html, "concept-09-regresion-lineal.html"), []);
+});
+
+test("_chequearNav detecta más de un link marcado 'on'", () => {
+  const html = `<a href="index.html" class="nav-link on">Inicio</a>
+                <a href="temas.html" class="nav-link on">Temas</a>`;
+  const errores = _chequearNav(html, "index.html");
+  assert.strictEqual(errores.length, 1);
+  assert.ok(errores[0].includes("más de un link"));
+});
+
+// --- _chequearIds ---
+
+test("_chequearIds detecta ids de ejercicio duplicados", () => {
+  const js = `Ejercicios.montar("#e", [{tipo:"mcq", id:"a1"},{tipo:"num", id:"a1"}], "t");`;
+  const errores = _chequearIds(js);
+  assert.strictEqual(errores.length, 1);
+  assert.ok(errores[0].includes("a1"));
+});
+
+test("_chequearIds no marca ids distintos", () => {
+  const js = `Ejercicios.montar("#e", [{tipo:"mcq", id:"a1"},{tipo:"num", id:"a2"}], "t");`;
+  assert.strictEqual(_chequearIds(js).length, 0);
+});
+
+// --- _chequearEnlaces ---
+
+test("_chequearEnlaces: enlace a un archivo que no existe ni está declarado da error", () => {
+  const html = `<a href="concept-99-fantasma.html">x</a>`;
+  const errores = _chequearEnlaces(
+    html, "index.html",
+    new Set(["index.html"]),
+    new Set(["concept-01-python.html"])
+  );
+  assert.strictEqual(errores.length, 1);
+  assert.ok(errores[0].includes("concept-99-fantasma.html"));
+});
+
+test("_chequearEnlaces: enlace a un tema declarado pero todavía sin escribir no es un error", () => {
+  const html = `<a href="concept-10-gradiente.html">x</a>`;
+  const errores = _chequearEnlaces(
+    html, "temas.html",
+    new Set(["temas.html"]),
+    new Set(["concept-10-gradiente.html"])
+  );
+  assert.deepStrictEqual(errores, []);
+});
+
+test("_chequearEnlaces: enlace a un archivo existente en disco no es un error", () => {
+  const html = `<a href="index.html">x</a>`;
+  const errores = _chequearEnlaces(
+    html, "temas.html",
+    new Set(["index.html", "temas.html"]),
+    new Set()
+  );
+  assert.deepStrictEqual(errores, []);
 });
