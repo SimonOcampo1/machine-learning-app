@@ -279,7 +279,15 @@ const Ejercicios = (() => {
         return loadPyodide({ indexURL: PYODIDE_CDN });
       })();
     }
-    const py = await promesaPyodide;
+    let py;
+    try {
+      py = await promesaPyodide;
+    } catch (e) {
+      // Una promesa rechazada queda cacheada y todo intento posterior la reusa.
+      // Sin esto, un solo clic sin conexión deja Python inutilizable hasta recargar.
+      promesaPyodide = null;
+      throw e;
+    }
     const faltantes = paquetes.filter(p => !paquetesCargados.has(p));
     if (faltantes.length) {
       await py.loadPackage(faltantes);
@@ -313,10 +321,15 @@ const Ejercicios = (() => {
 
     correr.addEventListener("click", async () => {
       correr.disabled = true;
-      const pesado = (def.paquetes || []).length > 0;
-      estado.textContent = paquetesCargados.size || promesaPyodide
-        ? "Ejecutando…"
-        : `Descargando Python${pesado ? " y sus paquetes" : ""}. Solo la primera vez.`;
+      // El mensaje tiene que decir la verdad en los tres casos. Mirar solo si
+      // Pyodide ya cargó no alcanza: un ejercicio posterior puede pedir paquetes
+      // nuevos y bajarse 30 MB mientras la pantalla dice "Ejecutando…".
+      const faltanPaquetes = (def.paquetes || []).some(p => !paquetesCargados.has(p));
+      estado.textContent = !promesaPyodide
+        ? `Descargando Python${faltanPaquetes ? " y sus paquetes" : ""}. Solo la primera vez.`
+        : faltanPaquetes
+          ? "Descargando paquetes. Solo la primera vez."
+          : "Ejecutando…";
 
       try {
         const py = await cargarPyodide(def.paquetes || []);
@@ -335,8 +348,15 @@ sys.stderr = _buf
         } catch (e) {
           error = e;
         }
-        const impreso = py.runPython("sys.stdout.getvalue()");
-        py.runPython("sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__");
+        // Se lee `_buf` directo, no `sys.stdout`: si el código del usuario reasignó
+        // sys.stdout, leer de ahí tiraría y la restauración nunca ocurriría,
+        // dejando el intérprete redirigido para las ejecuciones siguientes.
+        let impreso = "";
+        try {
+          impreso = py.runPython("_buf.getvalue()");
+        } finally {
+          py.runPython("sys.stdout = sys.__stdout__; sys.stderr = sys.__stderr__");
+        }
 
         salida.hidden = false;
         salida.textContent = error ? `${impreso}\n${error.message}` : (impreso || "(sin salida)");
