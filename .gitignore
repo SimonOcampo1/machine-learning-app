@@ -1,0 +1,12 @@
+# Libros de referencia: ~110 MB, no van al repo
+assets/
+
+# Extracciones dirigidas de los PDFs (derivadas, regenerables)
+docs/fuentes/
+
+node_modules/
+.vercel
+.env
+.env.*
+.DS_Store
+Thumbs.db
