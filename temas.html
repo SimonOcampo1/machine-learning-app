@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Temas · ML · Estudio</title>
+  <meta name="description" content="El mapa completo de la materia: las tres ramas del machine learning, la línea de tiempo histórica, los 24 temas y las distinciones que más se confunden.">
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link on">Temas</a>
+      <!-- Estudio y Práctica se agregan en la Etapa 6, cuando esas páginas
+           existan. Un link de navegación a un 404 es peor que su ausencia. -->
+      <button class="theme-tog" id="theme-tog" onclick="toggleTheme()" aria-label="Cambiar tema">☾</button>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero">
+      <p class="eyebrow">Índice completo</p>
+      <h1><span class="w1">Temas</span><span class="w2">y territorio</span></h1>
+      <p class="lede">El mapa entero de la materia: de dónde viene, cómo se divide, y qué distinciones son las que más se confunden.</p>
+    </header>
+
+    <section class="section reveal fase-1">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <h2>Las tres ramas</h2>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>Supervisado</h3>
+            <p class="pilar-e"><strong>Entra:</strong> ejemplos con la respuesta puesta.</p>
+            <p class="pilar-s"><strong>Sale:</strong> una función que predice la respuesta de un ejemplo nuevo.</p>
+            <p>Filtrar spam: miles de mails ya marcados como spam o no.</p>
+          </article>
+          <article class="pilar">
+            <h3>No supervisado</h3>
+            <p class="pilar-e"><strong>Entra:</strong> ejemplos sin ninguna respuesta.</p>
+            <p class="pilar-s"><strong>Sale:</strong> estructura que estaba escondida en los datos.</p>
+            <p>Agrupar clientes por comportamiento sin saber de antemano qué grupos hay.</p>
+          </article>
+          <article class="pilar">
+            <h3>Por refuerzo</h3>
+            <p class="pilar-e"><strong>Entra:</strong> un entorno que premia y castiga.</p>
+            <p class="pilar-s"><strong>Sale:</strong> una política de qué hacer en cada situación.</p>
+            <p>Un programa que aprende a jugar al ajedrez jugando millones de partidas.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section reveal fase-3">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <h2>Doscientos años en siete hitos</h2>
+        <ol class="timeline" id="timeline"></ol>
+      </div>
+    </section>
+
+    <section class="section reveal fase-2">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <h2>Los 24 temas</h2>
+        <div id="lista-temas"></div>
+      </div>
+    </section>
+
+    <section class="section reveal fase-4">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <h2>Distinciones que se confunden</h2>
+        <div class="dist-grid" id="distinciones"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="envoltura pie">
+    <p>Hecho para David y Abel · <span data-anio></span></p>
+  </footer>
+
+  <script src="temas.js"></script>
+</body>
+</html>
