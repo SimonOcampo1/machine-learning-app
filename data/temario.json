@@ -2,17 +2,17 @@
   "fases": [
     { "n": 0, "nombre": "Piso", "hint": "Nadie toca un modelo antes de saber qué es un vector", "hue": 220,
       "temas": [
-        { "n": 1, "titulo": "Python esencial: variables, listas, bucles, funciones", "slug": "python", "archivo": "concept-01-python.html" },
+        { "n": 1, "titulo": "Python esencial", "slug": "python", "archivo": "concept-01-python.html" },
         { "n": 2, "titulo": "NumPy y pensar en vectores", "slug": "numpy", "archivo": "concept-02-numpy.html" },
-        { "n": 3, "titulo": "Álgebra lineal mínima: vectores, matrices, producto punto", "slug": "algebra", "archivo": "concept-03-algebra.html" },
-        { "n": 4, "titulo": "Probabilidad y estadística mínima: media, varianza, Bayes", "slug": "probabilidad", "archivo": "concept-04-probabilidad.html" }
+        { "n": 3, "titulo": "Álgebra lineal mínima", "slug": "algebra", "archivo": "concept-03-algebra.html" },
+        { "n": 4, "titulo": "Probabilidad y estadística mínima", "slug": "probabilidad", "archivo": "concept-04-probabilidad.html" }
       ] },
     { "n": 1, "nombre": "Aprender de los datos", "hint": "Qué significa que una máquina aprenda", "hue": 285,
       "temas": [
-        { "n": 5, "titulo": "Qué es machine learning: supervisado, no supervisado, tipos de problema", "slug": "que-es-ml", "archivo": "concept-05-que-es-ml.html" },
-        { "n": 6, "titulo": "El flujo de trabajo: datos → modelo → evaluación", "slug": "flujo", "archivo": "concept-06-flujo.html" },
+        { "n": 5, "titulo": "Qué es machine learning", "slug": "que-es-ml", "archivo": "concept-05-que-es-ml.html" },
+        { "n": 6, "titulo": "El flujo de trabajo", "slug": "flujo", "archivo": "concept-06-flujo.html" },
         { "n": 7, "titulo": "Train/test y validación cruzada", "slug": "validacion", "archivo": "concept-07-validacion.html" },
-        { "n": 8, "titulo": "Sesgo, varianza, overfitting y underfitting", "slug": "sesgo-varianza", "archivo": "concept-08-sesgo-varianza.html" }
+        { "n": 8, "titulo": "Sesgo, varianza y overfitting", "slug": "sesgo-varianza", "archivo": "concept-08-sesgo-varianza.html" }
       ] },
     { "n": 2, "nombre": "Regresión", "hint": "Predecir un número", "hue": 145,
       "temas": [
@@ -23,7 +23,7 @@
     { "n": 3, "nombre": "Clasificación", "hint": "Predecir una categoría", "hue": 55,
       "temas": [
         { "n": 12, "titulo": "Clasificación y regresión logística", "slug": "logistica", "archivo": "concept-12-logistica.html" },
-        { "n": 13, "titulo": "Métricas: matriz de confusión, precisión, recall, ROC-AUC", "slug": "metricas", "archivo": "concept-13-metricas.html" },
+        { "n": 13, "titulo": "Métricas de clasificación", "slug": "metricas", "archivo": "concept-13-metricas.html" },
         { "n": 14, "titulo": "K vecinos más cercanos", "slug": "knn", "archivo": "concept-14-knn.html" },
         { "n": 15, "titulo": "Naïve Bayes", "slug": "naive-bayes", "archivo": "concept-15-naive-bayes.html" },
         { "n": 16, "titulo": "SVM y el truco del kernel", "slug": "svm", "archivo": "concept-16-svm.html" }
@@ -32,15 +32,15 @@
       "temas": [
         { "n": 17, "titulo": "Árboles de decisión", "slug": "arboles", "archivo": "concept-17-arboles.html" },
         { "n": 18, "titulo": "Random Forest y bagging", "slug": "random-forest", "archivo": "concept-18-random-forest.html" },
-        { "n": 19, "titulo": "Boosting y gradient boosting", "slug": "boosting", "archivo": "concept-19-boosting.html" },
+        { "n": 19, "titulo": "Boosting", "slug": "boosting", "archivo": "concept-19-boosting.html" },
         { "n": 20, "titulo": "Clustering: K-means y jerárquico", "slug": "clustering", "archivo": "concept-20-clustering.html" },
         { "n": 21, "titulo": "Reducción de dimensionalidad: PCA", "slug": "pca", "archivo": "concept-21-pca.html" }
       ] },
     { "n": 5, "nombre": "Redes neuronales", "hint": "De una neurona a una red que aprende sola", "hue": 330,
       "temas": [
         { "n": 22, "titulo": "Del perceptrón a la red multicapa", "slug": "perceptron", "archivo": "concept-22-perceptron.html" },
-        { "n": 23, "titulo": "Backpropagation y entrenamiento", "slug": "backprop", "archivo": "concept-23-backprop.html" },
-        { "n": 24, "titulo": "CNNs conceptualmente y qué sigue", "slug": "cnn", "archivo": "concept-24-cnn.html" }
+        { "n": 23, "titulo": "Backpropagation", "slug": "backprop", "archivo": "concept-23-backprop.html" },
+        { "n": 24, "titulo": "CNNs y qué sigue", "slug": "cnn", "archivo": "concept-24-cnn.html" }
       ] }
   ]
 }
