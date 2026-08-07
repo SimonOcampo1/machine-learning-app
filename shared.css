@@ -138,6 +138,7 @@ nav {
   gap: var(--e6);
   padding: var(--e4) max(1.25rem, calc((100% - 1180px) / 2));
   background: color-mix(in oklab, var(--bg) 88%, transparent);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--rule);
 }
@@ -299,8 +300,12 @@ nav {
 .concept-nav .cn-next { text-align: right; margin-left: auto; }
 
 /* ── Reveal on scroll (lo aplica shared.js) ──────────────── */
-.reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms ease, transform 600ms ease; }
-.reveal.visible { opacity: 1; transform: none; }
+/* El estado oculto vive detrás de `.js`, que shared.js pone en <html> en su
+   primera línea. Si el JS no carga, no corre, o está deshabilitado, la regla
+   nunca aplica y el contenido queda visible. Ocultar por defecto y confiar en
+   que el JS lo revele deja la página en blanco ante cualquier falla. */
+.js .reveal { opacity: 0; transform: translateY(18px); transition: opacity 600ms ease, transform 600ms ease; }
+.js .reveal.visible { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; }
+  .js .reveal { opacity: 1; transform: none; }
 }
