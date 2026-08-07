@@ -54,7 +54,9 @@ function _chequearNav(html, archivo) {
   const errores = [];
   const links = [...html.matchAll(/<a\s+href="([^"]+)"\s+class="nav-link([^"]*)"/g)];
   if (!links.length) return [`${archivo}: no tiene bloque de navegación`];
-  const marcados = links.filter(([, , extra]) => extra.includes("on"));
+  // Token exacto, no substring: una clase como "nav-link icon" no debe contar
+  // como marcada. El chequeo cuida 24 paginas, conviene que no de falsos positivos.
+  const marcados = links.filter(([, , extra]) => extra.trim().split(/\s+/).includes("on"));
   const esPropioDeLaNav = links.some(([, href]) => href === archivo);
   if (marcados.length > 1) {
     errores.push(`${archivo}: más de un link de nav marcado 'on'`);
@@ -81,7 +83,8 @@ function _chequearIds(js) {
 // toda la Etapa 5, cuando faltan 23 archivos por escribir.
 function _chequearEnlaces(html, archivo, existentes, declarados) {
   const errores = [];
-  for (const [, href] of html.matchAll(/href="([^"#?:]+\.html)[^"]*"/g)) {
+  for (const [, crudo] of html.matchAll(/href="([^"#?:]+\.html)[^"]*"/g)) {
+    const href = crudo.replace(/^\.\//, ""); // "./index.html" es el mismo archivo que "index.html"
     if (existentes.has(href)) continue;
     if (declarados.has(href)) continue;
     errores.push(`${archivo}: enlace roto a ${href}`);
