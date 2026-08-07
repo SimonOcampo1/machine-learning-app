@@ -394,6 +394,26 @@ nav {
 }
 .pa-b:hover { color: var(--accent); border-color: var(--accent); }
 
+/* ── Tabla de cálculo ────────────────────────────────────── */
+/* El wrapper con scroll propio, no la tabla: si la tabla scrollea sola con
+   `display:block` pierde el `border-collapse`, y los bordes entre celdas
+   se duplican. */
+.tabla-scroll { overflow-x: auto; margin-block: var(--e6); }
+.tabla-calc { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--t-small); }
+.tabla-calc th, .tabla-calc td { padding: var(--e2) var(--e3); border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
+.tabla-calc th:first-child, .tabla-calc td:first-child { text-align: left; }
+.tabla-calc thead th { color: var(--ink-mute); font-weight: 500; }
+.tabla-calc tfoot td { font-weight: 700; border-top: 2px solid var(--accent); border-bottom: 0; color: var(--accent); }
+.tabla-calc tfoot td:first-child { color: var(--ink); }
+
+/* ── Simulador ───────────────────────────────────────────── */
+.sim-ctrl { display: grid; gap: var(--e3); margin-top: var(--e6); }
+.sim-ctrl label { display: grid; grid-template-columns: 7rem 1fr 3.5rem; align-items: center; gap: var(--e3); font-size: var(--t-small); }
+.sim-ctrl output { font-family: var(--font-mono); text-align: right; }
+.sim-ctrl input[type="range"] { accent-color: var(--accent); }
+.sim-error { font-size: var(--t-small); color: var(--ink-mute); }
+.sim-error strong { font-family: var(--font-mono); color: var(--accent); }
+
 /* ── Python vivo ─────────────────────────────────────────── */
 .py-editor {
   width: 100%; font-family: var(--font-mono); font-size: 0.875rem; line-height: 1.6;
