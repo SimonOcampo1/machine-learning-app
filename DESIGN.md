@@ -90,25 +90,82 @@ familias. Es lo que hace GSAP y es lo que sostiene el tono.
 - **Punto de reemplazo:** si algún día se compran los `.woff2` de PP Mori, se
   cambia `--font` y nada más. El resto del sistema no la nombra.
 
-Sin monoespaciada decorativa. Se usa `--font-mono` solo donde el contenido *es*
-código o una cifra que tiene que alinearse en columna (tablas de cálculo,
-editor de Python, salida). Mono como disfraz de "técnico" está prohibido.
+Sin monoespaciada decorativa. `--font-mono` se usa **solo donde el contenido ES
+código**: el editor de Python, la terminal, los bloques `.callout.codigo` y las
+líneas del Parsons. Mono como disfraz de "técnico" está prohibido.
+
+Para alinear cifras en columna **no se usa mono**, se usa
+`font-variant-numeric: tabular-nums`. Inter Tight tiene cifras de ancho fijo y
+las usa cuando se le pide: se conserva la alineación y se pierde la textura
+cuadrada, que en una tabla de cuentas no comunicaba nada. Aplica a
+`.tabla-calc`, los `output` del simulador, los inputs numéricos y las etiquetas
+de valor de los diagramas.
+
+### Matemática: KaTeX
+
+Toda fórmula y toda notación inline se compone con **KaTeX**, por CDN. La mono
+quedó prohibida ahí: la notación tipeada a mano en Unicode
+(`β₁ = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²`) dejaba los subíndices fuera de la línea
+de base y la división como un slash suelto.
+
+El contrato es **`data-tex`**, y es al revés de lo que hace todo el mundo:
+
+```html
+<span class="mate" data-tex="R^2">R²</span>
+<div class="callout formula" data-tex="\sigma(z) = \frac{1}{1 + e^{-z}}">σ(z) = 1 / (1 + e⁻ᶻ)</div>
+```
+
+El LaTeX va en el atributo y el **Unicode de siempre queda como contenido**. Con
+delimitadores (`$$…$$` y un auto-render), si el CDN no responde el lector se come
+`$$\beta_1 = \frac{\sum...}{}$$` crudo en la pantalla: la fórmula deja de ser
+legible justo cuando ya no hay nada que la arregle. Con `data-tex`, esa misma
+falla deja exactamente lo que la página mostraba antes de existir KaTeX. El
+principio 4 de PRODUCT.md pide que todo camino de falla vuelva a legible, y una
+fórmula ilegible es la peor manera de romperlo en un sitio de matemática.
+
+Dos reglas que no son opcionales:
+
+- **`.katex { position: relative }`.** KaTeX emite un MathML paralelo
+  (`.katex-mathml`) que es lo que leen los lectores de pantalla, y va
+  `position: absolute`. Sin un ancestro posicionado su bloque contenedor pasa a
+  ser el documento y se escapa de cualquier contenedor con `overflow`: la
+  anotación de la tabla de cálculo hacía scrollear la página entera 70px de lado
+  en un teléfono.
+- **Las unidades no son notación.** `m²` es metros cuadrados y va en Unicode, no
+  en LaTeX: en LaTeX una unidad va en redonda, no en itálica matemática.
 
 ### Escala
 
 Fluida. El extremo superior de cada `clamp()` es el valor exacto de GSAP.
 
-| Rol | Token | Mín | Máx GSAP | lh | tracking |
-|---|---|---|---|---|---|
-| caption | `--t-caption` | 14px | 14px | 1.4 | -0.01em |
-| body-sm | `--t-body-sm` | 15px | 16px | 1.35 | -0.01em |
-| body | `--t-body` | 17px | 19px | 1.55 | -0.01em |
-| body-lg | `--t-body-lg` | 19px | 23px | 1.45 | -0.01em |
-| subheading | `--t-sub` | 24px | 34px | 1.2 | -0.011em |
-| heading-sm | `--t-h3` | 26px | 44px | 1.2 | -0.011em |
-| heading | `--t-h2` | 34px | 66px | 1.1 | -0.011em |
-| heading-lg | `--t-h1` | 44px | 101px | 1.0 | -0.011em |
-| display | `--t-display` | 60px | 224px | 0.9 | -0.02em |
+| Rol | Token | Mín (400px) | Máx (1440px) | GSAP | lh | tracking |
+|---|---|---|---|---|---|---|
+| caption | `--t-caption` | 14px | 14px | 14 | 1.4 | -0.01em |
+| body-sm | `--t-body-sm` | 15px | 17px | 16 | 1.35 | -0.01em |
+| body | `--t-body` | 17px | **21px** | 19 | 1.55 | -0.01em |
+| body-lg | `--t-body-lg` | 19px | 23px | 23 | 1.45 | -0.01em |
+| subheading | `--t-sub` | 20px | 26px | 34 | 1.2 | -0.011em |
+| heading-sm | `--t-h3` | 22px | 32px | 44 | 1.2 | -0.011em |
+| heading | `--t-h2` | 26px | 42px | 66 | 1.1 | -0.011em |
+| heading-lg | `--t-h1` | 30px | 64px | 101 | 1.0 | -0.011em |
+| display | `--t-display` | 44px | 132px | 224 | 0.9 | -0.02em |
+
+**Los títulos bajan un 35% respecto de GSAP y el cuerpo sube.** Son las dos
+mitades del mismo arreglo y no se tocan por separado:
+
+- Los techos de gsap.com son de una home de marketing con títulos de tres
+  palabras. Acá los títulos son frases de tema ("Sesgo y varianza: el compromiso
+  central") y a 101px un `h1` se partía en tres renglones en una notebook de
+  1440px; los `h2` a 63px competían con el `h1` de su propia página.
+- El cuerpo sube de 19 a 21px porque es la única forma honesta de llenar el
+  ancho. La medida de lectura no puede pasar de 68ch, así que para que la
+  columna ocupe más píxeles cada caracter tiene que medir más. A 19px la prosa
+  medía 747px y sobraban ~430px muertos; a 21px mide 826px.
+- La jerarquía no se pierde: `h1`/cuerpo pasa de 5.3× a 3.0×, que sigue siendo
+  un salto grande.
+
+La interpolación va de 400px a 1440px de viewport, no hasta 1920: ese es el
+rango donde vive el lector real, teléfono ↔ notebook.
 
 Nota sobre `lh` de cuerpo: GSAP usa 1.15, que sirve para párrafos cortos de
 marketing. Acá el cuerpo son bloques largos de teoría sobre fondo oscuro, y el
@@ -136,7 +193,39 @@ consciente del doc, por legibilidad.
 - Separación entre secciones: **80px**, hasta 108px en los cortes fuertes
 - Padding de tarjeta: **24px**
 - Gap entre elementos: **16px**
-- Medida de lectura: **68ch**
+- Medida de lectura: **68ch** (`--medida`)
+- Columna de notas al margen: **`clamp(14rem, 22vw, 20rem)`** (`--margen`)
+
+### Grilla editorial de tres columnas
+
+Toda página de tema es `[riel del número 4rem] [prosa 68ch] [margen anotado]`.
+El margen no es aire sobrante: es donde viven las notas.
+
+| Qué | Dónde va |
+|---|---|
+| Párrafos | Columna de prosa, capados en 68ch, justificados |
+| Callout que **interrumpe** prosa | Flota al margen, a la altura del párrafo que lo dispara |
+| Callout que **cierra** una sección, o tira de varios | Prosa + margen, en dos columnas de ≥30rem |
+| Leyenda de diagrama (`figcaption`) | Margen, al lado de la figura |
+| Diagramas, tablas, ejercicios | Prosa + margen |
+
+**Las notas al margen van con `float`, no con grid.** Un grid de dos columnas le
+da una FILA propia a cada hijo: el callout en la columna 2 empuja al párrafo
+siguiente por debajo suyo y deja un hueco de su alto en la columna de prosa. El
+float no consume fila, se cuelga al costado del flujo. Es además la técnica
+original de Tufte, no un rodeo.
+
+Por debajo de 1100px el margen colapsa y todo vuelve al flujo, en el orden del
+HTML.
+
+### Justificado
+
+La prosa va **justificada con `hyphens: auto`**, nunca sin. Justificar en
+castellano sin partición de palabras abre "ríos": el idioma tiene palabras
+largas y el navegador, para llegar al margen sin poder cortarlas, estira los
+espacios hasta que aparecen canales blancos verticales. No se justifican los
+textos cortos (leyendas, lede, pies, notas de paso): una sola línea justificada
+queda llena de agujeros.
 
 ## Components
 
@@ -190,6 +279,59 @@ va en un bloque con **borde completo** de 1px del color de estado y fondo
 `--fase-tint` del mismo. Nunca `border-left`: el side-stripe está prohibido por
 el doc de GSAP y por `impeccable`.
 
+### Terminal de Python
+
+Editor y terminal **lado a lado**, del mismo alto, cada uno en su panel con
+barra de título (`ejercicio.py` / `terminal`). La salida se escribe **en vivo**,
+línea por línea, mientras el código corre: `py.setStdout({ batched })`, no un
+buffer que se vuelca al final.
+
+Tres colores en la salida, y cada uno significa una cosa distinta:
+`--s50` para lo que dice el runtime (el prompt, "Descargando Python"), `--ink`
+para el stdout del programa, `--err` para stderr y para el traceback. Un cursor
+de bloque parpadeante mientras corre es la única señal de que el proceso sigue
+vivo durante los 20s que tarda Pyodide la primera vez.
+
+stdout y stderr se capturan **por separado**: la corrección compara solo stdout.
+Juntos, un warning de scikit-learn —que no es culpa de quien resuelve— daba el
+ejercicio por incorrecto aunque el `print` fuera exacto.
+
+Bajo 900px se apilan: dos consolas de 300px no son dos consolas.
+
+### Flujo de ejecución del Parsons
+
+Al lado de los bloques arrastrables, un diagrama que **espeja su orden en vivo**:
+un nodo por bloque, encadenados por un conector acodado. La sangría de la línea
+se traduce en desplazamiento lateral del nodo, así que el acodado dibuja el
+entrar y salir de un bloque: la indentación deja de ser un detalle tipográfico y
+pasa a ser una forma.
+
+Al comprobar, un token recorre el camino y se frena en el primer bloque
+equivocado, que pasa a `--err` y tiembla una sola vez. Los bloques descartados se
+saltean sin correr la numeración. El hover sobre un bloque resalta su nodo y al
+revés: es lo que enseña que las dos columnas son la misma cosa.
+
+El SVG va `aria-hidden`: es un espejo de la lista, que ya es navegable y
+anunciable. Que un lector de pantalla lo lea de nuevo sería repetir el ejercicio
+entero.
+
+### Diagrama paso a paso
+
+`js/nucleo/diagramas.js`. Para procesos con etapas —una pasada hacia adelante,
+un reparto de error, una partición de árbol—, un diagrama que se dibuja solo al
+entrar en viewport cuenta su historia una vez y a la velocidad del scroll. Este
+agrega una barra: `◀ ▶`, reproducir/pausar, reiniciar, y una regleta de marcas
+que es a la vez indicador y navegación.
+
+El contrato es chico a propósito: el diagrama entrega una lista de pasos y una
+función `pintar(i)` que deja el SVG en el estado del paso `i` **entero y sin
+depender del paso anterior**. Eso es lo que hace que ir para atrás, saltar y
+arrancar en el último con movimiento reducido sean el mismo código.
+
+Con `prefers-reduced-motion` arranca en el **último** paso, no en el primero: el
+estado final es el que contiene toda la información, y quien no quiere
+movimiento igual quiere el contenido.
+
 ### Nav
 
 Barra superior única, pegajosa, fondo canvas al 88% con blur de 12px, filete
@@ -238,4 +380,12 @@ El sitio es sobre GSAP y usa GSAP. La animación es la prueba, no el adorno.
 - Un séptimo color.
 - `border-left` de acento en cualquier cosa.
 - `background-clip: text` con gradiente.
-- Mono donde el contenido no sea código o cifra tabulada.
+- Mono donde el contenido no sea código. Para cifras, `tabular-nums`.
+- Notación matemática sin su respaldo en Unicode dentro del elemento.
+- `1fr` en una pista de grilla que pueda contener código, tablas o fórmulas:
+  arranca en `min-width: auto` y se estira hasta el contenido más ancho que no
+  puede partirse. Siempre `minmax(0, 1fr)`.
+- Justificar sin `hyphens: auto`.
+- Controles nativos sin estilar: barras de scroll, flechas de `input[number]` y
+  sliders traen el diseño del sistema operativo y sobre este canvas se ven
+  prestados.
