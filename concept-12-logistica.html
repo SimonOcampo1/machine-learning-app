@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clasificación y regresión logística · ML</title>
+  <meta name="description" content="Por qué una recta no sirve para predecir una categoría, cómo la sigmoide convierte cualquier número en una probabilidad, y por qué el umbral de decisión lo elegís vos y no el modelo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-3">
+  <div class="barra-progreso"></div>
+  <!-- El gradiente de las formas, declarado una vez para toda la página. Toma
+       los colores por `stop-color: var(...)`, así que sigue a la fase sola y no
+       hay ningún hex literal: verificar.js los rechaza dentro de un <svg>. -->
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 3</p>
+      <p class="eyebrow">{ Tema 12 · Clasificación }</p>
+      <h1>Clasificación y regresión logística</h1>
+      <p class="lede">Hasta ahora la respuesta era un número. Desde acá la respuesta es una etiqueta: aprueba o no aprueba, fraude o no fraude. Cambia la pregunta, y cambia todo lo que hay que hacer para responderla.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Otra clase de pregunta }</p>
+        <h2>De un número a una etiqueta</h2>
+        <p>Los tres temas anteriores fueron regresión: la respuesta era un número en una escala continua, el precio de un departamento. Este arranca la fase de clasificación, donde la respuesta es una de dos posibilidades. ¿Este mail es spam? ¿Este paciente tiene la enfermedad? ¿Este alumno va a aprobar?</p>
+        <p>Lo primero que hay que hacer es codificar las dos posibilidades como números, porque los modelos trabajan con números. La convención es <code>1</code> para la clase que te interesa detectar (se la llama la clase <strong>positiva</strong>) y <code>0</code> para la otra. Que la clase positiva sea "tiene cáncer" y no "está sano" no es una opinión sobre qué es mejor: es simplemente cuál es la que estás buscando.</p>
+        <p>El ejemplo que vamos a sostener de punta a punta es chico y concreto. Tenés 200 alumnos, de cada uno sabés cuántas horas estudió en la semana previa al examen, y sabés si aprobó. Aprobó vale <code>1</code>, no aprobó vale <code>0</code>. Querés, para un alumno nuevo del que solo sabés las horas, decir qué va a pasar.</p>
+        <p>Con dos clases se llama clasificación binaria, que es de lo que trata este tema y los cuatro que siguen. Cuando hay más de dos (reconocer qué dígito es una imagen, entre diez opciones) se llama multiclase, y casi siempre se resuelve entrenando varios clasificadores binarios y quedándose con el que da la probabilidad más alta.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El intento ingenuo }</p>
+        <h2>Por qué la recta no sirve</h2>
+        <p>La tentación es obvia: ya tenés regresión lineal, y ahora tenés una columna de ceros y unos. Ajustá una recta a esos ceros y unos, y listo. Tirá cualquier valor por arriba de 0.5 a la clase 1 y el resto a la clase 0.</p>
+        <p>Se puede hacer, corre sin errores, y está mal por dos motivos distintos.</p>
+        <p><strong>El primero es que la recta no se queda quieta entre 0 y 1.</strong> Una recta es infinita en las dos direcciones. Si con 8 horas de estudio predice 0.95, con 12 horas va a predecir 1.3, y con 0 horas va a predecir un número negativo. ¿Qué significa una respuesta de 1.3 cuando las únicas respuestas posibles son 0 y 1? Nada. Y si querés leer la salida como una probabilidad, que es lo que casi siempre querés hacer, una probabilidad de 1.3 no existe.</p>
+        <p><strong>El segundo es peor porque es silencioso.</strong> La recta se ajusta minimizando el error cuadrático (tema 09), y el error cuadrático castiga muchísimo estar lejos. Un solo alumno raro, uno que estudió 40 horas y aprobó, está tan lejos a la derecha que la recta gira entera para acercarse a él. Al girar, baja en la zona del medio, y alumnos que antes caían justo por encima del 0.5 pasan a caer por debajo. Cambiaron de predicción sin que cambiara nada de ellos. Nadie tira una excepción, el error cuadrático hasta puede mejorar, y la clasificación empeoró.</p>
+        <figure class="diagram" id="d-recta">
+          <svg viewBox="0 0 640 320" role="img" aria-label="Una recta ajustada a puntos que valen cero o uno se sale del rango: por la izquierda predice valores negativos y por la derecha valores mayores que uno">
+            <line class="daxis" x1="70" y1="270" x2="600" y2="270"/>
+            <line class="daxis" x1="70" y1="270" x2="70" y2="50"/>
+            <line class="dedge-mute" x1="70" y1="100" x2="600" y2="100" stroke-dasharray="4 5"/>
+            <text class="dtxt-mute" x="58" y="105" text-anchor="end">1</text>
+            <text class="dtxt-mute" x="58" y="275" text-anchor="end">0</text>
+            <circle class="dnode-solid" cx="122" cy="270" r="6"/>
+            <circle class="dnode-solid" cx="174" cy="270" r="6"/>
+            <circle class="dnode-solid" cx="226" cy="270" r="6"/>
+            <circle class="dnode-solid" cx="278" cy="270" r="6"/>
+            <circle class="dnode-solid" cx="382" cy="100" r="6"/>
+            <circle class="dnode-solid" cx="434" cy="100" r="6"/>
+            <circle class="dnode-solid" cx="486" cy="100" r="6"/>
+            <circle class="dnode-solid" cx="538" cy="100" r="6"/>
+            <path class="dedge" d="M70 305 L600 55"/>
+            <text class="dtxt-mute" x="80" y="300">predice -0.2</text>
+            <text class="dtxt-mute" x="590" y="46" text-anchor="end">predice 1.3</text>
+            <text class="dlabel" x="335" y="305" text-anchor="middle">horas de estudio</text>
+          </svg>
+          <figcaption>Los puntos solo pueden estar arriba (aprobó) o abajo (no aprobó). La recta pasa entre medio y sigue de largo por los dos extremos, hacia valores que no significan nada.</figcaption>
+        </figure>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>El problema no se arregla recortando la salida ("si da más de 1, poné 1"). Eso tapa el síntoma y deja intacto el segundo problema, que es que la recta se sigue ajustando para acercarse a puntos lejanos que no le importan a nadie.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La pieza nueva }</p>
+        <h2>La sigmoide, una función que aplasta</h2>
+        <p>Lo que falta es una manera de tomar el número que sale de la recta, que puede ser cualquier cosa entre menos infinito y más infinito, y convertirlo en algo que siempre esté entre 0 y 1. Esa función existe, se llama sigmoide o logística, y es esta:</p>
+        <div class="callout formula">σ(z) = 1 / (1 + e<sup>−z</sup>)</div>
+        <p>La <code>e</code> es el número de Euler, 2.718…, y la <code>σ</code> es la letra griega sigma minúscula, que es como se la nombra siempre. Mirá qué hace con tres valores de <code>z</code>:</p>
+        <p>Si <code>z = 0</code>, entonces <code>e<sup>0</sup></code> vale 1, y la cuenta es <code>1 / (1 + 1) = 0.5</code>. Justo en el medio. Si <code>z</code> es un número positivo grande, digamos 5, entonces <code>e<sup>−5</sup></code> es 0.0067, casi cero, y la cuenta da <code>1 / 1.0067 = 0.993</code>. Casi 1. Y si <code>z</code> es negativo grande, digamos −5, entonces <code>e<sup>5</sup></code> es 148, y la cuenta da <code>1 / 149 = 0.0067</code>. Casi 0.</p>
+        <p>Lo importante es el "casi". La sigmoide se acerca a 1 y a 0 pero <strong>nunca los toca</strong>: son asíntotas. Por más evidencia que tengas, un modelo logístico nunca va a devolver una certeza del 100%. Eso no es un defecto, es honestidad matemática, y va a tener consecuencias cuando veamos cómo se entrena.</p>
+        <figure class="diagram" id="d-sigmoide">
+          <svg viewBox="0 0 640 320" role="img" aria-label="La curva sigmoide en forma de S: es casi cero para valores muy negativos, cruza el medio en cero, y se acerca a uno para valores muy positivos sin llegar nunca">
+            <line class="daxis" x1="70" y1="250" x2="600" y2="250"/>
+            <line class="dedge-mute" x1="70" y1="70" x2="600" y2="70" stroke-dasharray="4 5"/>
+            <line class="dedge-mute" x1="70" y1="160" x2="330" y2="160" stroke-dasharray="4 5"/>
+            <line class="dedge-mute" x1="330" y1="250" x2="330" y2="160" stroke-dasharray="4 5"/>
+            <text class="dtxt-mute" x="60" y="74" text-anchor="end">1</text>
+            <text class="dtxt-mute" x="60" y="164" text-anchor="end">0.5</text>
+            <text class="dtxt-mute" x="60" y="254" text-anchor="end">0</text>
+            <path class="dedge" d="M70 250 L113 249 L157 247 L200 242 L243 229 L287 202 L330 160 L373 118 L417 91 L460 79 L503 73 L547 71 L590 70"/>
+            <circle class="dnode-solid" cx="330" cy="160" r="6"/>
+            <text class="dtxt-mute" x="330" y="272" text-anchor="middle">z = 0</text>
+            <text class="dtxt-mute" x="90" y="272">z muy negativo</text>
+            <text class="dtxt-mute" x="590" y="272" text-anchor="end">z muy positivo</text>
+            <text class="dlabel" x="500" y="110">nunca llega a 1</text>
+          </svg>
+          <figcaption>Cualquier número que le tires sale entre 0 y 1. La zona interesante está en el medio: entre <code>z = −3</code> y <code>z = 3</code> la curva se mueve mucho, y afuera de ahí ya casi no cambia por más que <code>z</code> crezca.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Leer la salida }</p>
+        <h2>Una probabilidad, y un corte que ponés vos</h2>
+        <p>Acá está el modelo entero. Adentro sigue habiendo una recta, exactamente la misma combinación lineal de los temas 09 y 10: se multiplica cada variable por su coeficiente y se suma el intercepto. A ese resultado lo llamamos <code>z</code>. Después la sigmoide lo aplasta.</p>
+        <div class="callout formula">z = w · horas + b<br>p = σ(z)</div>
+        <p>Supongamos que el entrenamiento sobre los 200 alumnos devolvió <code>w = 1.2</code> y <code>b = −6</code>. Es decir, <code>z = 1.2 · horas − 6</code>. Con eso ya podés calcular la probabilidad para cualquier cantidad de horas:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>horas</th><th>z = 1.2·horas − 6</th><th>p = σ(z)</th><th>decisión con umbral 0.5</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>3</td><td>−2.4</td><td>0.083</td><td>no aprueba</td></tr>
+              <tr><td>4</td><td>−1.2</td><td>0.231</td><td>no aprueba</td></tr>
+              <tr><td>5</td><td>0.0</td><td>0.500</td><td>justo en el borde</td></tr>
+              <tr><td>6</td><td>1.2</td><td>0.769</td><td>aprueba</td></tr>
+              <tr><td>7</td><td>2.4</td><td>0.917</td><td>aprueba</td></tr>
+              <tr><td>8</td><td>3.6</td><td>0.973</td><td>aprueba</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>La lectura honesta de la fila de 6 horas no es "este alumno aprueba". Es "de los alumnos que estudiaron 6 horas, alrededor del 77% aprobó". El modelo no sabe qué va a pasar con esta persona: sabe qué proporción de gente parecida aprobó.</p>
+        <p>Pero en algún momento hay que decidir. Si el modelo devuelve 0.77 y vos tenés que mandar o no mandar un aviso, la probabilidad sola no te sirve: necesitás un corte. Ese corte es el <strong>umbral de decisión</strong>, y por defecto se pone en 0.5.</p>
+        <p>El 0.5 no tiene nada de sagrado. Es lo que sale por defecto porque es el punto donde el modelo está indeciso, no porque sea la mejor decisión para tu problema. Pensá en un detector de fraude: dejar pasar un fraude cuesta plata de verdad, y revisar de más una operación legítima cuesta un llamado telefónico. Ahí conviene bajar el umbral a 0.2, marcar más operaciones, y aguantarse las falsas alarmas. Pensá ahora en un filtro de spam que manda a la carpeta de spam sin avisar: mandar un mail importante a esa carpeta es un desastre, así que conviene subir el umbral a 0.9 y dejar pasar algo de basura.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Mover el umbral no reentrena nada. Los coeficientes son los mismos, las probabilidades son las mismas, lo único que cambia es dónde cortás. Por eso el umbral es una decisión de negocio y no una decisión del modelo: sale de cuánto cuesta cada tipo de error, y eso el modelo no lo puede saber.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dónde queda el corte }</p>
+        <h2>La frontera de decisión es una recta</h2>
+        <p>Con una sola variable el umbral es un punto: 5 horas. Con dos variables se vuelve interesante. Digamos que además de las horas tenés la nota del examen anterior. Ahora <code>z = w₁ · horas + w₂ · nota + b</code>, y cada alumno es un punto en un plano.</p>
+        <p>¿Dónde está el borde? Donde <code>p = 0.5</code> exacto. Y ya vimos que la sigmoide vale 0.5 cuando <code>z = 0</code>. O sea que el borde es el conjunto de puntos donde <code>w₁ · horas + w₂ · nota + b = 0</code>, que es la ecuación de una recta. Eso se llama la <strong>frontera de decisión</strong>: de un lado el modelo dice una clase, del otro dice la otra, y la sigmoide solo controla qué tan seguro está según lo lejos que estés del borde.</p>
+        <figure class="diagram" id="d-frontera">
+          <svg viewBox="0 0 640 340" role="img" aria-label="Dos nubes de alumnos separadas por una recta: de un lado el modelo predice que aprueban, del otro que no, y sobre la recta la probabilidad vale exactamente un medio">
+            <line class="daxis" x1="70" y1="290" x2="600" y2="290"/>
+            <line class="daxis" x1="70" y1="290" x2="70" y2="40"/>
+            <circle class="dnode-solid" cx="380" cy="90" r="6"/>
+            <circle class="dnode-solid" cx="440" cy="130" r="6"/>
+            <circle class="dnode-solid" cx="500" cy="80" r="6"/>
+            <circle class="dnode-solid" cx="345" cy="140" r="6"/>
+            <circle class="dnode-solid" cx="520" cy="150" r="6"/>
+            <circle class="dnode-solid" cx="430" cy="60" r="6"/>
+            <circle class="dnode-bg" cx="150" cy="250" r="7"/>
+            <circle class="dnode-bg" cx="215" cy="200" r="7"/>
+            <circle class="dnode-bg" cx="180" cy="150" r="7"/>
+            <circle class="dnode-bg" cx="260" cy="255" r="7"/>
+            <circle class="dnode-bg" cx="130" cy="180" r="7"/>
+            <circle class="dnode-bg" cx="300" cy="220" r="7"/>
+            <path class="dedge" d="M110 285 L570 55"/>
+            <text class="dlabel" x="500" y="200" text-anchor="middle">p &gt; 0.5: aprueba</text>
+            <text class="dtxt-mute" x="150" y="110" text-anchor="middle">p &lt; 0.5: no aprueba</text>
+            <text class="dtxt-mute" x="360" y="185" text-anchor="middle">sobre la recta, p = 0.5</text>
+            <text class="dlabel" x="335" y="322" text-anchor="middle">horas de estudio</text>
+            <text class="dlabel" x="30" y="165" text-anchor="middle" transform="rotate(-90 30 165)">nota anterior</text>
+          </svg>
+          <figcaption>La frontera es recta porque adentro de la sigmoide hay una combinación lineal. Los puntos lejos del borde reciben probabilidades cercanas a 0 o a 1; los que están pegados al borde reciben algo cercano a 0.5.</figcaption>
+        </figure>
+        <p>Esto tiene una consecuencia dura: <strong>si tus dos clases no se pueden separar con una recta, la regresión logística no las va a separar nunca</strong>, por más datos que le des. El caso clásico es una clase que rodea a la otra, como una rosca alrededor de un punto: no hay ninguna recta que las separe. Hay dos salidas. Una es agregar variables nuevas calculadas a partir de las que tenés (el cuadrado de una, el producto de dos), y la frontera pasa a ser curva en el espacio original. La otra es usar un modelo que no tenga esta limitación, y de eso se tratan los temas 14, 16 y 17.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cómo aprende }</p>
+        <h2>Log-loss y descenso de gradiente</h2>
+        <p>En regresión lineal simple había una fórmula cerrada: metías los datos y salían los coeficientes de una. Acá no existe esa fórmula. La sigmoide, al estar metida en el medio, arruina la posibilidad de despejar. Así que se entrena con <strong>descenso de gradiente</strong>, exactamente el procedimiento del tema 10: arrancás con coeficientes cualquiera, mirás para qué lado baja el error, das un paso, y repetís unos cuantos miles de veces.</p>
+        <p>Lo que cambia es qué error se minimiza. No es el error cuadrático: es la <strong>log-loss</strong>, también llamada entropía cruzada binaria.</p>
+        <div class="callout formula">costo = − [ y · log(p) + (1 − y) · log(1 − p) ]</div>
+        <p>No hace falta que la sepas derivar, pero sí que entiendas qué castiga. Fijate que <code>y</code> vale 0 o 1, así que uno de los dos términos siempre se apaga. Si el alumno aprobó (<code>y = 1</code>), el costo queda <code>−log(p)</code>: si el modelo dijo 0.9 el costo es chico (0.105), si dijo 0.5 es mayor (0.69), y si dijo 0.01 el costo es enorme (4.6). Si el alumno no aprobó, pasa lo mismo al revés.</p>
+        <p>Esa es la idea entera: <strong>la log-loss castiga la confianza equivocada mucho más que la duda</strong>. Equivocarse diciendo "no estoy seguro" sale barato. Equivocarse diciendo "estoy segurísimo" sale carísimo, y el costo tiende a infinito a medida que la probabilidad se acerca a la certeza equivocada. Acá se ve para qué sirve que la sigmoide nunca llegue exactamente a 0 o a 1: si llegara, un solo error de esos daría un costo infinito y el entrenamiento explotaría.</p>
+        <p>¿Por qué no usar el error cuadrático de siempre? Porque con la sigmoide adentro, el error cuadrático deja de tener un único mínimo: el paisaje se llena de valles y mesetas, y el descenso de gradiente se queda trabado en cualquiera de ellos según dónde arrancó. Con log-loss, en cambio, el paisaje tiene un solo mínimo, y el descenso siempre llega al mismo lugar. Es exactamente el problema de mínimos locales del tema 10, y acá se resuelve eligiendo bien la función de costo en vez de peleándole al optimizador.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre el mismo modelo de la sección 04: dos conceptuales, uno de despejar el umbral, uno de armar la función de predicción línea por línea, y uno de calcular la sigmoide con Python de verdad.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe acá</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que "regresión logística" hace regresión.</strong> El nombre es histórico y confunde a todo el mundo la primera vez: viene de que adentro hay una regresión sobre el <em>logit</em>, no de que el modelo prediga números. Es un clasificador, y punto. Si en scikit-learn escribís <code>LinearRegression</code> donde querías <code>LogisticRegression</code>, el código corre igual y te devuelve números fuera de 0 y 1.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Leer la probabilidad como si estuviera calibrada.</strong> Que el modelo devuelva 0.9 no garantiza que de cada 100 casos con salida 0.9 acierte 90. Puede acertar 60 y aun así clasificar bien casi todo, porque para clasificar solo importa de qué lado del umbral cae, no el valor exacto. El error es silencioso: no hay excepción, la exactitud puede verse perfecta, y sin embargo si usás esa probabilidad para decidir cuánto crédito dar o a quién llamar primero, la decisión está mal. Se detecta con una curva de calibración: agrupás las predicciones por rango y comparás la probabilidad promedio contra la proporción real de positivos.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Elegir el umbral mirando la exactitud.</strong> Si de tus 200 alumnos aprobaron 190, un modelo que diga "aprueba" siempre acierta el 95%, y cualquier umbral que hayas probado va a parecer peor que ese. Vas a terminar eligiendo el corte que te tapa la clase que te importaba detectar. La exactitud no es la métrica correcta para esto y el tema 13 es entero sobre por qué.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Clasificar es predecir una etiqueta, no un número, y las etiquetas se codifican como 1 para la clase que buscás y 0 para la otra. Ajustar una recta a esos ceros y unos falla por dos motivos: predice valores fuera del rango, que no significan nada, y un solo dato lejano gira la recta entera y cambia predicciones que no tenían por qué cambiar, sin avisar. La solución es dejar la recta adentro y taparla con la sigmoide, que toma el <code>z</code> que sale de la combinación lineal y lo aplasta al intervalo entre 0 y 1, valiendo exactamente 0.5 cuando <code>z</code> es cero y sin tocar nunca los extremos. Esa salida se lee como una probabilidad, y para convertirla en una decisión hace falta un umbral, que por defecto es 0.5 pero que movés según cuánto te cueste cada tipo de error: bajo para no dejar pasar fraudes, alto para no mandar un mail importante a la basura. Mover el umbral no reentrena nada. La frontera entre las dos clases es una recta, y esa es la limitación real del modelo: lo que no se separa con una recta, la logística no lo separa. Se entrena con descenso de gradiente sobre la log-loss, que castiga la confianza equivocada mucho más que la duda y garantiza un único mínimo. Queda pendiente lo más importante y lo que menos se enseña: cómo saber si el clasificador que armaste sirve. El próximo tema muestra por qué la exactitud, que es la métrica que todo el mundo mira primero, miente descaradamente en cuanto una clase es más rara que la otra.</p>
+      </div>
+    </section>
+
+    <!-- Se llena desde data/temario.json: un tema sin escribir sale atenuado y
+         sin href. shared.js la monta sola, deduciendo el tema del nombre del
+         archivo. -->
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="logistica.js"></script>
+</body>
+</html>

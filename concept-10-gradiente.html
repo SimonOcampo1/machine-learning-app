@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regresión múltiple y descenso de gradiente · ML</title>
+  <meta name="description" content="Cómo pasa la regresión de una recta a varios predictores escritos como X @ beta, y por qué casi todos los modelos se entrenan bajando una colina en la niebla en vez de usar una fórmula.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-2">
+  <div class="barra-progreso"></div>
+  <!-- El gradiente de las formas, declarado una vez para toda la página. Toma
+       los colores por `stop-color: var(...)`, así que sigue a la fase sola y no
+       hay ningún hex literal: verificar.js los rechaza dentro de un <svg>. -->
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 2</p>
+      <p class="eyebrow">{ Tema 10 · Regresión }</p>
+      <h1>Regresión múltiple y descenso de gradiente</h1>
+      <p class="lede">Dos cosas a la vez: qué pasa cuando la recta deja de ser una recta porque hay más de un predictor, y cómo se entrena un modelo cuando la fórmula que resuelve todo de una vez no está disponible.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ De uno a varios }</p>
+        <h2>El tamaño no es lo único que importa</h2>
+        <p>En el tema anterior predijimos el precio de una casa a partir de un solo dato: los metros cuadrados. Funcionaba, pero cualquiera que haya buscado departamento sabe que faltan cosas. Dos casas de 65 m² pueden valer muy distinto si una es a estrenar y la otra tiene cuarenta años, o si una está a diez cuadras del centro y la otra a doce kilómetros.</p>
+        <p>La regresión múltiple es la respuesta obvia a esa objeción: en vez de una sola variable predictora, varias. La fórmula crece de la manera más aburrida posible, que es sumando términos.</p>
+        <div class="callout formula">ŷ = β₀ + β₁x₁ + β₂x₂ + β₃x₃ + … + β<sub>p</sub>x<sub>p</sub></div>
+        <p>Cada <strong>x</strong> es una característica de la casa y cada <strong>β</strong> es cuánto pesa esa característica en el precio. Vamos a sostener este ejemplo durante todo el tema: superficie en metros cuadrados, antigüedad en años, y distancia al centro en kilómetros. Supongamos que el modelo entrenado dio esto, con el precio en miles de dólares:</p>
+        <div class="callout formula">ŷ = 30 + 1.8 · m2 − 0.9 · antigüedad − 4 · distancia</div>
+        <p>Con esos números, una casa de 50 m², de 10 años y a 3 km del centro se predice en 30 + 90 − 9 − 12 = 99 mil dólares. Una de 80 m², de 5 años y a 1 km, en 30 + 144 − 4.5 − 4 = 165.5 mil.</p>
+        <p>Lo importante es que <strong>nada de lo del tema anterior cambió</strong>. El error se sigue midiendo igual (residuo, al cuadrado, sumado), la definición de "mejor modelo" sigue siendo la que minimiza esa suma, y R² se sigue calculando igual. Lo único que cambió es que ahora hay <em>p</em> pendientes en vez de una. Geométricamente ya no es una recta: con dos predictores es un plano, y con tres o más es algo que no se puede dibujar y que se llama hiperplano. El nombre suena grave; la cuenta es la misma suma de siempre.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Todo en una cuenta }</p>
+        <h2>Escribirlo como X @ β</h2>
+        <p>Escribir <code>β₀ + β₁x₁ + β₂x₂ + β₃x₃</code> para cada casa, y repetirlo para las mil casas del conjunto de datos, es insoportable. Acá es donde sirve lo que viste sobre matrices: toda esa cuenta, para todas las casas a la vez, es una sola multiplicación de matrices.</p>
+        <p>Armás una matriz <strong>X</strong>, que se llama <em>matriz de diseño</em>: una fila por casa, una columna por característica. Y le agregás adelante una columna de puros unos, que parece un capricho pero no lo es: esa columna multiplicada por β₀ da β₀, y así el intercepto entra en la misma cuenta que todo lo demás en vez de tener que sumarse aparte. Los coeficientes van en un vector <strong>β</strong>. Y entonces:</p>
+        <div class="callout formula">ŷ = X @ β</div>
+        <figure class="diagram" id="d-diseno">
+          <svg viewBox="0 0 640 240" role="img" aria-label="La matriz de tres casas por cuatro columnas multiplicada por el vector de cuatro coeficientes da el vector de tres precios predichos; la primera fila y la primera predicción están resaltadas">
+            <text class="dlabel" x="140" y="26" text-anchor="middle">X · una fila por casa</text>
+            <text class="dlabel" x="335" y="26" text-anchor="middle">β</text>
+            <text class="dlabel" x="470" y="26" text-anchor="middle">ŷ</text>
+            <text class="dtxt-mute" x="60" y="62" text-anchor="middle">1</text>
+            <text class="dtxt-mute" x="115" y="62" text-anchor="middle">m2</text>
+            <text class="dtxt-mute" x="170" y="62" text-anchor="middle">años</text>
+            <text class="dtxt-mute" x="225" y="62" text-anchor="middle">km</text>
+            <rect class="dnode-bg" x="30" y="75" width="220" height="120" rx="8"/>
+            <text class="dtxt" x="60" y="108" text-anchor="middle">1</text>
+            <text class="dtxt" x="115" y="108" text-anchor="middle">50</text>
+            <text class="dtxt" x="170" y="108" text-anchor="middle">10</text>
+            <text class="dtxt" x="225" y="108" text-anchor="middle">3</text>
+            <text class="dtxt" x="60" y="143" text-anchor="middle">1</text>
+            <text class="dtxt" x="115" y="143" text-anchor="middle">80</text>
+            <text class="dtxt" x="170" y="143" text-anchor="middle">5</text>
+            <text class="dtxt" x="225" y="143" text-anchor="middle">1</text>
+            <text class="dtxt" x="60" y="178" text-anchor="middle">1</text>
+            <text class="dtxt" x="115" y="178" text-anchor="middle">65</text>
+            <text class="dtxt" x="170" y="178" text-anchor="middle">20</text>
+            <text class="dtxt" x="225" y="178" text-anchor="middle">8</text>
+            <text class="dtxt" x="272" y="142" text-anchor="middle">@</text>
+            <rect class="dnode-bg" x="295" y="75" width="80" height="120" rx="8"/>
+            <text class="dtxt" x="335" y="100" text-anchor="middle">30</text>
+            <text class="dtxt" x="335" y="126" text-anchor="middle">1.8</text>
+            <text class="dtxt" x="335" y="152" text-anchor="middle">−0.9</text>
+            <text class="dtxt" x="335" y="178" text-anchor="middle">−4</text>
+            <text class="dtxt" x="398" y="142" text-anchor="middle">=</text>
+            <rect class="dnode-bg" x="420" y="75" width="100" height="120" rx="8"/>
+            <text class="dtxt" x="470" y="108" text-anchor="middle">99</text>
+            <text class="dtxt" x="470" y="143" text-anchor="middle">165.5</text>
+            <text class="dtxt" x="470" y="178" text-anchor="middle">97</text>
+            <path class="dedge" d="M42 116 H 238"/>
+            <path class="dedge" d="M432 116 H 508"/>
+            <text class="dtxt-mute" x="580" y="120" text-anchor="middle">fila 1</text>
+            <text class="dtxt-mute" x="212" y="225" text-anchor="middle">la columna de unos es la que le da lugar al intercepto β₀</text>
+          </svg>
+          <figcaption>La primera fila de <strong>X</strong> multiplicada término a término por <strong>β</strong> y sumada da la primera predicción: 1·30 + 50·1.8 + 10·(−0.9) + 3·(−4) = 99. Lo mismo pasa con cada fila, en una sola operación.</figcaption>
+        </figure>
+        <p>Esto no es una comodidad de notación nada más. NumPy hace esa multiplicación en código compilado, sobre todas las filas a la vez, y es órdenes de magnitud más rápido que un bucle de Python. De acá en adelante, casi todo modelo que veas va a estar escrito así: los datos en una matriz, los parámetros en un vector, y la predicción como un producto.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Leer un coeficiente }</p>
+        <h2>Manteniendo lo demás constante</h2>
+        <p>Con un solo predictor, β₁ = 1.8 se leía directo: cada metro cuadrado más son 1800 dólares más. Con varios predictores la lectura cambia, y el agregado es chiquito pero cambia todo: cada metro cuadrado más son 1800 dólares más <strong>manteniendo la antigüedad y la distancia constantes</strong>. O sea, comparando dos casas que tienen la misma antigüedad y la misma distancia al centro, y difieren solo en el tamaño.</p>
+        <p>Esa cláusula es la que le da su valor a la regresión múltiple. Si en tus datos las casas grandes tienden a estar en las afueras, una regresión simple sobre el tamaño va a mezclar las dos cosas: el coeficiente del tamaño va a estar contaminado por el efecto de la distancia. Meter las dos variables en el mismo modelo es lo que las separa.</p>
+        <p>Y esa misma cláusula es la que se rompe cuando dos características dicen casi lo mismo. Supongamos que además de los metros cuadrados agregás la cantidad de ambientes. Las dos miden, en el fondo, "qué tan grande es la casa": las casas de 40 m² casi nunca tienen cinco ambientes. Eso se llama <strong>multicolinealidad</strong>, y el problema es este: la frase "manteniendo los ambientes constantes, un metro cuadrado más vale 1800" describe una comparación que en tus datos casi no existe. Casi no hay pares de casas con la misma cantidad de ambientes y superficies muy distintas.</p>
+        <p>El modelo, sin embargo, no se queja. Devuelve números igual. Lo que pasa es que hay infinitas combinaciones de coeficientes que predicen casi lo mismo, y el ajuste elige una cualquiera de ellas. Podés terminar con β<sub>m2</sub> = 5.6 y β<sub>ambientes</sub> = −14: leído literalmente, eso dice que agregar un ambiente a tu casa la abarata catorce mil dólares. No es que el modelo esté descubriendo algo raro sobre el mercado inmobiliario. Es que 5.6 y −14 se cancelan entre sí, porque las dos variables suben juntas, y otro par de números igual de arbitrario habría dado prácticamente las mismas predicciones.</p>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>Interpretar coeficientes de variables colineales como si cada uno midiera un efecto propio. El síntoma que lo delata: sacás una sola fila de datos, reentrenás, y los coeficientes se mueven muchísimo o cambian de signo. Un modelo estable no hace eso. Ojo con la conclusión: para <em>predecir</em>, la multicolinealidad casi no molesta (las predicciones salen bien igual). Molesta para <em>explicar</em>, que es lo que uno suele querer hacer con una regresión.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El límite de la fórmula }</p>
+        <h2>Por qué no alcanza con despejar</h2>
+        <p>La regresión múltiple también tiene fórmula cerrada, igual que la simple. Escrita con matrices es esta:</p>
+        <div class="callout formula">β = (XᵀX)⁻¹ Xᵀy</div>
+        <p>Ese <code>⁻¹</code> es una <strong>inversión de matriz</strong>, la operación matricial equivalente a dividir. Si tenés <em>p</em> características, <code>XᵀX</code> es una matriz de <em>p</em> por <em>p</em>, y hay que invertirla. Ahí aparecen tres problemas, en orden creciente de gravedad.</p>
+        <p><strong>Primero, el costo.</strong> Invertir una matriz de <em>p</em> por <em>p</em> cuesta del orden de <em>p</em>³ operaciones. Con 20 características son 8000 operaciones, un parpadeo. Con 50.000 características (nada exótico: un modelo sobre texto tiene una columna por palabra del vocabulario) son 1.25 × 10¹⁴ operaciones, y además la matriz <code>XᵀX</code> por sí sola ocupa unos 20 GB de memoria. No es que tarde: no entra.</p>
+        <p><strong>Segundo, que a veces directamente no se puede.</strong> Si dos columnas de X son idénticas, o una es la suma exacta de otras dos, la matriz <code>XᵀX</code> no tiene inversa. Es el caso extremo de la multicolinealidad de la sección anterior, y no es raro: pasa solo cada vez que codificás una variable categórica en columnas de ceros y unos sin descartar una.</p>
+        <p><strong>Tercero, y es el motivo de fondo: casi ningún otro modelo tiene fórmula cerrada.</strong> La regresión lineal es la excepción, no la regla. La regresión logística del tema 12 no tiene. Las redes neuronales del tema 22 no tienen, ni remotamente. Necesitamos un método de entrenamiento que no dependa de poder despejar los parámetros a mano, porque despejarlos a mano casi nunca se puede.</p>
+        <div class="callout"><span class="etiqueta">Nota</span>Para la regresión lineal en un caso normal (unas decenas de características, unos miles de filas), <code>LinearRegression</code> de scikit-learn usa un método directo y anda perfecto. El descenso de gradiente no viene a reemplazarlo acá: viene porque es el único método que va a seguir funcionando en todos los temas que siguen.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Bajar en la niebla }</p>
+        <h2>Descenso de gradiente</h2>
+        <p>Estás parado en la ladera de una montaña, de noche y con niebla cerrada. Querés llegar al punto más bajo del valle. No ves nada más allá de tus pies, así que no podés mirar el valle y caminar derecho hacia él. Pero sí podés hacer una cosa: tantear con el pie alrededor tuyo y sentir hacia qué lado el suelo baja más rápido. Das un paso en esa dirección. Tanteás de nuevo. Otro paso. Repetís hasta que el suelo se sienta plano en todas direcciones, y ahí estás en el fondo.</p>
+        <p>Eso es el descenso de gradiente, y la única traducción que hace falta es esta: la montaña es la <strong>función de costo</strong>. Para cada combinación posible de coeficientes β, la función de costo te dice cuánto se equivoca ese modelo sobre tus datos. En regresión es la vieja conocida, el error cuadrático medio:</p>
+        <div class="callout formula">J(β) = (1/n) · Σ (yᵢ − ŷᵢ)²</div>
+        <p>Tu posición en la montaña es el valor actual de los coeficientes; la altura es el costo. Bajar al valle es encontrar los coeficientes que menos se equivocan. Y el "tantear con el pie" tiene nombre matemático: el <strong>gradiente</strong>, que es simplemente el vector con la derivada del costo respecto de cada coeficiente. Cada componente responde "si muevo un poquito este coeficiente, ¿el costo sube o baja, y cuánto?". El gradiente apunta hacia donde el costo <em>sube</em> más rápido, así que para bajar hay que ir justo en contra. De ahí el signo menos de la regla de actualización, que es todo el algoritmo:</p>
+        <div class="callout formula">β ← β − α · ∇J(β)</div>
+        <p>Se arranca con coeficientes cualquiera (ceros sirven), se calcula el gradiente, se da el paso, y se repite unos cientos o miles de veces hasta que el costo deja de bajar. Nada más que eso. Vale la pena registrar lo raro que es: el modelo nunca "sabe" cuál es la respuesta correcta, solo sabe, en cada punto, hacia qué lado mejora un poquito.</p>
+        <figure class="diagram" id="d-colina">
+          <svg viewBox="0 0 640 380" role="img" aria-label="Un valle de error visto desde arriba, con curvas de nivel concéntricas, y una trayectoria de pasos que arranca lejos, zigzaguea y termina en el mínimo del centro">
+            <g transform="rotate(-18 400 210)">
+              <ellipse class="dnode-bg" cx="400" cy="210" rx="235" ry="140"/>
+              <ellipse class="dnode-bg" cx="400" cy="210" rx="180" ry="107"/>
+              <ellipse class="dnode-bg" cx="400" cy="210" rx="125" ry="74"/>
+              <ellipse class="dnode-bg" cx="400" cy="210" rx="70" ry="41"/>
+              <ellipse class="dnode-bg" cx="400" cy="210" rx="24" ry="14"/>
+            </g>
+            <path class="dedge" d="M180 100 L262 168 L312 156 L352 196 L378 190 L392 204 L400 210"/>
+            <circle class="dnode-solid" cx="180" cy="100" r="6"/>
+            <circle class="dnode-solid" cx="262" cy="168" r="5"/>
+            <circle class="dnode-solid" cx="312" cy="156" r="5"/>
+            <circle class="dnode-solid" cx="352" cy="196" r="5"/>
+            <circle class="dnode-solid" cx="378" cy="190" r="4"/>
+            <circle class="dnode-solid" cx="392" cy="204" r="4"/>
+            <circle class="dnode-solid" cx="400" cy="210" r="4"/>
+            <text class="dlabel" x="180" y="82" text-anchor="middle">arranque: β en cero</text>
+            <text class="dlabel" x="470" y="238" text-anchor="start">mínimo</text>
+            <text class="dtxt-mute" x="70" y="352">cada anillo es un nivel de costo; el centro es el costo más bajo</text>
+            <text class="dlabel" x="34" y="200" text-anchor="middle" transform="rotate(-90 34 200)">β₂</text>
+            <text class="dlabel" x="330" y="374" text-anchor="middle">β₁</text>
+          </svg>
+          <figcaption>Vista desde arriba, con dos coeficientes nomás para poder dibujarla. Los pasos son grandes al principio, donde la pendiente es pronunciada, y se van achicando solos cerca del fondo, donde el gradiente se achica. El algoritmo no decide frenar: frena porque el terreno se aplana.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El tamaño del paso }</p>
+        <h2>El learning rate lo decide todo</h2>
+        <p>El <code>α</code> de la fórmula es el <strong>learning rate</strong> o tasa de aprendizaje: cuán largo es cada paso. Es el número que más vas a tener que tocar a mano en todo el machine learning, y los dos modos de falla son opuestos y se ven completamente distinto.</p>
+        <figure class="diagram" id="d-lr">
+          <svg viewBox="0 0 640 265" role="img" aria-label="Tres curvas de costo en forma de U con la trayectoria de los pasos: con paso muy chico avanza apenas, con paso justo llega al fondo en pocos saltos, y con paso muy grande rebota de lado a lado alejándose">
+            <path class="dedge-mute" d="M25 50 Q112 250 200 50"/>
+            <path class="dedge-mute" d="M240 50 Q327 250 415 50"/>
+            <path class="dedge-mute" d="M455 50 Q542 250 630 50"/>
+            <path class="dedge" d="M42 86 L53 104 L63 119 L74 131 L84 140"/>
+            <path class="dedge" d="M261 92 L289 131 L310 146 L327 150"/>
+            <path class="dedge" d="M516 141 L574 137 L476 92 L626 58"/>
+            <circle class="dnode-solid" cx="42" cy="86" r="4"/>
+            <circle class="dnode-solid" cx="53" cy="104" r="4"/>
+            <circle class="dnode-solid" cx="63" cy="119" r="4"/>
+            <circle class="dnode-solid" cx="74" cy="131" r="4"/>
+            <circle class="dnode-solid" cx="84" cy="140" r="4"/>
+            <circle class="dnode-solid" cx="261" cy="92" r="4"/>
+            <circle class="dnode-solid" cx="289" cy="131" r="4"/>
+            <circle class="dnode-solid" cx="310" cy="146" r="4"/>
+            <circle class="dnode-solid" cx="327" cy="150" r="5"/>
+            <circle class="dnode-solid" cx="516" cy="141" r="4"/>
+            <circle class="dnode-solid" cx="574" cy="137" r="4"/>
+            <circle class="dnode-solid" cx="476" cy="92" r="4"/>
+            <circle class="dnode-solid" cx="626" cy="58" r="4"/>
+            <text class="dlabel" x="112" y="205" text-anchor="middle">α muy chico</text>
+            <text class="dlabel" x="327" y="205" text-anchor="middle">α justo</text>
+            <text class="dlabel" x="542" y="205" text-anchor="middle">α muy grande</text>
+            <text class="dtxt-mute" x="112" y="232" text-anchor="middle">baja, pero tarda</text>
+            <text class="dtxt-mute" x="112" y="250" text-anchor="middle">una eternidad</text>
+            <text class="dtxt-mute" x="327" y="232" text-anchor="middle">llega al fondo en</text>
+            <text class="dtxt-mute" x="327" y="250" text-anchor="middle">pocos pasos</text>
+            <text class="dtxt-mute" x="542" y="232" text-anchor="middle">se pasa, y cada</text>
+            <text class="dtxt-mute" x="542" y="250" text-anchor="middle">rebote es peor</text>
+          </svg>
+          <figcaption>La misma función de costo, tres tamaños de paso. En el panel de la derecha el algoritmo no converge lento: <strong>diverge</strong>, se aleja del mínimo en cada iteración.</figcaption>
+        </figure>
+        <p><strong>Demasiado chico</strong> (digamos α = 0.000001): el modelo entrena, el costo baja, todo parece bien. El problema es que baja tan despacio que después de diez mil iteraciones seguís lejísimos del mínimo. El síntoma es aburrido y por eso engaña: una curva de costo que baja pero nunca se aplana, y un modelo que anda mal sin que haya nada roto.</p>
+        <p><strong>Demasiado grande</strong> (digamos α = 2): cada paso se pasa de largo del mínimo y cae del otro lado, más arriba de donde estaba. El paso siguiente se pasa todavía más. El costo, en vez de bajar, sube en cada iteración, y a los pocos pasos los números se desbordan y aparecen <code>NaN</code> (que en Python significa "no es un número") en los coeficientes. Este síntoma, al menos, es imposible de no ver.</p>
+        <p>No hay fórmula para elegirlo. La práctica es probar potencias de diez (0.001, 0.01, 0.1) y graficar el costo contra el número de iteración: si baja y se aplana, está bien; si baja apenas, subilo; si sube, bajalo. Hay una cosa más que ayuda muchísimo y que es el tema que sigue: si tus características tienen escalas muy distintas (metros cuadrados hasta 200, cantidad de baños hasta 3), el valle no es redondo sino largo y angosto, y el descenso zigzaguea de pared a pared en vez de bajar derecho. Poner todas las variables en la misma escala convierte ese cañón en un embudo redondo y acorta el entrenamiento en un orden de magnitud.</p>
+        <h3>Estocástico y por mini-lotes</h3>
+        <p>Hay un detalle de costo escondido en la fórmula: calcular el gradiente exige recorrer <strong>todas</strong> las filas de los datos, porque el costo es una suma sobre todas. Con mil casas no es nada. Con diez millones de fotos, cada uno de los miles de pasos requeriría pasar por las diez millones, y el entrenamiento no termina nunca. La salida es aceptar un gradiente aproximado: el <strong>descenso de gradiente estocástico</strong> (SGD) calcula el gradiente con <em>una sola</em> fila elegida al azar y da el paso con eso, y el <strong>descenso por mini-lotes</strong> lo calcula con un puñado, típicamente 32 o 64 filas. La trayectoria se vuelve mucho más errática (cada paso apunta a un lado apenas distinto del correcto) pero se dan muchísimos más pasos en el mismo tiempo, y en la práctica se llega antes. Prácticamente todas las redes neuronales del mundo se entrenan por mini-lotes; el tema 23 vuelve sobre esto en detalle.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios: dos conceptuales, uno de calcular un paso de descenso a mano, uno de armar el bucle de entrenamiento línea por línea, y uno de correrlo de verdad en el navegador.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe acá</h2>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Sumar el gradiente en vez de restarlo.</strong> Escribir <code>beta = beta + alpha * grad</code> en vez de <code>beta - alpha * grad</code> es un error de un solo carácter que convierte el descenso en un <em>ascenso</em>: el algoritmo busca el peor modelo posible con la misma diligencia con la que buscaría el mejor. No hay excepción, no hay mensaje. El costo sube monótonamente, que a simple vista se confunde con un learning rate demasiado grande. Se distinguen así: con un α excesivo, bajar α arregla el problema; con el signo dado vuelta, bajar α solo hace que el costo suba más despacio.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Agregar características porque sí.</strong> Cada variable nueva que sumás nunca puede empeorar el R² sobre los datos de entrenamiento: en el peor caso el modelo le pone coeficiente cero. Eso quiere decir que un R² que sube al agregar columnas no es evidencia de nada. Podés agregar diez columnas de números aleatorios y ver el R² de entrenamiento subir. Lo que importa es el error sobre datos que el modelo no vio, medido como en el tema 07.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Confundir "el costo dejó de bajar" con "encontré el mejor modelo".</strong> El descenso encuentra un mínimo de la función de costo sobre los datos de entrenamiento, y eso es todo lo que garantiza. Si el modelo está sobreajustado, el descenso lo va a llevar obedientemente al fondo del pozo equivocado. Converger y generalizar son dos cosas distintas.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>La regresión múltiple es la misma idea del tema anterior con más columnas: un coeficiente por característica, sumados, más un intercepto, y todo eso se escribe de una sola vez como <code>X @ β</code> agregando a la matriz de diseño una columna de unos que absorbe el intercepto. Cada coeficiente se lee "manteniendo lo demás constante", y esa lectura se rompe cuando dos características miden casi lo mismo: con multicolinealidad los coeficientes se vuelven inestables y arbitrarios, las predicciones siguen saliendo bien y la explicación deja de valer. La fórmula cerrada existe, pero exige invertir una matriz de <em>p</em> por <em>p</em>, algo caro con muchas características, imposible cuando hay columnas redundantes, e inexistente para casi cualquier otro modelo. El descenso de gradiente resuelve eso caminando: parado en un punto de la función de costo, calculás hacia dónde sube más rápido y das un paso en contra, con un largo de paso α que si es muy chico no llega nunca y si es muy grande hace que el costo explote. Calcular el gradiente con una fila (estocástico) o con un puñado (mini-lotes) cambia precisión por velocidad y es lo que hace viable entrenar sobre millones de ejemplos. Queda una cosa abierta, y es justo la que abre el tema siguiente: con muchas características el modelo tiene demasiada libertad y los coeficientes se disparan. La regularización, Ridge y Lasso, es la manera de atarlos cortos.</p>
+      </div>
+    </section>
+
+    <!-- Se llena desde data/temario.json: un tema sin escribir sale atenuado y
+         sin href. shared.js la monta sola, deduciendo el tema del nombre del
+         archivo. -->
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="gradiente.js"></script>
+</body>
+</html>

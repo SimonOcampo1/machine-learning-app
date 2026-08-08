@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Álgebra lineal mínima · ML</title>
+  <meta name="description" content="Vectores, matrices y producto punto: las tres operaciones con las que se escribe cualquier modelo lineal, conectadas con NumPy.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-0">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 0</p>
+      <p class="eyebrow">{ Tema 03 · Piso }</p>
+      <h1>Álgebra lineal mínima</h1>
+      <p class="lede">En el tema anterior escribiste <code>X * 1.1</code> y funcionó. Esto le pone nombre a lo que estabas haciendo, y agrega la única operación que todavía falta: la que <em>es</em> una predicción.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cambio de nombre }</p>
+        <h2>Vector y matriz: lo mismo que ya tenías</h2>
+        <p>No hay nada nuevo que construir. Un <strong>vector</strong> es una lista de números, y ya la escribiste: <code>np.array([85, 3])</code> es un vector de dos componentes. Una <strong>matriz</strong> es una tabla de números, y también la escribiste: la <code>X</code> de forma (4, 2) del tema anterior es una matriz de cuatro filas por dos columnas.</p>
+        <p>Lo que cambia es qué representan. En machine learning la convención es rígida y conviene fijarla ahora, porque no se va a mover en los veintiún temas que siguen:</p>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>Una fila</h3>
+            <p class="pilar-e">Un vector.</p>
+            <p>Una observación completa: <em>esta</em> casa, con todas sus características. 85 m² y 3 ambientes es el vector [85, 3].</p>
+          </article>
+          <article class="pilar">
+            <h3>Una columna</h3>
+            <p class="pilar-e">También un vector.</p>
+            <p>Una característica medida en todas las observaciones: los metros cuadrados de las cuatro casas.</p>
+          </article>
+          <article class="pilar">
+            <h3>La tabla entera</h3>
+            <p class="pilar-e">Una matriz.</p>
+            <p>Todas las observaciones con todas sus características. Es la <code>X</code> que se le pasa a cualquier modelo.</p>
+          </article>
+        </div>
+        <p>La palabra <strong>dimensión</strong> de un vector significa cuántos números tiene. Un vector de 2 dimensiones se puede dibujar en una hoja; uno de 3, en el espacio; uno de 500, no se puede dibujar y no importa, porque las cuentas son idénticas. Que un dataset "tenga muchas dimensiones" quiere decir, simplemente, que cada fila tiene muchas columnas.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Las dos fáciles }</p>
+        <h2>Sumar y escalar</h2>
+        <p>Dos vectores del mismo tamaño se suman componente a componente. [85, 3] + [10, 1] da [95, 4]. Si los tamaños no coinciden, la suma no existe y NumPy tira error: no hay ninguna interpretación razonable de sumar una casa con dos características a otra con cinco.</p>
+        <p>Multiplicar un vector por un solo número (que en este contexto se llama <strong>escalar</strong>) multiplica cada componente. [85, 3] × 2 da [170, 6]. Geométricamente estira o encoge el vector sin cambiarle la dirección; si el número es negativo, la da vuelta.</p>
+        <figure class="diagram" id="d-suma">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Dos vectores dibujados como flechas desde el origen y su suma, que llega al extremo del segundo apoyado sobre el primero">
+            <line class="daxis" x1="60" y1="240" x2="600" y2="240"/>
+            <line class="daxis" x1="60" y1="240" x2="60" y2="30"/>
+            <path class="dedge" d="M60 240 L 260 160"/>
+            <text class="dlabel" x="150" y="190">u</text>
+            <path class="dedge" d="M60 240 L 180 100"/>
+            <text class="dlabel" x="100" y="150">v</text>
+            <path class="dedge-mute" d="M260 160 L 380 20" stroke-dasharray="5 5"/>
+            <path class="dfill" d="M60 240 L 386 24 L 380 20 Z"/>
+            <path class="dedge" d="M60 240 L 380 20"/>
+            <text class="dlabel" x="290" y="110">u + v</text>
+            <text class="dtxt-mute" x="330" y="270" text-anchor="middle">la suma llega adonde llegás recorriendo uno y después el otro</text>
+          </svg>
+          <figcaption>Sumar dos vectores es encadenarlos: se apoya el segundo en la punta del primero. El resultado no depende del orden.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La operación que importa }</p>
+        <h2>El producto punto</h2>
+        <p>Esta es la que hay que entender de verdad. El <strong>producto punto</strong> entre dos vectores del mismo tamaño multiplica los pares que están en la misma posición y suma todo. El resultado no es un vector: es un solo número.</p>
+        <div class="callout formula">[85, 3] · [1200, 50000] = 85×1200 + 3×50000 = 252.000</div>
+        <p>Leelo despacio, porque acabás de ver una predicción. El primer vector es una casa: 85 m² y 3 ambientes. El segundo son los coeficientes de un modelo: 1200 pesos por metro cuadrado y 50.000 pesos por ambiente. El producto punto de los dos es el precio que ese modelo predice para esa casa.</p>
+        <p><strong>Eso es todo lo que hace un modelo lineal.</strong> La regresión lineal del tema 09, la regresión múltiple del 10, la regresión logística del 12 y cada neurona de las redes del 22: todas calculan un producto punto entre las características de una observación y un vector de coeficientes. Lo único que cambia entre ellas es cómo se eligen esos coeficientes y qué se hace con el número que sale.</p>
+        <figure class="diagram" id="d-punto">
+          <svg viewBox="0 0 640 240" role="img" aria-label="Dos vectores enfrentados componente a componente: cada par se multiplica y los productos se suman en un único número">
+            <text class="dlabel" x="90" y="35" text-anchor="middle">la casa</text>
+            <rect class="dnode-bg" x="40" y="50" width="100" height="44" rx="6"/>
+            <text class="dtxt" x="90" y="78" text-anchor="middle">85</text>
+            <rect class="dnode-bg" x="40" y="106" width="100" height="44" rx="6"/>
+            <text class="dtxt" x="90" y="134" text-anchor="middle">3</text>
+
+            <text class="dtxt-mute" x="175" y="78" text-anchor="middle">×</text>
+            <text class="dtxt-mute" x="175" y="134" text-anchor="middle">×</text>
+
+            <text class="dlabel" x="270" y="35" text-anchor="middle">los coeficientes</text>
+            <rect class="dnode-bg" x="210" y="50" width="120" height="44" rx="6"/>
+            <text class="dtxt" x="270" y="78" text-anchor="middle">1200</text>
+            <rect class="dnode-bg" x="210" y="106" width="120" height="44" rx="6"/>
+            <text class="dtxt" x="270" y="134" text-anchor="middle">50000</text>
+
+            <path class="dedge" d="M345 72 L 400 90"/>
+            <path class="dedge" d="M345 128 L 400 106"/>
+            <text class="dtxt-mute" x="380" y="55" text-anchor="middle">se suman</text>
+
+            <rect class="dfill" x="410" y="72" width="180" height="54" rx="10"/>
+            <text class="dtxt" x="500" y="105" text-anchor="middle">252.000</text>
+            <text class="dlabel" x="500" y="150" text-anchor="middle">el precio predicho</text>
+            <text class="dtxt-mute" x="320" y="215" text-anchor="middle">un vector de características, por un vector de coeficientes, da un número</text>
+          </svg>
+          <figcaption>En NumPy se escribe con el símbolo <code>@</code>: <code>casa @ coeficientes</code>. También existe <code>np.dot(casa, coeficientes)</code>, que hace exactamente lo mismo.</figcaption>
+        </figure>
+        <div class="callout"><span class="etiqueta">Clave</span>El producto punto mide qué tan alineados están dos vectores. Si apuntan para el mismo lado da grande y positivo; si son perpendiculares da exactamente cero; si apuntan al revés da negativo. Esa lectura vuelve en el tema 16, cuando SVM use el cero para definir una frontera.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Todas las filas de una vez }</p>
+        <h2>Matriz por vector</h2>
+        <p>Un producto punto predice el precio de <em>una</em> casa. Si tenés cuatro, la reacción natural es un bucle. Pero ya sabemos del tema 02 que eso es lo que hay que evitar.</p>
+        <p>Multiplicar una matriz por un vector es exactamente eso, hecho de una sola vez: se toma cada fila de la matriz y se hace su producto punto con el vector. Con <code>X</code> de forma (4, 2) y un vector de coeficientes de forma (2,), el resultado es un vector de forma (4,): una predicción por casa.</p>
+        <div class="callout formula">predicciones = X @ beta</div>
+        <p>Esa línea es, literalmente, "aplicá el modelo a todo el dataset". Es la línea que está adentro de casi todas las librerías que vas a usar, y la razón por la que vale la pena haber leído hasta acá: <code>X @ beta</code> deja de ser un símbolo raro y pasa a leerse como una frase.</p>
+        <p>Las formas tienen que encajar, y la regla es una sola: <strong>el número de columnas del primero tiene que ser igual al número de filas del segundo</strong>. (4, 2) con (2,) funciona porque el 2 coincide, y el resultado se queda con lo de afuera: (4,). Si no coinciden, NumPy tira un error que menciona las dos formas, y ese error es tu amigo.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>En NumPy, <code>A * B</code> y <code>A @ B</code> son cosas distintas. El asterisco multiplica elemento por elemento; la arroba hace el producto matricial. Con formas que casualmente encajan para las dos, el asterisco no da error: da otro resultado. Para modelos siempre es <code>@</code>.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Medir }</p>
+        <h2>Norma: el largo de un vector</h2>
+        <p>La <strong>norma</strong> de un vector es su largo. Se calcula elevando cada componente al cuadrado, sumando todo y sacando la raíz. Con dos componentes es exactamente el teorema de Pitágoras: el vector [3, 4] tiene norma 5.</p>
+        <div class="callout formula">‖v‖ = √(v₁² + v₂² + … + vₙ²)</div>
+        <p>Sirve para dos cosas que vas a usar mucho. La primera es medir <strong>distancia</strong>: la distancia entre dos puntos es la norma de su diferencia, <code>‖u − v‖</code>. Ese es el corazón del tema 14, donde clasificar consiste en buscar los vecinos más cercanos, y del 20, donde agrupar consiste en asignar cada punto al centro más cercano.</p>
+        <p>La segunda es medir <strong>tamaño</strong>. Cuando en el tema 11 se hable de "castigar coeficientes grandes", lo que se va a castigar es la norma del vector de coeficientes. Ridge usa la suma de cuadrados, que es la norma de recién sin la raíz; Lasso usa la suma de los valores absolutos, que es otra norma. La diferencia entre esas dos formas de medir el mismo vector es la diferencia entre los dos métodos.</p>
+        <p>En NumPy: <code>np.linalg.norm(v)</code>.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre las mismas dos casas de arriba: dos conceptuales, uno de cuentas, uno de armar código y uno de NumPy real.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Esperar un vector donde sale un número.</strong> El producto punto de dos vectores devuelve un escalar, no un vector. Si escribiste <code>u @ v</code> y después intentás indexar el resultado con <code>[0]</code>, Python te va a decir que un número no se puede indexar. La confusión viene de que <code>*</code> sí devuelve un vector.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Dar vuelta el orden.</strong> <code>X @ beta</code> y <code>beta @ X</code> no son lo mismo, y a diferencia de la suma, el orden importa siempre en el producto matricial. Con formas (4,2) y (2,), el primero funciona y el segundo tira error, así que este al menos avisa.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Usar <code>*</code> creyendo que es producto matricial.</strong> Con un vector de coeficientes de forma (2,) y una matriz (4, 2), <code>X * beta</code> no da error: broadcasting multiplica cada fila componente a componente y devuelve una matriz (4, 2). Parece que anduvo. Pero te faltó sumar, así que tenés cuatro pares de números sueltos en vez de cuatro predicciones, y el código sigue corriendo con datos mal. Es el error silencioso de este tema.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Un vector es una fila de datos y una matriz es la tabla completa; la dimensión de un vector es cuántos números tiene, y que sean quinientos no cambia ninguna cuenta. Sumar y escalar funcionan componente a componente y no tienen misterio. La operación que hay que entender de verdad es el producto punto: multiplicar par a par y sumar todo, para obtener un solo número, porque ese número <em>es</em> la predicción de un modelo lineal, y todos los modelos lineales del sitio hacen exactamente eso. Multiplicar una matriz por un vector aplica ese producto punto a todas las filas a la vez, y se escribe <code>X @ beta</code>, con arroba y no con asterisco: el asterisco no da error, da otra cosa. La norma es el largo de un vector, y sirve tanto para medir distancias entre puntos, que es lo que hacen KNN y k-means, como para medir el tamaño de un vector de coeficientes, que es lo que castiga la regularización. El próximo tema cierra la fase con lo mínimo de probabilidad y estadística, y ahí aparece Bayes, que es el resultado más contraintuitivo de toda esta fase.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="algebra.js"></script>
+</body>
+</html>
