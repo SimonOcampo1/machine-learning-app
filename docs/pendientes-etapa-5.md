@@ -1,10 +1,13 @@
 # Pendientes y notas para la Etapa 5
 
-Lo que queda abierto para quien escriba los temas que faltan. Nada de esto
-bloquea el deploy.
+**Estado: los 24 temas están escritos.** La Etapa 5 está cerrada.
 
-**Estado: 3 de 24 escritos** — 01 (Python), 02 (NumPy) y 09 (regresión lineal).
-Faltan 21. El orden natural es seguir por el 03 para terminar la fase 0.
+Cada uno con teoría, 2 o 3 diagramas SVG animados, 5 ejercicios corregibles
+(2 conceptuales, 1 numérico, 1 de armar código y 1 de Python real sobre
+Pyodide), errores frecuentes y síntesis. `node verificar.js` pasa,
+`node contraste.js` da 18/18, y los 82 tests pasan.
+
+Lo que sigue abierto es deuda técnica y decisiones, no contenido.
 
 ## Antes de desplegar (requiere cuentas)
 
@@ -65,6 +68,16 @@ Queda anotado para no volver a abrirlo por error.
    `@supports` que deja el borde crema liso como fallback, así que el botón
    nunca queda invisible, pero en un navegador viejo se pierde la única
    escalación cromática del sistema.
+5. **`regresion-lineal.js` es el único que no usa `const SLUG`.** Se escribió
+   antes de esa convención y repite el slug literal en cuatro lugares. Los
+   otros 23 lo declaran una vez arriba. Funciona y está testeado; unificarlo
+   es cosmético.
+6. **Ningún tema se vio renderizado en un navegador.** Todo lo verificado es
+   estático: `verificar.js`, `contraste.js`, los tests, y un chequeo cruzado
+   de que cada `#d-*` animado exista en su HTML. Playwright no pudo instalar
+   Chrome en la máquina donde se escribieron. Conviene abrir unos cuantos con
+   `npx serve` antes de desplegar, sobre todo para mirar que los SVG no se
+   desborden en pantallas angostas.
 
 ## Decisiones abiertas
 

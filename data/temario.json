@@ -38,9 +38,9 @@
       ] },
     { "n": 5, "nombre": "Redes neuronales", "hint": "De una neurona a una red que aprende sola", "hue": 330,
       "temas": [
-        { "n": 22, "titulo": "Del perceptrón a la red multicapa", "slug": "perceptron", "archivo": "concept-22-perceptron.html" },
-        { "n": 23, "titulo": "Backpropagation", "slug": "backprop", "archivo": "concept-23-backprop.html" },
-        { "n": 24, "titulo": "CNNs y qué sigue", "slug": "cnn", "archivo": "concept-24-cnn.html" }
+        { "n": 22, "titulo": "Del perceptrón a la red multicapa", "slug": "perceptron", "archivo": "concept-22-perceptron.html", "escrito": true, "ejercicios": 5 },
+        { "n": 23, "titulo": "Backpropagation", "slug": "backprop", "archivo": "concept-23-backprop.html", "escrito": true, "ejercicios": 5 },
+        { "n": 24, "titulo": "CNNs y qué sigue", "slug": "cnn", "archivo": "concept-24-cnn.html", "escrito": true, "ejercicios": 5 }
       ] }
   ]
 }

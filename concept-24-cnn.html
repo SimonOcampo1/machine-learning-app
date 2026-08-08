@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CNNs y qué sigue · ML</title>
+  <meta name="description" content="Por qué una red densa no sirve para imágenes, qué hace una convolución, y hacia dónde seguir después de los veinticuatro temas.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-5">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 5</p>
+      <p class="eyebrow">{ Tema 24 · Redes neuronales }</p>
+      <h1>CNNs y qué sigue</h1>
+      <p class="lede">Último tema. Una arquitectura que aprovecha una propiedad que las imágenes tienen y las tablas no, y después el mapa de hacia dónde seguir por cuenta propia.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Por qué no alcanza }</p>
+        <h2>Una red densa no sirve para imágenes</h2>
+        <p>La red del tema 22 conecta cada entrada con cada neurona de la primera capa. Probemos con una foto chica: 200 por 200 píxeles, en color, son 200 × 200 × 3 = <strong>120.000 números</strong> de entrada.</p>
+        <p>Si la primera capa oculta tuviera apenas 1.000 neuronas, esa sola capa tendría 120 millones de pesos. Es inviable de entrenar, imposible de alimentar con datos suficientes, y sobreajustaría de inmediato por lo que vimos en el tema 08.</p>
+        <p>Pero el problema serio no es el tamaño, es otro: al aplanar la imagen en una fila de 120.000 números, <strong>se destruye la información de vecindad</strong>. Dos píxeles que estaban pegados quedan tan relacionados como dos que estaban en esquinas opuestas. La red tendría que reaprender desde cero que la imagen tiene estructura espacial.</p>
+        <p>Y hay un tercer problema: si entrenás con gatos centrados y aparece un gato en la esquina, la red densa no tiene forma de reconocerlo, porque cada peso está atado a una posición específica. Tendría que aprender "gato" por separado en cada ubicación posible.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La idea }</p>
+        <h2>Un filtro que se desliza</h2>
+        <p>Una <strong>convolución</strong> resuelve los tres problemas de una vez. En vez de conectar todo con todo, se usa un <strong>filtro</strong> chiquito, típicamente de 3×3, que se desliza por toda la imagen. En cada posición hace un producto punto entre sus nueve pesos y los nueve píxeles que tiene debajo, y escribe un número en la salida.</p>
+        <figure class="diagram" id="d-conv">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Un filtro de tres por tres apoyado sobre una zona de la imagen, produciendo un valor en el mapa de salida, y desplazándose a la siguiente posición">
+            <text class="dlabel" x="130" y="30" text-anchor="middle">imagen</text>
+            <rect class="dnode-bg" x="40" y="45" width="180" height="180" rx="6"/>
+            <line class="dedge-mute" x1="40" y1="105" x2="220" y2="105"/>
+            <line class="dedge-mute" x1="40" y1="165" x2="220" y2="165"/>
+            <line class="dedge-mute" x1="100" y1="45" x2="100" y2="225"/>
+            <line class="dedge-mute" x1="160" y1="45" x2="160" y2="225"/>
+            <rect class="dfill" x="40" y="45" width="120" height="120" rx="4" opacity="0.5"/>
+            <path class="dedge" d="M40 45 H 160 V 165 H 40 Z"/>
+            <text class="dlabel" x="100" y="112" text-anchor="middle">3×3</text>
+
+            <path class="dedge" d="M240 135 H 330"/>
+            <text class="dtxt-mute" x="285" y="122" text-anchor="middle">producto</text>
+            <text class="dtxt-mute" x="285" y="158" text-anchor="middle">punto</text>
+
+            <text class="dlabel" x="450" y="30" text-anchor="middle">mapa de activación</text>
+            <rect class="dnode-bg" x="370" y="65" width="160" height="160" rx="6"/>
+            <line class="dedge-mute" x1="370" y1="118" x2="530" y2="118"/>
+            <line class="dedge-mute" x1="370" y1="171" x2="530" y2="171"/>
+            <line class="dedge-mute" x1="423" y1="65" x2="423" y2="225"/>
+            <line class="dedge-mute" x1="477" y1="65" x2="477" y2="225"/>
+            <rect class="dfill" x="370" y="65" width="53" height="53" rx="3"/>
+            <text class="dtxt-mute" x="450" y="250" text-anchor="middle">un número por cada posición del filtro</text>
+          </svg>
+          <figcaption>El filtro recorre toda la imagen. Los mismos nueve pesos se usan en cada posición: eso es compartir parámetros, y es la idea central.</figcaption>
+        </figure>
+        <p><strong>Compartir parámetros</strong> es lo que hay que llevarse de este tema. Los mismos nueve pesos se aplican en todas las posiciones, así que una capa convolucional con 32 filtros de 3×3 sobre una imagen en color tiene menos de 900 pesos, contra los 120 millones de la capa densa. Y como el filtro es el mismo en todos lados, si aprende a detectar un borde vertical, lo detecta en cualquier parte de la imagen. El problema del gato en la esquina desaparece.</p>
+        <p>Cada filtro produce un <strong>mapa de activación</strong>: una imagen nueva que marca dónde apareció el patrón que ese filtro detecta. Una capa tiene muchos filtros, así que produce muchos mapas, y la capa siguiente trabaja sobre ellos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La jerarquía }</p>
+        <h2>De bordes a conceptos</h2>
+        <p>Lo interesante aparece al apilar capas convolucionales, y es que la red construye sola una jerarquía de representaciones que nadie le programó.</p>
+        <p>Las <strong>primeras capas</strong> aprenden filtros que detectan cosas elementales: bordes en distintas orientaciones, cambios de color, manchas. Son casi idénticos entre redes entrenadas para tareas completamente distintas, y se parecen bastante a lo que hacen las primeras etapas del sistema visual humano.</p>
+        <p>Las <strong>capas intermedias</strong> combinan esos bordes en texturas, esquinas, formas simples, patrones repetidos. Las <strong>capas profundas</strong> combinan esas formas en partes reconocibles: una rueda, un ojo, una oreja. Y las últimas, en objetos completos.</p>
+        <p>Entre capas se intercala el <strong>pooling</strong>, que achica los mapas quedándose, por ejemplo, con el máximo de cada bloque de 2×2. Reduce el tamaño, baja el cómputo, y hace la red algo más tolerante a que las cosas se corran un poco de lugar.</p>
+        <p>Al final, los mapas se aplanan y pasan por una o dos capas densas, que son las que hacen la clasificación propiamente dicha. La parte convolucional extrae características; la parte densa decide.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo que se usa de verdad }</p>
+        <h2>Transfer learning</h2>
+        <p>Entrenar una CNN grande desde cero requiere millones de imágenes y varios días de cómputo caro. Casi nadie lo hace, y no hace falta.</p>
+        <p>Como las primeras capas aprenden bordes y texturas que sirven para <em>cualquier</em> imagen, se puede tomar una red ya entrenada sobre millones de fotos, quedarse con toda esa parte, y reemplazar solo las últimas capas por unas nuevas para tu problema particular. Después se entrena solo esa parte nueva, con tus datos.</p>
+        <p>Eso es <strong>transfer learning</strong>, y funciona sorprendentemente bien: se pueden lograr resultados excelentes con unos cientos de imágenes propias y minutos de entrenamiento en una máquina común. <strong>Es lo que hay que hacer</strong> ante casi cualquier problema de visión, y es probablemente la técnica más rentable de toda la fase 5.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo que vino después }</p>
+        <h2>Transformers</h2>
+        <p>Las convoluciones asumen que lo importante es local: los píxeles vecinos se relacionan más que los lejanos. Es cierto en imágenes y no lo es en texto, donde una palabra puede depender de otra que está treinta palabras atrás.</p>
+        <p>En 2017 apareció una arquitectura construida sobre otra idea, la <strong>atención</strong>: en vez de mirar vecinos, cada elemento decide dinámicamente a qué otros elementos prestarles atención, sin importar la distancia. Eso es un <strong>transformer</strong>, y es la arquitectura detrás de los modelos de lenguaje actuales, incluido el que escribió este texto.</p>
+        <p>Después se descubrió que también funciona muy bien en imágenes, partiéndolas en parches y tratando cada parche como un elemento. Hoy transformers y CNNs conviven en visión.</p>
+        <p>Todo eso está fuera del alcance de este sitio, pero conviene saber que la línea es continua: sigue siendo una función con parámetros, entrenada por descenso de gradiente, con los gradientes calculados por backpropagation. Todo lo del tema 23 sigue aplicando sin cambios.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Los últimos cinco: cuentas de parámetros, tamaños de salida y por qué compartir pesos cambia todo.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Entrenar desde cero.</strong> Con unos pocos miles de imágenes, una red entrenada desde cero va a andar mucho peor que un transfer learning hecho en diez minutos. Empezá siempre por una red preentrenada.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Usar una CNN para datos tabulares.</strong> Las convoluciones explotan la vecindad espacial, y en una tabla el orden de las columnas es arbitrario: no hay ninguna vecindad que explotar. Para tablas, el boosting del tema 19.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Preprocesar distinto que el modelo original.</strong> Cada red preentrenada espera sus imágenes normalizadas exactamente como en su entrenamiento: cierto tamaño, cierto rango de valores, ciertas medias por canal. Si le pasás imágenes en 0–255 a una red que espera valores normalizados, todo corre sin error, el entrenamiento converge, y los resultados son mucho peores de lo que deberían sin ninguna señal de por qué. Es la versión de este tema del mismo error que viene apareciendo desde KNN: la escala importa y equivocarse en ella no tira excepciones.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Hasta acá, y hacia dónde seguir</h2>
+        <p>Una red densa no sirve para imágenes por tres motivos: la cantidad de pesos es inviable, aplanar destruye la vecindad, y cada peso queda atado a una posición. La convolución resuelve los tres con un filtro chico que se desliza y cuyos pesos se comparten en todas las posiciones, lo que reduce los parámetros en órdenes de magnitud y hace que un patrón aprendido se detecte en cualquier parte de la imagen. Apilando capas, la red construye sola una jerarquía que va de bordes a texturas a partes a objetos, con pooling en el medio para achicar, y capas densas al final para decidir. En la práctica casi nadie entrena desde cero: transfer learning reutiliza las capas de una red ya entrenada y reemplaza solo las últimas, y es lo más rentable que hay en visión. Después vinieron los transformers, construidos sobre atención en vez de vecindad, que son lo que está detrás de los modelos de lenguaje actuales, y siguen siendo funciones con parámetros entrenadas por descenso de gradiente con backpropagation.</p>
+        <p>Con esto cierran los veinticuatro temas. Lo que quedó armado es un vocabulario y una forma de pensar: qué significa que un modelo aprenda, cómo se evalúa honestamente, por qué más complejidad no es mejor, y qué error silencioso acecha en cada método. Casi todos los temas terminaron señalando el mismo tipo de problema, y no fue casualidad: lo que rompe los proyectos no son los algoritmos, son las decisiones alrededor de ellos, los datos mal etiquetados, la métrica equivocada, la fuga que infla los resultados.</p>
+        <p>Para seguir por cuenta propia, tres caminos. El primero es <strong>practicar sobre datos propios</strong>: agarrar un problema que a uno le importe, conseguir los datos, y recorrer el flujo del tema 06 de punta a punta, que enseña más que diez temas más. El segundo es <strong>profundizar en un método</strong> hasta poder implementarlo desde cero, sin librería: escribir una regresión logística entera aclara cosas que ninguna lectura aclara. El tercero es leer los libros que están en <code>assets/</code>, ahora sí con el vocabulario para entenderlos: el de James, Witten, Hastie y Tibshirani es el más accesible para consolidar todo esto, el de Géron es el más práctico, y el de Goodfellow, Bengio y Courville es la referencia si el camino sigue por redes neuronales.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="cnn.js"></script>
+</body>
+</html>

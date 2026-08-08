@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Backpropagation · ML</title>
+  <meta name="description" content="Cómo se sabe cuánto mover cada uno de los millones de pesos de una red: el error se reparte hacia atrás con la regla de la cadena.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-5">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 5</p>
+      <p class="eyebrow">{ Tema 23 · Redes neuronales }</p>
+      <h1>Backpropagation</h1>
+      <p class="lede">Una red tiene millones de pesos y hay que saber cuánto mover cada uno. Este es el algoritmo que lo resuelve, y lo primero que hay que aclarar es que no es el que aprende.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>Millones de perillas</h2>
+        <p>El tema anterior dejó una red armada con sus pesos puestos al azar. Para que aprenda hay que ajustarlos, y ya sabemos cómo desde el tema 10: descenso de gradiente. Se calcula en qué dirección conviene mover cada peso y se da un paso chico en esa dirección.</p>
+        <p>El problema es de escala. Con dos coeficientes, calcular el gradiente era una cuenta directa. Con doce millones de pesos, y con cada peso influyendo en el error a través de una cadena larga de capas, calcular las derivadas de a una sería inviable: el costo crecería con el cuadrado de la cantidad de pesos.</p>
+        <p><strong>Backpropagation es la forma eficiente de calcular todos esos gradientes de una sola pasada.</strong> Y esa es la aclaración que hay que hacer de entrada, porque casi todas las explicaciones la difuminan:</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Backpropagation <strong>no es el algoritmo de aprendizaje</strong>. Es solo el método para calcular los gradientes. Quien aprende, quien efectivamente mueve los pesos, es el descenso de gradiente del tema 10. Backprop le dice hacia dónde; el descenso da el paso.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La herramienta }</p>
+        <h2>La regla de la cadena, sin fórmulas</h2>
+        <p>Toda la mecánica se apoya en una sola idea, y se puede entender sin derivadas.</p>
+        <p>Si A influye sobre B, y B influye sobre C, ¿cuánto influye A sobre C? El efecto se <strong>multiplica</strong> a lo largo del camino. Si mover A un poco mueve a B el doble, y mover B un poco mueve a C el triple, entonces mover A un poco mueve a C seis veces.</p>
+        <p>Una red es exactamente esa situación encadenada muchas veces. Un peso de la primera capa afecta a una neurona de la primera capa, que afecta a las de la segunda, que afectan a las de la tercera, hasta llegar a la predicción y de ahí al error. La influencia total de ese peso sobre el error es el producto de todos los efectos del camino.</p>
+        <p>Lo eficiente aparece al notar que muchos pesos comparten buena parte del camino. Si se calculan los efectos <strong>desde el final hacia el principio</strong>, cada tramo se calcula una sola vez y se reutiliza para todos los pesos que pasan por ahí. Eso es lo que hace backprop, y por eso "propagación hacia atrás".</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Las dos pasadas }</p>
+        <h2>Ida y vuelta</h2>
+        <p>Entrenar es repetir dos pasadas sobre la misma red.</p>
+        <p>En la <strong>pasada hacia adelante</strong>, los datos entran por la primera capa, cada neurona calcula su producto punto y su activación, y el resultado avanza capa por capa hasta salir una predicción. Se compara contra el valor real y se obtiene la <strong>pérdida</strong>, un número que resume qué tan mal estuvo.</p>
+        <p>En la <strong>pasada hacia atrás</strong>, se arranca desde ese error y se lo reparte hacia atrás, capa por capa. Cada capa recibe "cuánto de este error viene de mi salida", lo usa para calcular cuánto tiene que moverse cada uno de sus pesos, y pasa hacia atrás "cuánto de este error viene de mi entrada", que es lo que necesita la capa anterior.</p>
+        <figure class="diagram" id="d-backprop">
+          <svg viewBox="0 0 640 280" role="img" aria-label="La misma red recorrida en dos direcciones: hacia adelante los datos producen una predicción y una pérdida, hacia atrás el error se reparte capa por capa">
+            <circle class="dnode-bg" cx="80" cy="140" r="26"/>
+            <text class="dtxt" x="80" y="146" text-anchor="middle">x</text>
+            <circle class="dfill" cx="240" cy="95" r="26"/>
+            <circle class="dfill" cx="240" cy="185" r="26"/>
+            <circle class="dfill" cx="400" cy="140" r="26"/>
+            <circle class="dnode-bg" cx="545" cy="140" r="26"/>
+            <text class="dtxt" x="545" y="146" text-anchor="middle">ŷ</text>
+
+            <path class="dedge" d="M108 130 L 212 100"/>
+            <path class="dedge" d="M108 152 L 212 180"/>
+            <path class="dedge" d="M268 103 L 374 132"/>
+            <path class="dedge" d="M268 177 L 374 150"/>
+            <path class="dedge" d="M428 140 H 517"/>
+            <text class="dlabel" x="300" y="45" text-anchor="middle">hacia adelante: sale una predicción y una pérdida</text>
+
+            <path class="dedge-mute" d="M517 215 H 428" stroke-dasharray="6 4"/>
+            <path class="dedge-mute" d="M374 218 L 268 232" stroke-dasharray="6 4"/>
+            <path class="dedge-mute" d="M212 235 L 108 240" stroke-dasharray="6 4"/>
+            <text class="dtxt-mute" x="300" y="270" text-anchor="middle">hacia atrás: el error se reparte y cada capa aprende cuánto moverse</text>
+          </svg>
+          <figcaption>Las dos pasadas usan la misma red y los mismos pesos. La de ida produce el error; la de vuelta lo convierte en instrucciones de ajuste para cada peso.</figcaption>
+        </figure>
+        <p>Después de la pasada hacia atrás, el descenso de gradiente mueve todos los pesos un poquito en la dirección indicada, y se vuelve a empezar.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El vocabulario }</p>
+        <h2>Épocas, lotes y learning rate</h2>
+        <p>Tres palabras que aparecen en todo código de entrenamiento y que se confunden seguido.</p>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>Lote</h3>
+            <p class="pilar-e"><em>batch</em></p>
+            <p>Cuántos ejemplos se procesan antes de actualizar los pesos. Usar todo el dataset por actualización es preciso y lentísimo; usar uno solo es rapidísimo y muy ruidoso. En la práctica se usan mini-lotes de 32 a 256.</p>
+          </article>
+          <article class="pilar">
+            <h3>Época</h3>
+            <p class="pilar-e"><em>epoch</em></p>
+            <p>Una pasada completa por todo el dataset de entrenamiento. Con 10.000 ejemplos y lotes de 100, una época son 100 actualizaciones de pesos.</p>
+          </article>
+          <article class="pilar">
+            <h3>Learning rate</h3>
+            <p class="pilar-e">El mismo del tema 10</p>
+            <p>Cuánto se mueve cada peso por actualización. Sigue siendo el hiperparámetro más importante y el que más rompe: muy grande diverge, muy chico no llega.</p>
+          </article>
+        </div>
+        <p>El descenso con mini-lotes es lo estándar, y el ruido que introduce resulta ser útil: ayuda a escapar de mínimos locales malos. Encima de eso, los optimizadores modernos como <strong>Adam</strong> adaptan el learning rate por cada peso automáticamente, y son el valor por defecto razonable hoy.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema histórico }</p>
+        <h2>El gradiente que se desvanece</h2>
+        <p>Backprop se conocía desde los años setenta y se popularizó en 1986, pero las redes profundas no funcionaron hasta bastante después. La razón está en la multiplicación de la regla de la cadena.</p>
+        <p>El efecto de un peso de la primera capa sobre el error es el <strong>producto</strong> de los efectos de todas las capas que hay en el medio. Si cada uno de esos factores es menor que 1, el producto se derrumba exponencialmente: con veinte capas y factores de 0.5, el gradiente que llega a la primera capa es 0.5 elevado a la veinte, o sea alrededor de una millonésima.</p>
+        <p>El resultado es que las capas iniciales <strong>casi no se mueven</strong>: reciben una señal de ajuste tan diminuta que en la práctica nunca aprenden nada. La red profunda se comporta como una red superficial con capas muertas adelante.</p>
+        <p>Y las sigmoides eran las culpables. Su derivada nunca supera 0.25, así que cada capa que atravesaba el gradiente lo dividía al menos por cuatro. Diez capas de sigmoide bastaban para hacerlo desaparecer.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Ahí está el motivo real por el que <strong>ReLU</strong> cambió las cosas: para valores positivos su derivada es exactamente 1, así que el gradiente atraviesa la capa sin atenuarse. Junto con mejores inicializaciones de pesos, la normalización por lotes y las conexiones residuales, es lo que hizo posible entrenar redes de cientos de capas.</div>
+        <p>Existe el problema espejo, el gradiente que explota, cuando los factores son mayores que 1 y el producto se dispara. Se resuelve recortando el gradiente a un tope, que es una solución mucho más simple.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre la cadena de efectos, las épocas y el desvanecimiento.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Confundir época con actualización.</strong> Una época son muchas actualizaciones, tantas como lotes entren en el dataset. Entrenar "100 épocas" con lotes de 32 sobre 50.000 ejemplos son más de 150.000 actualizaciones de pesos.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que backprop aprende.</strong> Backprop calcula gradientes; el optimizador es el que mueve los pesos. La distinción importa cuando hay que diagnosticar: si el modelo no mejora, el problema casi siempre está en el optimizador o el learning rate, no en el cálculo del gradiente.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Olvidarse de poner los gradientes en cero entre iteraciones.</strong> En PyTorch, los gradientes se <em>acumulan</em> por defecto, así que si no llamás a <code>optimizer.zero_grad()</code> en cada vuelta, cada paso usa la suma de todos los gradientes anteriores. El entrenamiento corre sin ningún error, la pérdida baja de forma errática o se estanca, y no hay nada que señale la causa. Es el bug más común de quien arranca con redes, y son dos palabras.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Una red tiene millones de pesos y calcular las derivadas de a una sería inviable; backpropagation las calcula todas en una sola pasada, y no es el algoritmo de aprendizaje sino solo la forma eficiente de obtener los gradientes: quien mueve los pesos sigue siendo el descenso de gradiente del tema 10. Se apoya en la regla de la cadena, que dice que los efectos encadenados se multiplican, y en la observación de que recorriendo la red desde el final hacia el principio cada tramo se calcula una vez y se reutiliza. Entrenar es repetir dos pasadas: la de ida produce una predicción y una pérdida, la de vuelta reparte ese error capa por capa hasta obtener cuánto tiene que moverse cada peso. El vocabulario que hay que tener claro es lote, época y learning rate, donde una época son muchas actualizaciones y no una. Y el problema histórico es el gradiente que se desvanece: como los efectos se multiplican, factores menores que 1 hacen que la señal que llega a las primeras capas se derrumbe exponencialmente y esas capas nunca aprendan. Las sigmoides, con derivada máxima de 0.25, lo garantizaban; ReLU, con derivada 1 del lado positivo, es lo que hizo posible la profundidad real. El último tema aplica todo esto a imágenes, y cierra el recorrido.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="backprop.js"></script>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Del perceptrón a la red multicapa · ML</title>
+  <meta name="description" content="Una neurona es un modelo que ya conocés con otro nombre. El problema XOR, por qué apilar capas lineales no sirve, y qué hacen realmente las activaciones.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-5">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 5</p>
+      <p class="eyebrow">{ Tema 22 · Redes neuronales }</p>
+      <h1>Del perceptrón a la red multicapa</h1>
+      <p class="lede">La última fase arranca con una noticia tranquilizadora: una neurona es exactamente el modelo del tema 12, con otro nombre y dibujado distinto.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Nada nuevo }</p>
+        <h2>Una neurona es un producto punto</h2>
+        <p>Una neurona artificial hace tres cosas, en este orden: multiplica cada entrada por un peso y las suma, le agrega un sesgo, y pasa el resultado por una función de activación.</p>
+        <div class="callout formula">salida = activación(w₁x₁ + w₂x₂ + … + wₙxₙ + b)</div>
+        <p>Lo que está adentro del paréntesis es el <strong>producto punto del tema 03</strong> más una constante. Es literalmente la misma operación que calculaba el precio de una casa. Y si la activación es la sigmoide, lo que tenés es la regresión logística del tema 12, sin ninguna diferencia.</p>
+        <p>Eso vale la pena asentarlo antes de seguir: <strong>una sola neurona es un clasificador lineal</strong>, con el mismo poder y las mismas limitaciones. Traza una recta, o un plano si hay más dimensiones, y separa a los dos lados.</p>
+        <p>El <strong>perceptrón</strong> original, de 1957, era exactamente eso con una activación escalón: si la suma pasa un umbral, sale 1; si no, sale 0.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El muro }</p>
+        <h2>XOR, y veinte años perdidos</h2>
+        <p>Si una neurona es un clasificador lineal, hereda su límite: solo sirve cuando una recta alcanza. En 1969 se publicó el ejemplo más chico posible donde no alcanza, y el campo se frenó casi dos décadas.</p>
+        <p>El problema XOR tiene cuatro puntos y dos clases: la respuesta es 1 cuando exactamente una de las dos entradas vale 1, y 0 cuando las dos coinciden.</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>x₁</th><th>x₂</th><th>salida</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>0</td><td>0</td><td>0</td></tr>
+              <tr><td>0</td><td>1</td><td>1</td></tr>
+              <tr><td>1</td><td>0</td><td>1</td></tr>
+              <tr><td>1</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure class="diagram" id="d-xor">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Los cuatro puntos de XOR ubicados en las esquinas de un cuadrado, con las dos clases en diagonales opuestas, y tres rectas que no logran separarlas">
+            <line class="daxis" x1="120" y1="210" x2="380" y2="210"/>
+            <line class="daxis" x1="120" y1="210" x2="120" y2="50"/>
+            <circle class="dnode-solid" cx="150" cy="185" r="9"/>
+            <text class="dtxt-mute" x="150" y="235" text-anchor="middle">(0,0)</text>
+            <rect class="dnode-bg" x="141" y="66" width="18" height="18" rx="2"/>
+            <text class="dtxt-mute" x="150" y="45" text-anchor="middle">(0,1)</text>
+            <rect class="dnode-bg" x="331" y="176" width="18" height="18" rx="2"/>
+            <text class="dtxt-mute" x="340" y="235" text-anchor="middle">(1,0)</text>
+            <circle class="dnode-solid" cx="340" cy="75" r="9"/>
+            <text class="dtxt-mute" x="340" y="45" text-anchor="middle">(1,1)</text>
+            <path class="dedge-mute" d="M110 130 H 400" stroke-dasharray="5 5"/>
+            <path class="dedge-mute" d="M245 40 V 220" stroke-dasharray="5 5"/>
+            <path class="dedge-mute" d="M110 220 L 400 50" stroke-dasharray="5 5"/>
+            <text class="dtxt" x="510" y="120" text-anchor="middle">ninguna recta</text>
+            <text class="dtxt" x="510" y="145" text-anchor="middle">deja los cuadrados</text>
+            <text class="dtxt" x="510" y="170" text-anchor="middle">de un solo lado</text>
+          </svg>
+          <figcaption>Las dos clases quedan en diagonales opuestas. Probá mentalmente cualquier recta: siempre va a dejar un punto de cada clase del mismo lado.</figcaption>
+        </figure>
+        <p>Como una sola neurona no puede resolver ni ese problema de cuatro puntos, la conclusión de la época fue que el enfoque no llevaba a ningún lado, y la financiación se fue a otro lado.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La salida }</p>
+        <h2>Apilar capas</h2>
+        <p>La solución resultó ser poner neuronas en capas: las salidas de unas son las entradas de las siguientes. Con una <strong>capa oculta</strong> de apenas dos neuronas, XOR se resuelve.</p>
+        <p>La intuición de por qué: cada neurona de la capa oculta traza su propia recta y produce una respuesta parcial. La capa de salida ya no ve las entradas originales, ve <em>esas respuestas parciales</em>, y en ese espacio nuevo el problema sí es separable. Es la misma idea que el truco del kernel del tema 16, con una diferencia importante: acá la transformación no la elegís vos, se aprende de los datos.</p>
+        <figure class="diagram" id="d-capas">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Una red con dos entradas, una capa oculta de tres neuronas y una salida, todas conectadas entre capas">
+            <text class="dlabel" x="90" y="30" text-anchor="middle">entrada</text>
+            <text class="dlabel" x="320" y="30" text-anchor="middle">capa oculta</text>
+            <text class="dlabel" x="550" y="30" text-anchor="middle">salida</text>
+            <circle class="dnode-bg" cx="90" cy="95" r="24"/>
+            <text class="dtxt" x="90" y="101" text-anchor="middle">x₁</text>
+            <circle class="dnode-bg" cx="90" cy="175" r="24"/>
+            <text class="dtxt" x="90" y="181" text-anchor="middle">x₂</text>
+
+            <circle class="dfill" cx="320" cy="70" r="26"/>
+            <circle class="dfill" cx="320" cy="135" r="26"/>
+            <circle class="dfill" cx="320" cy="200" r="26"/>
+
+            <circle class="dnode-bg" cx="550" cy="135" r="26"/>
+            <text class="dtxt" x="550" y="141" text-anchor="middle">ŷ</text>
+
+            <path class="dedge-mute" d="M114 95 L 294 70 M114 95 L 294 135 M114 95 L 294 200"/>
+            <path class="dedge-mute" d="M114 175 L 294 70 M114 175 L 294 135 M114 175 L 294 200"/>
+            <path class="dedge" d="M346 70 L 524 128 M346 135 H 524 M346 200 L 524 142"/>
+            <text class="dtxt-mute" x="320" y="245" text-anchor="middle">cada conexión tiene su propio peso, y todos se aprenden</text>
+          </svg>
+          <figcaption>Una red de este tamaño, con dos entradas y tres neuronas ocultas, ya tiene trece pesos y cuatro sesgos. Una red real tiene millones.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La pieza que se olvida }</p>
+        <h2>Sin no linealidad, apilar no sirve para nada</h2>
+        <p>Acá está el punto que más se pasa por alto, y sin el cual todo lo anterior sería falso.</p>
+        <p>Si las neuronas no tuvieran función de activación, o si la activación fuera lineal, apilar capas <strong>no agregaría absolutamente nada</strong>. La composición de dos transformaciones lineales es otra transformación lineal: una red de cien capas lineales se puede reescribir como una sola capa, con otros pesos, que hace exactamente lo mismo.</p>
+        <p>Cien capas sin activación tienen exactamente el mismo poder que una neurona sola, y siguen sin poder resolver XOR.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span><strong>La función de activación no lineal es lo único que hace que la profundidad sirva.</strong> No es un detalle de implementación ni un ajuste fino: es la pieza que convierte una pila de capas en un modelo más expresivo que sus partes.</div>
+        <p>Las que se usan:</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>Sigmoide <span class="dist-vs">y tanh</span></h3>
+            <p class="dist-trampa">Aplastan cualquier número a (0,1) o a (−1,1). Fueron el estándar durante décadas.</p>
+            <p class="dist-truco">Su problema: en los extremos son casi planas, y una función casi plana tiene derivada casi nula. Eso mata el aprendizaje en redes profundas, como se ve en el tema 23.</p>
+          </article>
+          <article class="dist">
+            <h3>ReLU</h3>
+            <p class="dist-trampa">La más simple posible: si el número es negativo devuelve 0, si es positivo lo devuelve tal cual.</p>
+            <p class="dist-truco">Para valores positivos su derivada es exactamente 1, así que la señal de aprendizaje no se atenúa. Es rapidísima de calcular y es la razón práctica por la que se pudieron entrenar redes verdaderamente profundas.</p>
+          </article>
+        </div>
+        <p>Que una función tan tosca como ReLU le ganara a las elegantes sigmoides fue una sorpresa, y hoy es el valor por defecto en las capas ocultas. La sigmoide sobrevive en la capa de <em>salida</em> de un clasificador binario, donde sí se necesita una probabilidad.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Qué se gana }</p>
+        <h2>Cualquier función, con suficientes neuronas</h2>
+        <p>Hay un resultado teórico que se cita mucho: una red con una sola capa oculta, si es lo bastante ancha, puede aproximar cualquier función continua con la precisión que quieras. Se llama teorema de aproximación universal.</p>
+        <p>Conviene entender qué dice y qué no. Dice que la <strong>capacidad</strong> está. No dice que se pueda encontrar esa red entrenando, ni cuántos datos harían falta, ni que sea práctico: la cantidad de neuronas necesarias puede ser astronómica.</p>
+        <p>Lo que se descubrió en la práctica es que las redes <strong>profundas</strong>, con muchas capas angostas, aprenden mucho mejor que las anchas y chatas con la misma cantidad de neuronas. Cada capa construye sobre las representaciones de la anterior, y esa jerarquía es lo que hace funcionar al deep learning.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Toda esa capacidad significa varianza altísima en los términos del tema 08: una red sobreajusta con enorme facilidad. Necesita muchísimos datos, y de ahí que en datos tabulares el boosting del tema 19 le gane con consistencia. Las redes brillan donde hay millones de ejemplos y estructura que explotar: imágenes, texto y audio.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre la neurona, XOR y por qué hace falta la no linealidad.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que una red siempre le gana a un modelo clásico.</strong> Con una tabla de diez mil filas, una regresión regularizada o un gradient boosting casi siempre le ganan a una red, y son mucho más baratos de entrenar y explicar.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Poner sigmoide en las capas ocultas.</strong> Era el estándar y hoy es una mala elección por defecto: satura y frena el aprendizaje en profundidad. ReLU en las ocultas, sigmoide solo en la salida binaria.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Armar una red sin activaciones entre capas.</strong> Se define un modelo de seis capas, se entrena, converge, predice, y no falla nada. Pero al ser todas lineales, la red entera es matemáticamente equivalente a una sola capa: tenés un modelo lineal caro y lento, y ninguna de las seis capas aporta nada. Los síntomas son un desempeño que se estanca en el nivel de una regresión logística y no mejora por más capas que agregues.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Una neurona multiplica cada entrada por un peso, suma, agrega un sesgo y pasa el resultado por una activación: lo de adentro es el producto punto del tema 03, y con activación sigmoide es exactamente la regresión logística del tema 12. Por eso una sola neurona es un clasificador lineal y hereda su límite, que XOR expone con cuatro puntos y que frenó el campo casi veinte años. La salida es apilar capas: las neuronas ocultas producen respuestas parciales y la capa siguiente trabaja en ese espacio nuevo, igual que el truco del kernel pero con la transformación aprendida en vez de elegida. Y la pieza que no se puede olvidar es la activación no lineal: sin ella, la composición de capas lineales sigue siendo lineal y cien capas tienen el poder de una, así que la no linealidad es lo único que hace que la profundidad sirva. ReLU reemplazó a la sigmoide en las capas ocultas porque su derivada no se atenúa, y la sigmoide quedó para la salida binaria. Una red suficientemente ancha puede aproximar cualquier función, pero eso habla de capacidad y no de que se pueda entrenar, y toda esa capacidad significa varianza altísima: hacen falta muchísimos datos, razón por la cual en tablas el boosting sigue ganando. Lo que falta es cómo se ajustan esos millones de pesos, y eso es el próximo tema.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="perceptron.js"></script>
+</body>
+</html>
