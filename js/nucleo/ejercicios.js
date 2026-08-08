@@ -98,7 +98,25 @@ const Ejercicios = (() => {
     caja.className = `ej-fb ${res.ok ? "ok" : "no"}`;
     caja.textContent = res.msg;
     caja.hidden = false;
+    /* La explicación es donde vive casi toda la notación de los ejercicios —el
+       enunciado pregunta en palabras y la explicación contesta con fórmulas—,
+       y aparece recién ahora, al responder. Envolverla solo al montar no
+       alcanzaría: en ese momento esta caja está vacía. */
+    componerMate(caja);
     dispatchEvent(new CustomEvent("ejercicio-respondido"));
+  }
+
+  /* Envuelve la notación suelta y la compone. Las dos funciones viven en
+     shared.js y pueden faltar si ese archivo no cargó: sin ellas el texto se
+     lee igual en Unicode, que es el respaldo de siempre. */
+  function componerMate(raiz) {
+    if (typeof envolverMate !== "function") return;
+    try {
+      envolverMate(raiz);
+      montarMates(raiz).catch(e => console.warn("matemática de ejercicios:", e.message));
+    } catch (e) {
+      console.warn("notación de ejercicios:", e);
+    }
   }
 
   function montarMcq(def, slug) {
@@ -719,6 +737,13 @@ const Ejercicios = (() => {
       if (!c) throw new Error(`tipo de ejercicio sin constructor: ${def.tipo}`);
       raiz.append(c(def, slug));
     }
+
+    /* Los enunciados son strings de `js/temas/*.js` insertados con
+       `textContent`, así que la conversión a LaTeX que se hizo sobre el HTML no
+       los alcanza. Se envuelven acá, recién montados. Las explicaciones se
+       envuelven aparte, en `pintarResultado`, porque todavía no existen. */
+    componerMate(raiz);
+
     vigilarQuiz(defs, slug);
   }
 

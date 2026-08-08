@@ -130,8 +130,89 @@ function cargarKatex() {
   });
 }
 
-async function montarMates() {
-  const nodos = document.querySelectorAll("[data-tex]");
+/* ── Notación suelta en texto generado por JS ─────────────
+   Las 27 páginas tienen su notación envuelta en `data-tex` desde el HTML. Pero
+   los enunciados de los ejercicios NO viven en el HTML: son strings dentro de
+   `js/temas/*.js` que `ejercicios.js` inserta con `textContent`. Sin esto, un
+   enunciado que dice "¿cuánto vale la pendiente β₁?" quedaba en Unicode al lado
+   de una fórmula compuesta por KaTeX, con dos tipografías distintas para la
+   misma letra en la misma pantalla.
+   La tabla es la misma que se usó para convertir el HTML. Lo que NO está acá es
+   deliberado: `m²` es metros cuadrados —una unidad, que en LaTeX va en redonda
+   y no en itálica matemática—, y `3×3` o `85×1200` son aritmética de la prosa. */
+const TERMINOS_MATE = {
+  "β₁x̄": "\\beta_1\\bar{x}", "β₁x₁": "\\beta_1 x_1", "β₂x₂": "\\beta_2 x_2",
+  "β₃x₃": "\\beta_3 x_3", "w₁x₁": "w_1 x_1", "w₂x₂": "w_2 x_2", "wₙxₙ": "w_n x_n",
+  "ŷᵢ": "\\hat{y}_i", "∇J": "\\nabla J", "pᵢ²": "p_i^2",
+  "v₁²": "v_1^2", "v₂²": "v_2^2", "vₙ²": "v_n^2",
+  "β₀": "\\beta_0", "β₁": "\\beta_1", "β₂": "\\beta_2", "β₃": "\\beta_3",
+  "w₁": "w_1", "w₂": "w_2", "wₙ": "w_n", "x₁": "x_1", "x₂": "x_2",
+  "xᵢ": "x_i", "yᵢ": "y_i", "x̄": "\\bar{x}", "ȳ": "\\bar{y}", "ŷ": "\\hat{y}",
+  "R²": "R^2", "β": "\\beta", "α": "\\alpha", "σ": "\\sigma",
+  "Σ": "\\sum", "∝": "\\propto", "≈": "\\approx", "∇": "\\nabla"
+};
+
+// Más largo primero: sin esto `β` se comería el prefijo de `β₀` y dejaría un
+// `\beta` seguido de un `₀` huérfano.
+const _ALTERNATIVA_MATE = Object.keys(TERMINOS_MATE)
+  .sort((a, b) => b.length - a.length)
+  .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"))
+  .join("|");
+
+/* DOS expresiones para el mismo patrón, y no es redundancia. `test()` sobre una
+   regex con flag `g` es stateful: adelanta `lastIndex` en cada llamada y la
+   siguiente arranca desde ahí, así que llamada en un bucle devuelve false para
+   nodos que sí tienen notación. El filtro del TreeWalker es exactamente ese
+   bucle. La versión sin `g` es para preguntar; la de `g`, para recorrer. */
+const RE_MATE_HAY = new RegExp(`(${_ALTERNATIVA_MATE})`);
+const RE_MATE = new RegExp(`(${_ALTERNATIVA_MATE})`, "g");
+
+const LETRA_MATE = /[0-9A-Za-zÀ-ÿ]/;
+// Donde el contenido ES código o ya es matemática compuesta, no se toca.
+const INTOCABLE = "code, pre, textarea, script, style, svg, .katex, [data-tex]";
+
+function envolverMate(raiz) {
+  const paseador = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) =>
+      n.parentElement && !n.parentElement.closest(INTOCABLE) && RE_MATE_HAY.test(n.nodeValue)
+        ? NodeFilter.FILTER_ACCEPT
+        : NodeFilter.FILTER_REJECT
+  });
+
+  // Se juntan primero y se reemplazan después: mutar el árbol mientras el
+  // TreeWalker lo recorre le hace saltear nodos.
+  const textos = [];
+  for (let n = paseador.nextNode(); n; n = paseador.nextNode()) textos.push(n);
+
+  for (const nodoTexto of textos) {
+    const frag = document.createDocumentFragment();
+    let ultimo = 0;
+    const cadena = nodoTexto.nodeValue;
+    for (const m of cadena.matchAll(RE_MATE)) {
+      const antes = cadena[m.index - 1] || "";
+      const despues = cadena[m.index + m[0].length] || "";
+      // Pegado a una letra o dígito no es notación, es parte de una palabra.
+      if (LETRA_MATE.test(antes) || LETRA_MATE.test(despues)) continue;
+      frag.append(cadena.slice(ultimo, m.index));
+      const span = document.createElement("span");
+      span.className = "mate";
+      span.dataset.tex = TERMINOS_MATE[m[0]];
+      span.textContent = m[0];
+      frag.append(span);
+      ultimo = m.index + m[0].length;
+    }
+    if (!ultimo) continue;
+    frag.append(cadena.slice(ultimo));
+    nodoTexto.replaceWith(frag);
+  }
+}
+
+/* Componer es idempotente: se saltea lo que ya tiene KaTeX adentro. Eso es lo
+   que permite volver a llamarla cada vez que aparece contenido nuevo (los
+   ejercicios se montan después del DOMContentLoaded) sin recomponer las 90
+   fórmulas de la página. */
+async function montarMates(raiz = document.body) {
+  const nodos = [...raiz.querySelectorAll("[data-tex]")].filter(el => !el.querySelector(".katex"));
   if (!nodos.length) return;   // el índice y el roadmap no tienen fórmulas
 
   await cargarKatex();
