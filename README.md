@@ -4,6 +4,39 @@ Sitio de estudio de machine learning para dos amigos que arrancan de cero: David
 
 No es un producto para terceros ni un proyecto open source con audiencia externa: es material de estudio hecho a medida, con el nombre de los dos destinatarios en el pie de página.
 
+## Estructura
+
+En la raíz vive solo lo que **es una ruta del sitio** y la configuración del
+proyecto. Los 27 HTML se quedan arriba a propósito: sin build step, la ruta del
+archivo es la URL, y bajarlos a una carpeta cambiaría las 27 direcciones sin
+ganar nada.
+
+```
+.
+├── index.html  temas.html  muestra.html      páginas sueltas
+├── concept-01…24-<slug>.html                 un archivo por tema
+├── css/
+│   └── shared.css                            el sistema visual entero
+├── js/
+│   ├── nucleo/                               compartido por todas las páginas
+│   │   ├── shared.js      reveal, barra de progreso, nav entre temas, KaTeX
+│   │   ├── anim.js        GSAP + Lenis: scroll, trazado de diagramas
+│   │   ├── ejercicios.js  los cinco tipos de ejercicio y su corrección
+│   │   ├── progreso.js    estado por tema, fusión local ↔ servidor
+│   │   └── diagramas.js   mecanismo de diagramas paso a paso
+│   ├── paginas/           index.js, temas.js
+│   └── temas/             los 24 pegamentos, uno por tema
+├── api/progress.js                           única serverless function
+├── data/temario.json                         fuente de verdad del temario
+├── scripts/               verificar.js, contraste.js
+├── tests/                 *.test.js (node:test, sin dependencias)
+└── docs/                  notas de trabajo, tabla de contraste
+```
+
+Agregar un tema toca cuatro lugares: el HTML en la raíz, su pegamento en
+`js/temas/`, la entrada en `data/temario.json` y nada más. `npm run verificar`
+falla si alguno de los cuatro quedó a medias.
+
 ## Cómo correrlo local
 
 El sitio es estático — HTML, CSS y JS planos, sin build step — pero **no se puede abrir con doble clic** (`file://`). El home hace `fetch("data/temario.json")`, y `fetch` sobre `file://` falla por CORS. Hace falta un servidor HTTP mínimo:
@@ -17,19 +50,19 @@ Y abrir la URL que imprime (por defecto `http://localhost:3000`).
 ## Tests
 
 ```bash
-node --test
+npm test
 ```
 
 Corre todos los archivos `*.test.js` del repo (usa el test runner nativo de Node, sin dependencias). Cubre la lógica pura de:
-- `progreso.js` — fusión de progreso, cálculo de estado por tema, porcentaje global.
-- `ejercicios.js` — corrección de los distintos tipos de ejercicio.
+- `js/nucleo/progreso.js` — fusión de progreso, cálculo de estado por tema, porcentaje global.
+- `js/nucleo/ejercicios.js` — corrección de los distintos tipos de ejercicio.
 - `api/progress.js` — verificación del JWT de Google, validación del cuerpo del request.
-- `verificar.js` — cada uno de los chequeos del verificador (ver abajo), probado sobre datos rotos a propósito.
+- `scripts/verificar.js` — cada uno de los chequeos del verificador (ver abajo), probado sobre datos rotos a propósito.
 
 ## Verificador
 
 ```bash
-node verificar.js
+npm run verificar
 ```
 
 Barre todo el repo y chequea invariantes que ningún test unitario cubre porque dependen de que los 24 archivos de tema sean consistentes entre sí:
@@ -47,11 +80,11 @@ Correrlo antes de cada commit que toque un tema. Sale con código 1 y lista los 
 ## Contraste
 
 ```bash
-node contraste.js            # tabla en consola, sale 1 si alguna fila no llega
-node contraste.js --markdown # regenera la tabla de docs/contraste.md
+npm run contraste            # tabla en consola, sale 1 si alguna fila no llega
+npm run contraste -- --markdown # regenera la tabla de docs/contraste.md
 ```
 
-Mide el contraste WCAG real de cada par de tokens, incluidos los seis tintes de fase, que se calculan en OKLab con la misma fórmula que `color-mix(in oklab, …)`. Correrlo después de tocar cualquier color de `shared.css`.
+Mide el contraste WCAG real de cada par de tokens, incluidos los seis tintes de fase, que se calculan en OKLab con la misma fórmula que `color-mix(in oklab, …)`. Correrlo después de tocar cualquier color de `css/shared.css`.
 
 ## Diseño
 
@@ -73,7 +106,7 @@ Ver `.env.example` para la plantilla. Sin estas cuatro, el sitio sigue funcionan
 
 | Variable | De dónde sale |
 |---|---|
-| `GOOGLE_CLIENT_ID` | Google Cloud Console → Credenciales → ID de cliente de OAuth (app web). Es el mismo valor que va hardcodeado en la constante `CLIENT_ID` de `index.js`. |
+| `GOOGLE_CLIENT_ID` | Google Cloud Console → Credenciales → ID de cliente de OAuth (app web). Es el mismo valor que va hardcodeado en la constante `CLIENT_ID` de `js/paginas/index.js`. |
 | `EMAILS_PERMITIDOS` | Los correos de David, Abel y Simón, separados por coma. Es la allowlist: cualquier otra cuenta de Google puede loguearse pero el guardado le devuelve 401. |
 | `KV_REST_API_URL` | Lo inyecta solo la integración de Upstash for Redis al conectarla desde el Marketplace de Vercel. |
 | `KV_REST_API_TOKEN` | Idem. `api/progress.js` también acepta `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` por si el marketplace inyecta esos nombres en vez de los de Vercel KV. |
@@ -84,13 +117,13 @@ Este es el procedimiento que se repite 23 veces (uno por cada tema pendiente de 
 
 1. **Escribir el HTML del tema.** Copiar `concept-09-regresion-lineal.html` como punto de partida — ya tiene la estructura correcta: nav, hero, secciones de teoría con diagramas SVG, quiz y ejercicios — y adaptar el contenido al tema nuevo. Guardarlo como `concept-NN-slug.html`, con `NN` el número de dos dígitos que le corresponde en `data/temario.json`. Poner en `<body>` la clase `fase-N` de la fase a la que pertenece: es lo que elige el color de toda la página.
 2. **Marcarlo como escrito en `data/temario.json`:** agregar `"escrito": true` y `"ejercicios": N` a la entrada del tema, con `N` la cantidad de ejercicios corregibles. Sin `escrito` el roadmap lo sigue mostrando atenuado; sin `ejercicios` el tema nunca llega a "completo". El verificador exige los dos.
-3. **Correr el verificador y el contraste:** `node verificar.js && node contraste.js`. Atrapan los errores más comunes al agregar un tema — color hexadecimal suelto en un SVG, nav sin marcar, enlace roto, eyebrow sin llaves, `ejercicios` olvidado — antes de que lleguen a producción.
+3. **Correr el verificador y el contraste:** `npm run check`. Atrapan los errores más comunes al agregar un tema — color hexadecimal suelto en un SVG, nav sin marcar, enlace roto, eyebrow sin llaves, `ejercicios` olvidado — antes de que lleguen a producción.
 
-Dos cosas que **ya no** hay que hacer a mano, porque se automatizaron: registrar el conteo de ejercicios en `index.js` (ahora sale del temario) y llamar a `montarConceptNav("slug")` desde el JS del tema (ahora `shared.js` deduce el tema del nombre del archivo).
+Dos cosas que **ya no** hay que hacer a mano, porque se automatizaron: registrar el conteo de ejercicios en `js/paginas/index.js` (ahora sale del temario) y llamar a `montarConceptNav("slug")` desde el JS del tema (ahora `js/nucleo/shared.js` deduce el tema del nombre del archivo).
 
 ## Arquitectura en pocas líneas
 
-Sitio estático sin build step, cero dependencias de runtime instaladas (todo lo del navegador entra por CDN: GSAP + ScrollTrigger + DrawSVGPlugin para las animaciones, Lenis para el scroll suave, Google Identity Services para la sesión; en el servidor, solo stdlib de Node). Una única serverless function (`api/progress.js`) que verifica el JWT de Google a mano (sin librería de OAuth) y guarda/lee el progreso en Redis (Upstash, vía REST, sin cliente). El progreso vive primero en `localStorage`; la sincronización con el servidor es opcional y aditiva — fusiona sin nunca perder datos (`Progreso.fusionar` en `progreso.js`), así que un usuario sin sesión puede seguir progresando y no pierde nada al loguearse después.
+Sitio estático sin build step, cero dependencias de runtime instaladas (todo lo del navegador entra por CDN: GSAP + ScrollTrigger + DrawSVGPlugin para las animaciones, Lenis para el scroll suave, Google Identity Services para la sesión; en el servidor, solo stdlib de Node). Una única serverless function (`api/progress.js`) que verifica el JWT de Google a mano (sin librería de OAuth) y guarda/lee el progreso en Redis (Upstash, vía REST, sin cliente). El progreso vive primero en `localStorage`; la sincronización con el servidor es opcional y aditiva — fusiona sin nunca perder datos (`Progreso.fusionar` en `js/nucleo/progreso.js`), así que un usuario sin sesión puede seguir progresando y no pierde nada al loguearse después.
 
 ## Deploy — lo que falta y requiere cuentas ajenas
 
@@ -104,7 +137,7 @@ Todo lo de acá abajo necesita las cuentas del dueño del proyecto (Google Cloud
    - Copiar el ID de cliente.
 2. **Provisionar Redis.** En el panel de Vercel: Storage → Marketplace → Upstash for Redis → crear una base en el plan gratuito y conectarla al proyecto. Inyecta `KV_REST_API_URL` y `KV_REST_API_TOKEN` (o sus equivalentes `UPSTASH_REDIS_REST_*`, según cómo nombre las variables la integración — conviene confirmarlo después de conectarla).
 3. **Cargar las variables de entorno.** En Vercel → Settings → Environment Variables, para Production y Preview: `GOOGLE_CLIENT_ID` y `EMAILS_PERMITIDOS` (los tres correos separados por coma).
-4. **Reemplazar el placeholder en `index.js`.** Pegar el mismo `GOOGLE_CLIENT_ID` del paso 1 en la constante `CLIENT_ID` al principio de `index.js`.
+4. **Reemplazar el placeholder en `js/paginas/index.js`.** Pegar el mismo `GOOGLE_CLIENT_ID` del paso 1 en la constante `CLIENT_ID` al principio de `js/paginas/index.js`.
 5. **Desplegar:** `npx vercel --prod`.
 
 Después de desplegar, conviene verificar en producción: que el home carga y el roadmap se pinta, que un ejercicio resuelto sin sesión se guarda, que iniciar sesión con Google fusiona ese progreso sin perderlo, que el mismo progreso aparece en otro dispositivo con la misma cuenta, que una cuenta fuera de la allowlist puede seguir usando el sitio contra `localStorage` aunque el guardado remoto le falle, y que un POST a `/api/progress` sin header de autorización devuelve 401.

@@ -2,10 +2,10 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow, _chequearTex, _chequearRespaldoTex } = require("./verificar.js");
+const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow, _chequearTex, _chequearRespaldoTex } = require("../scripts/verificar.js");
 
 test("el temario tiene 6 fases y 24 temas con slugs únicos", () => {
-  const t = require("./data/temario.json");
+  const t = require("../data/temario.json");
   assert.strictEqual(t.fases.length, 6);
   const temas = t.fases.flatMap(f => f.temas);
   assert.strictEqual(temas.length, 24);
@@ -85,7 +85,8 @@ test("_chequearHuerfanos: archivo declarado no da error", () => {
 // --- verificar(): temario.json ilegible ---
 
 test("verificar(): temario.json ilegible da un solo error, sin excepción", () => {
-  const p = path.join(__dirname, "data/temario.json");
+  // El test vive en `tests/` y el temario en la raíz del proyecto.
+  const p = path.join(__dirname, "..", "data/temario.json");
   const original = fs.readFileSync(p, "utf8");
   fs.writeFileSync(p, "{ esto no es json válido", "utf8");
   try {

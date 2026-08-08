@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
-const P = require("./progreso.js");
+const P = require("../js/nucleo/progreso.js");
 
 test("fusionar toma el máximo puntaje por ejercicio", () => {
   const a = { v: 1, temas: { rl: { leido: true, quiz: false, ejercicios: { e1: 100, e2: 40 } } } };

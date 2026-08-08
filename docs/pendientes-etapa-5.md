@@ -4,8 +4,8 @@
 
 Cada uno con teoría, 2 o 3 diagramas SVG animados, 5 ejercicios corregibles
 (2 conceptuales, 1 numérico, 1 de armar código y 1 de Python real sobre
-Pyodide), errores frecuentes y síntesis. `node verificar.js` pasa,
-`node contraste.js` da 18/18, y los 82 tests pasan.
+Pyodide), errores frecuentes y síntesis. `npm run verificar` pasa,
+`npm run contraste` da 18/18, y los 82 tests pasan.
 
 Lo que sigue abierto es deuda técnica y decisiones, no contenido.
 
@@ -13,7 +13,7 @@ Lo que sigue abierto es deuda técnica y decisiones, no contenido.
 
 1. Crear el ID de cliente OAuth en Google Cloud Console y poner los orígenes
    autorizados (`http://localhost:3000` y la URL de producción).
-2. Reemplazar el placeholder `CLIENT_ID` en `index.js`.
+2. Reemplazar el placeholder `CLIENT_ID` en `js/paginas/index.js`.
 3. Provisionar Redis desde el Marketplace de Vercel (Upstash).
 4. Cargar `GOOGLE_CLIENT_ID` y `EMAILS_PERMITIDOS` como variables de entorno.
 5. `npx vercel --prod`.
@@ -26,29 +26,29 @@ Queda anotado para no volver a abrirlo por error.
 
 - **El tema claro se eliminó.** `DESIGN-gsap.md` prohíbe romper el par crema
   sobre negro, y gsap.com es de un solo canvas. Se fue el toggle, se fueron
-  `temaInicial`/`aplicarTema`/`toggleTheme` de `shared.js`, y `docs/contraste.md`
+  `temaInicial`/`aplicarTema`/`toggleTheme` de `js/nucleo/shared.js`, y `docs/contraste.md`
   perdió la columna por tema. Si alguna vez vuelve, vuelve con sus filas en
-  `contraste.js`.
+  `scripts/contraste.js`.
 - **Las seis fases ya no comparten familia cromática.** Antes eran hues
   rotando en `oklch()` y las fases 4 y 5 (350 y 330) eran indistinguibles.
   Ahora son seis hex fijos de la paleta de gsap.com. El par más cercano pasó a
   ser 2 (`#0ae448`) y 5 (`#abff84`), que son verde saturado contra verde
   pastel: se distinguen.
 - **`EJERCICIOS_POR_TEMA` no existe más.** El conteo vive en
-  `data/temario.json`, campo `ejercicios`, y `verificar.js` lo exige en todo
+  `data/temario.json`, campo `ejercicios`, y `scripts/verificar.js` lo exige en todo
   tema con `escrito: true`. Era el paso más fácil de olvidar de los cuatro que
   pedía agregar un tema, y fallaba en silencio.
-- **`montarConceptNav` se monta solo.** `shared.js` deduce el tema del nombre
+- **`montarConceptNav` se monta solo.** `js/nucleo/shared.js` deduce el tema del nombre
   del archivo contra `temario.json`. Ya no hay slug hardcodeado en el JS de
   cada tema, ni bloque vacío de 6rem si alguien se lo olvida.
-- **`index.js` y `temas.js` no usan `innerHTML`.** Todo se arma con nodos. Un
+- **`js/paginas/index.js` y `js/paginas/temas.js` no usan `innerHTML`.** Todo se arma con nodos. Un
   `&` o un `<` en el título de un tema futuro ya no rompe el markup.
 - **`Anim.controles` se borró.** Estaba definido, exportado y nunca llamado.
   Con él se fue la regla `.diag-ctrl` del CSS.
 - **`.ej-fb` pasó a borde completo.** El `border-left` de acento está prohibido
   por `DESIGN-gsap.md` y por la skill `impeccable`. Ahora es el mismo
   componente que `.callout`.
-- **Las reglas muertas de `shared.css` se fueron** en la reescritura completa:
+- **Las reglas muertas de `css/shared.css` se fueron** en la reescritura completa:
   `--sombra`, `--e32`, `.estrecho`.
 
 ## Deuda técnica que sigue abierta
@@ -62,8 +62,8 @@ Queda anotado para no volver a abrirlo por error.
    (comparación estricta con `RS256`), pero nada impediría que una futura
    "mejora" con `.toUpperCase()` pase desapercibida.
 3. **`--s50` quedó restringido a lo no textual** y nada lo hace cumplir salvo el
-   comentario en `shared.css`. Si alguien lo usa para texto sobre `--off-black`,
-   quedan 4.16:1 y `contraste.js` no lo ve, porque mide tokens, no usos.
+   comentario en `css/shared.css`. Si alguien lo usa para texto sobre `--off-black`,
+   quedan 4.16:1 y `scripts/contraste.js` no lo ve, porque mide tokens, no usos.
 4. **El borde de gradiente del CTA depende de `mask-composite`.** Hay un
    `@supports` que deja el borde crema liso como fallback, así que el botón
    nunca queda invisible, pero en un navegador viejo se pierde la única
@@ -73,7 +73,7 @@ Queda anotado para no volver a abrirlo por error.
    otros 23 lo declaran una vez arriba. Funciona y está testeado; unificarlo
    es cosmético.
 6. **Ningún tema se vio renderizado en un navegador.** Todo lo verificado es
-   estático: `verificar.js`, `contraste.js`, los tests, y un chequeo cruzado
+   estático: `scripts/verificar.js`, `scripts/contraste.js`, los tests, y un chequeo cruzado
    de que cada `#d-*` animado exista en su HTML. Playwright no pudo instalar
    Chrome en la máquina donde se escribieron. Conviene abrir unos cuantos con
    `npx serve` antes de desplegar, sobre todo para mirar que los SVG no se
@@ -87,7 +87,7 @@ Queda anotado para no volver a abrirlo por error.
   `DESIGN-gsap.md`, pero el doc avisa que la calidez humanista de Mori es
   load-bearing y que un grotesco geométrico enfría el tono. Si algún día se
   compran los `.woff2` de PP Mori, el cambio es una línea: `--font` en
-  `shared.css`. Nada más del sistema nombra la familia.
+  `css/shared.css`. Nada más del sistema nombra la familia.
 
 ## Notas de contenido
 
