@@ -61,10 +61,28 @@ const Anim = (() => {
      Ahí se apaga el motor y el arrastre corre 100% nativo; al soltar, Lenis
      rearranca desde la coordenada que eligió el usuario. */
   function montarParcheScrollbar() {
+    let agarrada = false;
+
     document.addEventListener("pointerdown", (e) => {
-      if (e.clientX > document.documentElement.clientWidth) lenis.stop();
+      if (e.clientX <= document.documentElement.clientWidth) return;
+      agarrada = true;
+      lenis.stop();
     });
-    document.addEventListener("pointerup", () => lenis.start());
+
+    /* Tres formas de soltar, no una. Con solo `pointerup` en `document`, si el
+       usuario suelta el botón afuera de la ventana —cosa que pasa seguido
+       arrastrando una barra— el evento no llega nunca y Lenis se queda
+       apagado: el scroll con la rueda deja de funcionar hasta recargar.
+       `pointercancel` cubre que el navegador se lleve el gesto, y el `blur` de
+       la ventana cubre el alt-tab a mitad del arrastre. */
+    const soltar = () => {
+      if (!agarrada) return;
+      agarrada = false;
+      lenis.start();
+    };
+    document.addEventListener("pointerup", soltar);
+    document.addEventListener("pointercancel", soltar);
+    addEventListener("blur", soltar);
   }
 
   /* Con Lenis activo, un href="#x" salta de golpe: el navegador mueve la

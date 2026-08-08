@@ -53,7 +53,7 @@
         <p class="eyebrow">{ El corte básico }</p>
         <h2>Train y test</h2>
         <p>Se mezclan las filas al azar y se parte el dataset en dos: típicamente 75-80% para entrenar y 20-25% para testear. El modelo se entrena solo con la primera parte, y la segunda queda guardada.</p>
-        <div class="callout formula">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)</div>
+        <div class="callout codigo">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)</div>
         <p>El <code>random_state</code> fija la mezcla para que el corte sea siempre el mismo. Sirve para que un resultado se pueda reproducir; no cambia nada de la lógica.</p>
         <p>La regla de oro es incómoda pero no tiene excepciones: <strong>el conjunto de test se usa una sola vez, al final de todo.</strong> No para elegir el algoritmo, no para ajustar hiperparámetros, no para decidir qué columnas incluir. En cuanto tomás una decisión mirando el test, dejaste de tener una estimación limpia, porque elegiste lo que mejor le queda a ese conjunto puntual.</p>
         <div class="callout warn"><span class="etiqueta">Cuidado</span>Mezclar al azar es lo correcto salvo cuando los datos tienen orden temporal. Con series de tiempo, mezclar te deja entrenando con datos del futuro para predecir el pasado, que es imposible en producción. Ahí el corte es por fecha: se entrena con lo viejo y se testea con lo nuevo.</div>
@@ -208,6 +208,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="validacion.js"></script>
 </body>
 </html>

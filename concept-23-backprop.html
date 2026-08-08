@@ -68,29 +68,97 @@
         <p>Entrenar es repetir dos pasadas sobre la misma red.</p>
         <p>En la <strong>pasada hacia adelante</strong>, los datos entran por la primera capa, cada neurona calcula su producto punto y su activación, y el resultado avanza capa por capa hasta salir una predicción. Se compara contra el valor real y se obtiene la <strong>pérdida</strong>, un número que resume qué tan mal estuvo.</p>
         <p>En la <strong>pasada hacia atrás</strong>, se arranca desde ese error y se lo reparte hacia atrás, capa por capa. Cada capa recibe "cuánto de este error viene de mi salida", lo usa para calcular cuánto tiene que moverse cada uno de sus pesos, y pasa hacia atrás "cuánto de este error viene de mi entrada", que es lo que necesita la capa anterior.</p>
+        <!-- El SVG está completo y quieto en el HTML: es la red con sus pesos
+             iniciales y las dos direcciones marcadas. Si el JS no carga, esto
+             es lo que se ve, y se entiende. `backprop.js` lo convierte en el
+             recorrido paso a paso, llenando los <text> de valor y los
+             controles. Nada acá depende de que ese JS llegue. -->
         <figure class="diagram" id="d-backprop">
-          <svg viewBox="0 0 640 280" role="img" aria-label="La misma red recorrida en dos direcciones: hacia adelante los datos producen una predicción y una pérdida, hacia atrás el error se reparte capa por capa">
-            <circle class="dnode-bg" cx="80" cy="140" r="26"/>
-            <text class="dtxt" x="80" y="146" text-anchor="middle">x</text>
-            <circle class="dfill" cx="240" cy="95" r="26"/>
-            <circle class="dfill" cx="240" cy="185" r="26"/>
-            <circle class="dfill" cx="400" cy="140" r="26"/>
-            <circle class="dnode-bg" cx="545" cy="140" r="26"/>
-            <text class="dtxt" x="545" y="146" text-anchor="middle">ŷ</text>
+          <svg viewBox="0 0 700 400" role="img" aria-label="Una red de dos entradas, dos neuronas ocultas y una salida. Hacia adelante las flechas van de izquierda a derecha produciendo una predicción y una pérdida; hacia atrás, un arco de vuelta reparte el error entre los pesos.">
+            <defs>
+              <!-- Las puntas de flecha son la diferencia entre "una línea" y
+                   "una dirección", y este diagrama es sobre direcciones.
+                   `context-stroke` hereda el color del trazo que la usa, así
+                   que la de ida sale del color de la fase y la de vuelta del
+                   color de error sin declarar dos marcadores. -->
+              <marker id="bp-punta" viewBox="0 0 10 10" refX="9" refY="5"
+                      markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="context-stroke"/>
+              </marker>
+            </defs>
 
-            <path class="dedge" d="M108 130 L 212 100"/>
-            <path class="dedge" d="M108 152 L 212 180"/>
-            <path class="dedge" d="M268 103 L 374 132"/>
-            <path class="dedge" d="M268 177 L 374 150"/>
-            <path class="dedge" d="M428 140 H 517"/>
-            <text class="dlabel" x="300" y="45" text-anchor="middle">hacia adelante: sale una predicción y una pérdida</text>
+            <!-- ── Aristas de ida ── -->
+            <g id="bp-ida">
+              <path class="bp-arista" data-w="w11" d="M 98 120 L 202 100" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="w12" d="M 98 132 L 202 258" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="w21" d="M 98 248 L 202 112" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="w22" d="M 98 260 L 202 270" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="v1"  d="M 278 106 L 382 172" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="v2"  d="M 278 264 L 382 188" marker-end="url(#bp-punta)"/>
+              <path class="bp-arista" data-w="L"   d="M 458 180 L 552 180" marker-end="url(#bp-punta)"/>
+            </g>
 
-            <path class="dedge-mute" d="M517 215 H 428" stroke-dasharray="6 4"/>
-            <path class="dedge-mute" d="M374 218 L 268 232" stroke-dasharray="6 4"/>
-            <path class="dedge-mute" d="M212 235 L 108 240" stroke-dasharray="6 4"/>
-            <text class="dtxt-mute" x="300" y="270" text-anchor="middle">hacia atrás: el error se reparte y cada capa aprende cuánto moverse</text>
+            <!-- ── Nodos ── -->
+            <g class="bp-nodo" data-n="x1">
+              <circle cx="70" cy="126" r="28"/>
+              <text class="bp-nombre" x="70" y="122" text-anchor="middle">x₁</text>
+              <text class="bp-valor" x="70" y="138" text-anchor="middle" data-v="x1">1.00</text>
+              <text class="bp-grad" x="70" y="86" text-anchor="middle" data-g="x1"></text>
+            </g>
+            <g class="bp-nodo" data-n="x2">
+              <circle cx="70" cy="254" r="28"/>
+              <text class="bp-nombre" x="70" y="250" text-anchor="middle">x₂</text>
+              <text class="bp-valor" x="70" y="266" text-anchor="middle" data-v="x2">0.50</text>
+              <text class="bp-grad" x="70" y="300" text-anchor="middle" data-g="x2"></text>
+            </g>
+            <g class="bp-nodo" data-n="h1">
+              <circle cx="230" cy="106" r="28"/>
+              <text class="bp-nombre" x="230" y="102" text-anchor="middle">h₁</text>
+              <text class="bp-valor" x="230" y="118" text-anchor="middle" data-v="h1">—</text>
+              <text class="bp-grad" x="230" y="62" text-anchor="middle" data-g="h1"></text>
+            </g>
+            <g class="bp-nodo" data-n="h2">
+              <circle cx="230" cy="264" r="28"/>
+              <text class="bp-nombre" x="230" y="260" text-anchor="middle">h₂</text>
+              <text class="bp-valor" x="230" y="276" text-anchor="middle" data-v="h2">—</text>
+              <text class="bp-grad" x="230" y="316" text-anchor="middle" data-g="h2"></text>
+            </g>
+            <g class="bp-nodo" data-n="y">
+              <circle cx="410" cy="180" r="28"/>
+              <text class="bp-nombre" x="410" y="176" text-anchor="middle">ŷ</text>
+              <text class="bp-valor" x="410" y="192" text-anchor="middle" data-v="y">—</text>
+              <text class="bp-grad" x="410" y="232" text-anchor="middle" data-g="y"></text>
+            </g>
+            <g class="bp-nodo" data-n="L">
+              <circle cx="590" cy="180" r="30"/>
+              <text class="bp-nombre" x="590" y="176" text-anchor="middle">pérdida</text>
+              <text class="bp-valor" x="590" y="192" text-anchor="middle" data-v="L">—</text>
+              <text class="bp-grad" x="590" y="234" text-anchor="middle" data-g="L"></text>
+            </g>
+
+            <!-- ── Etiquetas de peso, sobre cada arista ── -->
+            <text class="bp-peso" data-p="w11" x="140" y="100" text-anchor="middle">0.50</text>
+            <text class="bp-peso" data-p="w12" x="118" y="196" text-anchor="middle">-0.40</text>
+            <text class="bp-peso" data-p="w21" x="186" y="188" text-anchor="middle">0.80</text>
+            <text class="bp-peso" data-p="w22" x="150" y="284" text-anchor="middle">0.30</text>
+            <text class="bp-peso" data-p="v1"  x="322" y="128" text-anchor="middle">1.20</text>
+            <text class="bp-peso" data-p="v2"  x="322" y="240" text-anchor="middle">-0.70</text>
+
+            <!-- ── El camino de vuelta ──
+                 Un solo arco continuo por debajo de la red, de la pérdida a las
+                 entradas, con la punta apuntando hacia atrás. Antes acá había
+                 tres segmentos punteados sueltos que no tocaban ningún nodo y
+                 no se entendía qué eran. -->
+            <path id="bp-vuelta" class="bp-vuelta"
+                  d="M 590 218 C 590 350, 430 366, 300 366 C 190 366, 110 340, 70 292"
+                  marker-end="url(#bp-punta)"/>
+            <text class="bp-rotulo-ida" x="330" y="28" text-anchor="middle">hacia adelante · los datos producen la predicción</text>
+            <text class="bp-rotulo-vuelta" x="330" y="392" text-anchor="middle">hacia atrás · el error se reparte entre los pesos</text>
+
+            <!-- El objetivo, como referencia fija contra la que se compara. -->
+            <text class="bp-objetivo" x="590" y="118" text-anchor="middle">objetivo y = 1.00</text>
           </svg>
-          <figcaption>Las dos pasadas usan la misma red y los mismos pesos. La de ida produce el error; la de vuelta lo convierte en instrucciones de ajuste para cada peso.</figcaption>
+          <figcaption>Las dos pasadas usan la misma red y los mismos pesos. La de ida produce el error; la de vuelta lo convierte en instrucciones de ajuste para cada peso. Los números son reales: se calculan en vivo con estos pesos.</figcaption>
         </figure>
         <p>Después de la pasada hacia atrás, el descenso de gradiente mueve todos los pesos un poquito en la dirección indicada, y se vuelve a empezar.</p>
       </div>
@@ -183,6 +251,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="backprop.js"></script>
 </body>
 </html>

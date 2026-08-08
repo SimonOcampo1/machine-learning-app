@@ -42,7 +42,7 @@
         <p class="eyebrow">{ El problema }</p>
         <h2>Una lista no sabe hacer cuentas</h2>
         <p>En el tema anterior vimos que una lista guarda valores en orden. Lo que una lista <em>no</em> sabe hacer es operar sobre todos a la vez. Si tenés los precios de cuatro casas y querés subirlos todos un 10%, con listas hay que recorrerlas:</p>
-        <div class="callout formula">nuevos = []<br>for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;nuevos.append(p * 1.1)</div>
+        <div class="callout codigo">nuevos = []<br>for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;nuevos.append(p * 1.1)</div>
         <p>Funciona, y con cuatro casas no se nota nada. El problema aparece con las cantidades reales del rubro: un conjunto de datos chico tiene decenas de miles de filas, y entrenar un modelo implica recorrerlas cientos de veces. Ese bucle, escrito en Python puro, es entre cincuenta y cien veces más lento que lo que vamos a ver ahora, y esa diferencia es la que separa "entrena en dos minutos" de "entrena en tres horas".</p>
         <p>Peor todavía, y esto pesa más que la velocidad: escribir bucles anidados para cada operación vuelve el código imposible de leer. La fórmula de la regresión lineal cabe en una línea; escrita con bucles ocupa quince y no se parece en nada a la fórmula.</p>
       </div>
@@ -54,7 +54,7 @@
         <p class="eyebrow">{ La solución }</p>
         <h2>El array</h2>
         <p>NumPy es la librería que resuelve esto. Su estructura es el <strong>array</strong>: se parece a una lista, pero sabe hacer cuentas sobre todos sus elementos de una sola vez.</p>
-        <div class="callout formula">import numpy as np<br>precios = np.array([1500, 2000, 1800, 2400])<br>nuevos = precios * 1.1</div>
+        <div class="callout codigo">import numpy as np<br>precios = np.array([1500, 2000, 1800, 2400])<br>nuevos = precios * 1.1</div>
         <p>Tres líneas, sin bucle, y el resultado es un array con los cuatro precios aumentados. Esa multiplicación se aplica a cada elemento por separado: es lo que se llama una <strong>operación vectorizada</strong>.</p>
         <p>El <code>import numpy as np</code> de la primera línea es una convención universal: absolutamente todo el código de machine learning del mundo escribe <code>np</code>. No es obligatorio, pero escribir otra cosa es como hablar con acento raro.</p>
         <figure class="diagram" id="d-vectorizado">
@@ -93,7 +93,7 @@
         <p class="eyebrow">{ Dos dimensiones }</p>
         <h2>Filas, columnas y la forma</h2>
         <p>Hasta acá el array fue una fila de números. Pero los datos de verdad son tablas: una fila por observación, una columna por característica. Eso es un array de dos dimensiones, y se arma con una lista de listas.</p>
-        <div class="callout formula">X = np.array([[85, 3], [120, 4], [60, 2], [95, 3]])</div>
+        <div class="callout codigo">X = np.array([[85, 3], [120, 4], [60, 2], [95, 3]])</div>
         <p>Cuatro casas, dos características cada una: metros cuadrados y ambientes. La propiedad <code>X.shape</code> devuelve <code>(4, 2)</code>: cuatro filas, dos columnas. Es lo primero que hay que mirar cuando algo no funciona, y vas a escribirlo cientos de veces.</p>
         <p>La convención del rubro es tan firme que conviene aprenderla ya: <strong>la matriz de datos se llama <code>X</code>, en mayúscula, y el vector de respuestas se llama <code>y</code>, en minúscula.</strong> La mayúscula es porque es una matriz y la minúscula porque es un vector. Vas a ver <code>modelo.fit(X, y)</code> en todos los temas que siguen.</p>
         <figure class="diagram" id="d-shape">
@@ -148,7 +148,7 @@
         <h2>Broadcasting</h2>
         <p>Cuando escribiste <code>precios * 1.1</code>, un array de cuatro elementos se multiplicó por un solo número. Estrictamente, esas dos cosas no tienen la misma forma. NumPy lo resolvió estirando el 1.1 hasta cubrir los cuatro elementos, sin copiar nada en memoria. Eso es <strong>broadcasting</strong>.</p>
         <p>Funciona también entre arrays. Si <code>X</code> tiene forma (4, 2) y le restás un array de forma (2,), NumPy repite ese par de valores en las cuatro filas. Esto no es una curiosidad: es exactamente la operación de estandarizar datos, que vas a hacer en casi todos los temas.</p>
-        <div class="callout formula">X_centrada = X - X.mean(axis=0)</div>
+        <div class="callout codigo">X_centrada = X - X.mean(axis=0)</div>
         <p>Esa línea le resta a cada columna su propio promedio. Con bucles serían cuatro líneas y dos índices; acá es una, y se lee casi como la frase en castellano.</p>
         <figure class="diagram" id="d-broadcast">
           <svg viewBox="0 0 640 220" role="img" aria-label="Un array de forma cuatro por dos menos un array de forma dos: la fila de dos valores se repite en las cuatro filas">
@@ -182,9 +182,9 @@
         <p class="eyebrow">{ Elegir sin buscar }</p>
         <h2>Máscaras booleanas</h2>
         <p>La última herramienta imprescindible. Comparar un array con un número no devuelve <code>True</code> o <code>False</code>: devuelve un array de <code>True</code> y <code>False</code>, uno por elemento.</p>
-        <div class="callout formula">precios &gt; 1900&nbsp;&nbsp;→&nbsp;&nbsp;[False, True, False, True]</div>
+        <div class="callout codigo">precios &gt; 1900&nbsp;&nbsp;→&nbsp;&nbsp;[False, True, False, True]</div>
         <p>Y ese array de booleanos se puede usar como índice, para quedarse solo con los elementos donde dio <code>True</code>:</p>
-        <div class="callout formula">caros = precios[precios &gt; 1900]&nbsp;&nbsp;→&nbsp;&nbsp;[2000, 2400]</div>
+        <div class="callout codigo">caros = precios[precios &gt; 1900]&nbsp;&nbsp;→&nbsp;&nbsp;[2000, 2400]</div>
         <p>Se lee de adentro hacia afuera y termina sonando natural: "precios, donde precios sea mayor a 1900". Es la forma estándar de filtrar datos, y también de contar: como <code>True</code> vale 1, <code>(precios &gt; 1900).sum()</code> devuelve 2, la cantidad de casos que cumplen. Ese truco de sumar booleanos aparece en todas las métricas de clasificación de la fase 3.</p>
       </div>
     </section>
@@ -235,6 +235,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="numpy.js"></script>
 </body>
 </html>

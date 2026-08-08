@@ -42,7 +42,7 @@
         <p class="eyebrow">{ Nada nuevo }</p>
         <h2>Una neurona es un producto punto</h2>
         <p>Una neurona artificial hace tres cosas, en este orden: multiplica cada entrada por un peso y las suma, le agrega un sesgo, y pasa el resultado por una función de activación.</p>
-        <div class="callout formula">salida = activación(w₁x₁ + w₂x₂ + … + wₙxₙ + b)</div>
+        <div class="callout formula" data-tex="\text{salida} = \text{activación}(w_1 x_1 + w_2 x_2 + \dots + w_n x_n + b)">salida = activación(w₁x₁ + w₂x₂ + … + wₙxₙ + b)</div>
         <p>Lo que está adentro del paréntesis es el <strong>producto punto del tema 03</strong> más una constante. Es literalmente la misma operación que calculaba el precio de una casa. Y si la activación es la sigmoide, lo que tenés es la regresión logística del tema 12, sin ninguna diferencia.</p>
         <p>Eso vale la pena asentarlo antes de seguir: <strong>una sola neurona es un clasificador lineal</strong>, con el mismo poder y las mismas limitaciones. Traza una recta, o un plano si hay más dimensiones, y separa a los dos lados.</p>
         <p>El <strong>perceptrón</strong> original, de 1957, era exactamente eso con una activación escalón: si la suma pasa un umbral, sale 1; si no, sale 0.</p>
@@ -59,7 +59,7 @@
         <div class="tabla-scroll">
           <table class="tabla-calc">
             <thead>
-              <tr><th>x₁</th><th>x₂</th><th>salida</th></tr>
+              <tr><th><span class="mate" data-tex="x_1">x₁</span></th><th><span class="mate" data-tex="x_2">x₂</span></th><th>salida</th></tr>
             </thead>
             <tbody>
               <tr><td>0</td><td>0</td><td>0</td></tr>
@@ -212,6 +212,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="perceptron.js"></script>
 </body>
 </html>

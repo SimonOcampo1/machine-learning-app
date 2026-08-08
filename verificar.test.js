@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const { test } = require("node:test");
 const assert = require("node:assert");
-const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow } = require("./verificar.js");
+const { _chequearEscrito, verificar, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow, _chequearTex, _chequearRespaldoTex } = require("./verificar.js");
 
 test("el temario tiene 6 fases y 24 temas con slugs únicos", () => {
   const t = require("./data/temario.json");
@@ -276,4 +276,55 @@ test("_chequearEyebrow: revisa todos los eyebrow del archivo, no solo el primero
 
 test("_chequearEyebrow: una página sin eyebrow no da error", () => {
   assert.deepStrictEqual(_chequearEyebrow("<p>nada</p>", "x.html"), []);
+});
+
+// --- _chequearTex ---
+
+test("_chequearTex: llaves desbalanceadas dan error con el LaTeX adentro", () => {
+  const e = _chequearTex('<span data-tex="\frac{1}{2">x</span>', "c.html");
+  assert.strictEqual(e.length, 1);
+  assert.match(e[0], /llaves desbalanceadas/);
+});
+
+test("_chequearTex: LaTeX balanceado pasa", () => {
+  assert.deepStrictEqual(_chequearTex('<span data-tex="\frac{1}{2}">x</span>', "c.html"), []);
+});
+
+test("_chequearTex: una llave de más también da error", () => {
+  const e = _chequearTex('<span data-tex="\bar{x}}">x</span>', "c.html");
+  assert.strictEqual(e.length, 1);
+});
+
+/* `\{` y `\}` son llaves LITERALES, no delimitadores de argumento. Contarlas
+   haría fallar toda fórmula que use un conjunto, que es notación corriente. */
+test("_chequearTex: las llaves escapadas no cuentan como delimitador", () => {
+  assert.deepStrictEqual(_chequearTex('<span data-tex="\{1, 2\}">{1,2}</span>', "c.html"), []);
+});
+
+test("_chequearTex: data-tex vacío da error", () => {
+  const e = _chequearTex('<span data-tex="">x</span>', "c.html");
+  assert.strictEqual(e.length, 1);
+  assert.match(e[0], /vacío/);
+});
+
+test("_chequearTex: revisa todas las fórmulas del archivo, no solo la primera", () => {
+  const e = _chequearTex('<span data-tex="x^2">a</span><span data-tex="\frac{1">b</span>', "c.html");
+  assert.strictEqual(e.length, 1);
+});
+
+// --- _chequearRespaldoTex ---
+
+test("_chequearRespaldoTex: data-tex sin contenido da error", () => {
+  const e = _chequearRespaldoTex('<span class="mate" data-tex="R^2"></span>', "c.html");
+  assert.strictEqual(e.length, 1);
+  assert.match(e[0], /respaldo/);
+});
+
+test("_chequearRespaldoTex: con respaldo en Unicode pasa", () => {
+  assert.deepStrictEqual(_chequearRespaldoTex('<span class="mate" data-tex="R^2">R²</span>', "c.html"), []);
+});
+
+test("_chequearRespaldoTex: un respaldo de solo espacios no cuenta", () => {
+  const e = _chequearRespaldoTex('<span data-tex="R^2">&nbsp; </span>', "c.html");
+  assert.strictEqual(e.length, 1);
 });

@@ -71,6 +71,27 @@ test("rechaza un email fuera de la allowlist", async () => {
 
 test("rechaza un email sin verificar", async () => {
   const t = firmar({ ...valido(), email_verified: false });
+  await assert.rejects(() => verificarToken(t, CLIENT_ID, PERMITIDOS), /sin verificar/);
+});
+
+/* El sitio es abierto por defecto: `EMAILS_PERMITIDOS` sin definir llega acá
+   como lista vacía y eso significa "pasa cualquiera", no "no pasa nadie". Los
+   tres tests de abajo son el par que sostiene esa decisión — que la puerta esté
+   realmente abierta, que `email_verified` NO se relaje con ella, y que poner
+   mails en la variable la vuelva a cerrar. */
+test("allowlist vacía deja pasar cualquier cuenta verificada", async () => {
+  const t = firmar({ ...valido(), email: "cualquiera@gmail.com", sub: "999" });
+  const p = await verificarToken(t, CLIENT_ID, []);
+  assert.strictEqual(p.sub, "999");
+});
+
+test("allowlist vacía NO relaja el email verificado", async () => {
+  const t = firmar({ ...valido(), email_verified: false });
+  await assert.rejects(() => verificarToken(t, CLIENT_ID, []), /sin verificar/);
+});
+
+test("con allowlist cargada, la puerta se vuelve a cerrar", async () => {
+  const t = firmar({ ...valido(), email: "cualquiera@gmail.com" });
   await assert.rejects(() => verificarToken(t, CLIENT_ID, PERMITIDOS), /autorizado/);
 });
 

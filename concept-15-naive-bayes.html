@@ -43,8 +43,8 @@
         <h2>Bayes, aplicado a clasificar</h2>
         <p>En el tema 04 vimos que el teorema de Bayes da vuelta un condicional: permite pasar de lo que sabés, <code>P(evidencia | causa)</code>, a lo que querés, <code>P(causa | evidencia)</code>. Ese es exactamente el problema de un clasificador.</p>
         <p>Lo que tenés en los datos de entrenamiento es fácil de contar: entre los mails que ya sabés que son spam, ¿cuántos contenían la palabra "gratis"? Eso es <code>P(gratis | spam)</code>. Lo que querés al recibir un mail nuevo es lo contrario: viendo que dice "gratis", ¿qué probabilidad hay de que sea spam?</p>
-        <div class="callout formula">P(spam | palabras) ∝ P(palabras | spam) × P(spam)</div>
-        <p>El símbolo ∝ significa "proporcional a": el denominador de Bayes es el mismo para todas las clases, así que para decidir cuál gana no hace falta calcularlo. Solo hay que evaluar esa expresión para cada clase y quedarse con la más grande.</p>
+        <div class="callout formula" data-tex="P(\text{spam} \mid \text{palabras}) \propto P(\text{palabras} \mid \text{spam}) \times P(\text{spam})">P(spam | palabras) ∝ P(palabras | spam) × P(spam)</div>
+        <p>El símbolo <span class="mate" data-tex="\propto">∝</span> significa "proporcional a": el denominador de Bayes es el mismo para todas las clases, así que para decidir cuál gana no hace falta calcularlo. Solo hay que evaluar esa expresión para cada clase y quedarse con la más grande.</p>
         <p>El segundo factor, <code>P(spam)</code>, es la frecuencia base del tema 04: qué proporción de los mails son spam antes de mirar nada. El primero es el que trae el problema.</p>
       </div>
     </section>
@@ -56,7 +56,7 @@
         <h2>Por qué se llama ingenuo</h2>
         <p>Calcular <code>P(palabras | spam)</code> para un mail completo es imposible en la práctica. Un mail con veinte palabras exigiría haber visto antes esa combinación exacta de veinte palabras, en ese orden, suficientes veces como para estimar su frecuencia. No existe tal cosa: casi todo mail es una combinación única en la historia.</p>
         <p>La salida es una suposición, y es la que le da nombre al método: <strong>asumir que, dentro de una clase, las palabras aparecen independientes unas de otras.</strong> Con eso, la probabilidad de todas juntas es el producto de las probabilidades de cada una por separado, que es la multiplicación de eventos independientes del tema 04.</p>
-        <div class="callout formula">P(w₁, w₂, …, wₙ | spam) ≈ P(w₁|spam) × P(w₂|spam) × … × P(wₙ|spam)</div>
+        <div class="callout formula" data-tex="P(w_1, w_2, \dots, w_n \mid \text{spam}) \approx P(w_1 \mid \text{spam}) \times P(w_2 \mid \text{spam}) \times \dots \times P(w_n \mid \text{spam})">P(w₁, w₂, …, wₙ | spam) ≈ P(w₁|spam) × P(w₂|spam) × … × P(wₙ|spam)</div>
         <p>Y ahora sí es calculable: cada factor es un conteo simple sobre el entrenamiento.</p>
         <p>El problema es que la suposición es <strong>falsa</strong>, y no un poquito. En castellano, ver "buenos" hace muchísimo más probable ver "días" a continuación. Las palabras no son independientes ni cerca. Por eso <em>naïve</em>: el método sabe que está asumiendo algo que no se cumple.</p>
       </div>
@@ -93,7 +93,7 @@
           </table>
         </div>
         <p>Llega un mail que contiene las dos palabras. Calculamos el puntaje de cada clase multiplicando su frecuencia base por las probabilidades de las palabras:</p>
-        <div class="callout formula">spam: 0.30 × 0.80 × 0.10 = 0.024<br>legítimo: 0.70 × 0.10 × 0.60 = 0.042</div>
+        <div class="callout formula" data-tex="\begin{aligned} \text{spam} &amp;: 0.30 \times 0.80 \times 0.10 = 0.024 \\ \text{legítimo} &amp;: 0.70 \times 0.10 \times 0.60 = 0.042 \end{aligned}">spam: 0.30 × 0.80 × 0.10 = 0.024<br>legítimo: 0.70 × 0.10 × 0.60 = 0.042</div>
         <figure class="diagram" id="d-puntajes">
           <svg viewBox="0 0 640 300" role="img" aria-label="Los dos puntajes calculados en paralelo: cada clase multiplica su frecuencia base por las probabilidades de las dos palabras, y gana el mayor">
             <text class="dlabel" x="30" y="30">spam</text>
@@ -145,7 +145,7 @@
         <p>La cuenta de arriba tiene dos problemas que aparecen apenas la escalás, y los dos tienen solución estándar.</p>
         <p><strong>El primero es el cero.</strong> Si una palabra nunca apareció en spam durante el entrenamiento, su probabilidad estimada es 0. Y como todo se multiplica, un solo cero convierte el producto entero en cero: da igual que las otras diecinueve palabras del mail griten spam a coro. Una sola palabra nueva veta a toda la evidencia.</p>
         <p>La solución es el <strong>suavizado de Laplace</strong>: sumarle 1 a todos los conteos antes de calcular las proporciones. Nunca hay un cero, la evidencia no se puede vetar, y con conteos grandes el efecto de ese 1 es despreciable.</p>
-        <div class="callout formula">P(w|clase) = (veces que aparece + 1) / (total de la clase + cantidad de palabras distintas)</div>
+        <div class="callout formula" data-tex="P(w \mid \text{clase}) = \frac{\text{veces que aparece} + 1}{\text{total de la clase} + \text{cantidad de palabras distintas}}">P(w|clase) = (veces que aparece + 1) / (total de la clase + cantidad de palabras distintas)</div>
         <p><strong>El segundo es el desborde.</strong> Un mail de doscientas palabras multiplica doscientos números menores que 1. El resultado es tan chico que la computadora ya no puede representarlo y lo redondea a cero. Las dos clases dan cero y el clasificador no puede decidir.</p>
         <p>La solución es trabajar con <strong>logaritmos</strong>. El logaritmo convierte productos en sumas, y sumar doscientos números negativos moderados no desborda nada. Como el logaritmo es creciente, el orden entre clases se conserva exactamente, que es lo único que importa. Toda implementación real hace esto.</p>
       </div>
@@ -197,6 +197,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="naive-bayes.js"></script>
 </body>
 </html>

@@ -22,6 +22,16 @@ async function clavesGoogle() {
 
 const desdeB64u = (s) => Buffer.from(s, "base64url");
 
+/* `allowlist` vacía significa ABIERTO, no "nadie pasa".
+   El sitio nació como un regalo para dos personas y la lista de mails era el
+   portero. Pero el progreso ya se guarda por usuario —la clave de Redis es el
+   `sub` de Google, no un blob compartido— así que abrirlo no toca nada de la
+   arquitectura: nadie puede leer ni pisar el progreso de otro, y todos los
+   chequeos que importan (firma RS256 contra las claves de Google, `aud`,
+   `iss`, `exp`, `email_verified`) siguen igual de puestos.
+   Se deja como interruptor y no se borra el código: `EMAILS_PERMITIDOS` vacío
+   abre, con mails adentro cierra. Si algún día aparece abuso, se cierra desde
+   las variables de entorno sin volver a desplegar. */
 async function verificarToken(token, clientId, allowlist) {
   const partes = String(token || "").split(".");
   if (partes.length !== 3) throw new Error("formato de token inválido");
@@ -50,7 +60,11 @@ async function verificarToken(token, clientId, allowlist) {
   if (!payload.exp || payload.exp <= Math.floor(Date.now() / 1000)) throw new Error("token expirado");
   if (payload.aud !== clientId) throw new Error("aud incorrecto");
   if (!ISS_VALIDOS.includes(payload.iss)) throw new Error("iss incorrecto");
-  if (!payload.email_verified || !allowlist.includes(payload.email)) {
+  // `email_verified` NO es opcional aunque el sitio esté abierto: sin él,
+  // cualquiera que controle un dominio propio puede pedirle a Google un token
+  // con el mail de otra persona, y el `sub` iría atado a esa impostura.
+  if (!payload.email_verified) throw new Error("email sin verificar");
+  if (allowlist.length && !allowlist.includes(payload.email)) {
     throw new Error("usuario no autorizado");
   }
   return payload;
@@ -89,9 +103,16 @@ async function redisGet(clave) {
   return result ? JSON.parse(result) : null;
 }
 
+/* Un año, renovado en cada escritura. Con el sitio abierto, cada persona que
+   entre una vez y no vuelva deja un registro de hasta 64 KB para siempre; el
+   TTL hace que esos registros se limpien solos y que el almacenamiento crezca
+   con los usuarios ACTIVOS y no con los que pasaron. Para alguien que estudia
+   de verdad es invisible: cualquier ejercicio resuelto lo empuja otro año. */
+const TTL_SEGUNDOS = 365 * 24 * 3600;
+
 async function redisSet(clave, valor) {
   const { url, token } = configRedis();
-  const r = await fetch(`${url}/set/${encodeURIComponent(clave)}`, {
+  const r = await fetch(`${url}/set/${encodeURIComponent(clave)}?EX=${TTL_SEGUNDOS}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "Content-Type": "text/plain" },
     body: JSON.stringify(valor)
@@ -101,8 +122,12 @@ async function redisSet(clave, valor) {
 
 async function handler(req, res) {
   const clientId = process.env.GOOGLE_CLIENT_ID;
+  // Sin `EMAILS_PERMITIDOS` el sitio queda abierto a cualquier cuenta de Google
+  // verificada, que es el modo por defecto. Lo único que sigue siendo
+  // obligatorio es el client id: sin él no hay contra qué validar el `aud` y
+  // serviría cualquier token de cualquier app, que sí es un agujero.
   const permitidos = (process.env.EMAILS_PERMITIDOS || "").split(",").map(s => s.trim()).filter(Boolean);
-  if (!clientId || !permitidos.length) {
+  if (!clientId) {
     return res.status(500).json({ error: "servidor mal configurado" });
   }
 

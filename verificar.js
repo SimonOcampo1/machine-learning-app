@@ -99,6 +99,48 @@ function _chequearEyebrow(html, archivo) {
   return errores;
 }
 
+/* La notación matemática vive en `data-tex` y la compone KaTeX; el contenido
+   del elemento es el mismo en Unicode y es lo que queda si el CDN no responde.
+   Ese respaldo es también lo que hace que un LaTeX roto sea INVISIBLE: la
+   página sigue mostrando el Unicode correcto y nadie se entera de que la
+   fórmula nunca se compuso. Estos son los dos errores que se cometen tipeando
+   LaTeX a mano y que se pueden detectar sin traerse KaTeX como dependencia:
+   llaves desbalanceadas y un `data-tex` vacío. */
+function _chequearTex(html, archivo) {
+  const errores = [];
+  for (const [, crudo] of html.matchAll(/data-tex="([^"]*)"/g)) {
+    const tex = crudo.replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+    if (!tex.trim()) {
+      errores.push(`${archivo}: data-tex vacío`);
+      continue;
+    }
+    let nivel = 0;
+    for (let i = 0; i < tex.length; i++) {
+      if (tex[i - 1] === "\\") continue;   // \{ y \} son llaves literales
+      if (tex[i] === "{") nivel++;
+      if (tex[i] === "}") nivel--;
+      if (nivel < 0) break;
+    }
+    if (nivel !== 0) errores.push(`${archivo}: llaves desbalanceadas en LaTeX: ${tex}`);
+  }
+  return errores;
+}
+
+/* Un elemento con `data-tex` tiene que traer además su respaldo en Unicode. Si
+   queda vacío, el día que KaTeX no cargue el lector ve un hueco en lugar de la
+   fórmula — que es exactamente el modo de falla que el diseño `data-tex` viene
+   a evitar. Sin este chequeo, un respaldo olvidado no se nota nunca, porque en
+   condiciones normales KaTeX lo tapa. */
+function _chequearRespaldoTex(html, archivo) {
+  const errores = [];
+  for (const [, contenido] of html.matchAll(/data-tex="[^"]*"[^>]*>([\s\S]*?)<\/(?:span|div)>/g)) {
+    if (!contenido.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim()) {
+      errores.push(`${archivo}: data-tex sin respaldo en Unicode`);
+    }
+  }
+  return errores;
+}
+
 function _chequearNav(html, archivo) {
   const errores = [];
   const links = [...html.matchAll(/<a\s+href="([^"]+)"\s+class="nav-link([^"]*)"/g)];
@@ -179,6 +221,8 @@ function verificar() {
     errores.push(..._chequearNav(html, archivo));
     errores.push(..._chequearEyebrow(html, archivo));
     errores.push(..._chequearEnlaces(html, archivo, existentes, declarados));
+    errores.push(..._chequearTex(html, archivo));
+    errores.push(..._chequearRespaldoTex(html, archivo));
   }
 
   // Ids de ejercicio duplicados en cada archivo JS (salvo los de test)
@@ -202,4 +246,4 @@ if (require.main === module) {
   console.log("✓ verificación OK");
 }
 
-module.exports = { verificar, _chequearEscrito, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow };
+module.exports = { verificar, _chequearEscrito, _chequearTemas, _chequearSvg, _chequearHuerfanos, _chequearNav, _chequearIds, _chequearEnlaces, _chequearEjercicios, _chequearEyebrow, _chequearTex, _chequearRespaldoTex };
