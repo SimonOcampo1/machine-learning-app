@@ -30,9 +30,9 @@
       ] },
     { "n": 4, "nombre": "Árboles y no supervisado", "hint": "Decidir por ramas, y aprender sin etiquetas", "hue": 350,
       "temas": [
-        { "n": 17, "titulo": "Árboles de decisión", "slug": "arboles", "archivo": "concept-17-arboles.html" },
-        { "n": 18, "titulo": "Random Forest y bagging", "slug": "random-forest", "archivo": "concept-18-random-forest.html" },
-        { "n": 19, "titulo": "Boosting", "slug": "boosting", "archivo": "concept-19-boosting.html" },
+        { "n": 17, "titulo": "Árboles de decisión", "slug": "arboles", "archivo": "concept-17-arboles.html", "escrito": true, "ejercicios": 5 },
+        { "n": 18, "titulo": "Random Forest y bagging", "slug": "random-forest", "archivo": "concept-18-random-forest.html", "escrito": true, "ejercicios": 5 },
+        { "n": 19, "titulo": "Boosting", "slug": "boosting", "archivo": "concept-19-boosting.html", "escrito": true, "ejercicios": 5 },
         { "n": 20, "titulo": "Clustering: K-means y jerárquico", "slug": "clustering", "archivo": "concept-20-clustering.html" },
         { "n": 21, "titulo": "Reducción de dimensionalidad: PCA", "slug": "pca", "archivo": "concept-21-pca.html" }
       ] },

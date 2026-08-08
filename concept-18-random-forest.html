@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Random Forest y bagging · ML</title>
+  <meta name="description" content="Muchos árboles mediocres votando le ganan a un árbol muy bueno: por qué promediar baja la varianza y por qué hace falta descorrelacionar los árboles.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-4">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 4</p>
+      <p class="eyebrow">{ Tema 18 · Árboles y no supervisado }</p>
+      <h1>Random Forest y bagging</h1>
+      <p class="lede">El tema anterior terminó con un modelo inestable que sobreajusta siempre. Este lo convierte, sin cambiarlo, en uno de los algoritmos más confiables que existen.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La idea de fondo }</p>
+        <h2>Promediar baja la varianza</h2>
+        <p>Hay un hecho estadístico que es el motor de todo este tema: <strong>si promediás varias mediciones independientes de la misma cosa, el promedio varía menos que cada medición individual</strong>. Con n mediciones independientes, la varianza del promedio es n veces más chica.</p>
+        <p>Aplicado a modelos: si entrenás muchos árboles y promediás sus predicciones, los errores que cada uno comete por seguir su propio ruido tienden a cancelarse entre sí, mientras que la señal que todos captan sobrevive. Baja la varianza y el sesgo queda igual.</p>
+        <p>Eso es justo lo que necesitaba un árbol de decisión: sesgo bajo (puede capturar cualquier patrón) y varianza altísima. Es el candidato perfecto para promediar.</p>
+        <p>El problema práctico es que no tenés muchos conjuntos de datos independientes: tenés uno.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Fabricar variedad }</p>
+        <h2>Bagging</h2>
+        <p><strong>Bagging</strong> resuelve eso simulando conjuntos distintos a partir del único que tenés. De tus n filas, sacás una muestra de n filas <em>con reemplazo</em>: cada vez que elegís una fila la devolvés al bolillero, así que algunas salen repetidas y otras no salen.</p>
+        <p>Ese muestreo se llama <em>bootstrap</em>, y da la primera parte del nombre: <em>bootstrap aggregating</em>. Se repite cientos de veces, se entrena un árbol con cada muestra, y al predecir se vota (clasificación) o se promedia (regresión).</p>
+        <figure class="diagram" id="d-bagging">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Un dataset del que salen tres muestras bootstrap distintas, cada una entrena un árbol, y las tres predicciones se votan">
+            <rect class="dnode-bg" x="30" y="110" width="110" height="60" rx="8"/>
+            <text class="dtxt" x="85" y="146" text-anchor="middle">datos</text>
+            <path class="dedge" d="M150 130 L 215 60"/>
+            <path class="dedge" d="M150 140 H 215"/>
+            <path class="dedge" d="M150 150 L 215 220"/>
+            <text class="dtxt-mute" x="180" y="105" text-anchor="middle">con</text>
+            <text class="dtxt-mute" x="180" y="120" text-anchor="middle">reemplazo</text>
+
+            <rect class="dnode-bg" x="225" y="35" width="95" height="46" rx="6"/>
+            <text class="dtxt-mute" x="272" y="63" text-anchor="middle">muestra 1</text>
+            <rect class="dnode-bg" x="225" y="118" width="95" height="46" rx="6"/>
+            <text class="dtxt-mute" x="272" y="146" text-anchor="middle">muestra 2</text>
+            <rect class="dnode-bg" x="225" y="200" width="95" height="46" rx="6"/>
+            <text class="dtxt-mute" x="272" y="228" text-anchor="middle">muestra 3</text>
+
+            <path class="dedge" d="M330 58 H 375"/>
+            <path class="dedge" d="M330 141 H 375"/>
+            <path class="dedge" d="M330 223 H 375"/>
+
+            <rect class="dfill" x="385" y="35" width="80" height="46" rx="6"/>
+            <text class="dtxt" x="425" y="63" text-anchor="middle">árbol</text>
+            <rect class="dfill" x="385" y="118" width="80" height="46" rx="6"/>
+            <text class="dtxt" x="425" y="146" text-anchor="middle">árbol</text>
+            <rect class="dfill" x="385" y="200" width="80" height="46" rx="6"/>
+            <text class="dtxt" x="425" y="228" text-anchor="middle">árbol</text>
+
+            <path class="dedge" d="M475 58 L 530 125"/>
+            <path class="dedge" d="M475 141 H 530"/>
+            <path class="dedge" d="M475 223 L 530 158"/>
+            <rect class="dnode-bg" x="540" y="118" width="80" height="46" rx="6"/>
+            <text class="dtxt" x="580" y="146" text-anchor="middle">voto</text>
+          </svg>
+          <figcaption>Los tres árboles ven datasets parecidos pero no iguales, así que cometen errores distintos. Al votar, los errores no coincidentes quedan en minoría.</figcaption>
+        </figure>
+        <p>Un detalle útil: en cada muestra bootstrap queda afuera cerca de un tercio de las filas originales. Esas son las muestras <strong>out-of-bag</strong>, y sirven para evaluar cada árbol con datos que ese árbol no vio. El promedio de esas evaluaciones da una estimación de desempeño <em>gratis</em>, sin tener que apartar un conjunto de validación.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La pieza que faltaba }</p>
+        <h2>El segundo azar</h2>
+        <p>Bagging solo funciona a medias, y el motivo está en la letra chica del hecho estadístico del principio: la varianza baja n veces si las mediciones son <strong>independientes</strong>. Los árboles del bagging no lo son ni cerca.</p>
+        <p>Todos ven muestras del mismo dataset, así que si hay una variable muy predictiva, los cientos de árboles la van a elegir para el primer corte. Todos empiezan igual, se parecen muchísimo, y promediar cosas parecidas casi no reduce nada.</p>
+        <p><strong>Random Forest</strong> agrega la pieza que faltaba: en cada corte, cada árbol solo puede considerar un <strong>subconjunto al azar de las variables</strong>, típicamente la raíz cuadrada del total. Si hay 16 columnas, cada corte elige entre 4 elegidas al azar.</p>
+        <p>La consecuencia es que muchas veces la variable dominante ni siquiera está disponible, y el árbol se ve obligado a usar otra. Los árboles salen genuinamente distintos entre sí, y ahí el promedio sí rinde.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Parece contraintuitivo: se le prohíbe a cada árbol usar la mejor variable, y eso hace <em>peor</em> a cada árbol individual. Pero hace mucho mejor al conjunto. Descorrelacionar vale más que optimizar cada pieza, y esa es la idea central del tema.</div>
+        <p>El resto de la configuración es benigna: más árboles siempre es igual o mejor (nunca sobreajusta por agregar árboles, solo tarda más), y no hace falta podar cada árbol porque el promedio se encarga de la varianza. Los valores por defecto de scikit-learn funcionan bien sin tocar nada, cosa que casi ningún otro modelo puede decir.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo que se gana y lo que se pierde }</p>
+        <h2>El costo de promediar</h2>
+        <p>Lo que se gana: un modelo que anda muy bien sin ajuste fino, que resiste outliers, que no necesita estandarizar (hereda eso de los árboles), que da una estimación de error gratis con out-of-bag, y que se entrena en paralelo porque cada árbol es independiente.</p>
+        <p>Lo que se pierde es lo que hacía especial al tema anterior: <strong>la explicabilidad</strong>. Un árbol se dibuja y se lee; quinientos árboles votando no. La justificación en castellano para cada decisión individual desaparece.</p>
+        <p>Lo que queda es la <strong>importancia de variables</strong>, que mide cuánto bajó la impureza total gracias a cada columna, sumado sobre todos los árboles. Es útil, pero arrastra el mismo problema que el tema anterior, y ahora con más apariencia de autoridad porque salió de un modelo grande.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>La importancia por impureza favorece a las variables con muchos valores distintos, porque ofrecen más cortes posibles y es más fácil que alguno reduzca la impureza por casualidad. Un ID numérico puede aparecer arriba de todo siendo puro ruido. La alternativa confiable es la <strong>importancia por permutación</strong>: mezclar al azar los valores de una columna y medir cuánto empeora el modelo. Si empeora mucho, esa columna importaba de verdad.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre bootstrap, descorrelación e importancia de variables.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que más árboles sobreajusta.</strong> No: agregar árboles a un Random Forest solo estabiliza el promedio. Lo que crece es el tiempo de entrenamiento y de predicción. Si sobreajusta, el problema está en la profundidad o en la cantidad de variables por corte, no en la cantidad de árboles.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Podar cada árbol como si estuviera solo.</strong> El promedio ya controla la varianza, así que los árboles individuales pueden y suelen dejarse crecer. Podarlos agresivamente sube el sesgo de todos a la vez, y eso el promedio no lo arregla.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Tomar decisiones de negocio con la importancia por impureza.</strong> El ranking sale ordenado, se ve autorizado porque viene de un modelo de quinientos árboles, y puede tener arriba de todo una columna sin ningún poder predictivo real, solo por tener muchos valores distintos. Nada falla y nadie se entera hasta que alguien invierte plata en función de ese ranking. La verificación es barata: recalculá con importancia por permutación y compará los dos órdenes.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Promediar mediciones independientes baja la varianza sin tocar el sesgo, y un árbol de decisión, con su sesgo bajo y su varianza altísima, es el candidato ideal para eso. Bagging fabrica la variedad que hace falta muestreando el mismo dataset con reemplazo, entrenando un árbol por muestra y votando; el tercio de filas que queda afuera de cada muestra, las out-of-bag, da una estimación de error gratis. Pero bagging solo no alcanza, porque los árboles quedan muy parecidos entre sí cuando hay una variable dominante que todos eligen primero, y promediar cosas parecidas no reduce casi nada. Random Forest agrega el segundo azar: en cada corte solo se considera un subconjunto al azar de las variables, lo que empeora a cada árbol individual y mejora mucho al conjunto, porque descorrelacionar vale más que optimizar cada pieza. Más árboles nunca sobreajusta, no hace falta podar ni estandarizar, y los valores por defecto suelen andar bien. Lo que se pierde es la explicabilidad del árbol solo, y lo que queda, la importancia de variables, hay que mirarla con desconfianza: la versión por impureza favorece a las columnas con muchos valores distintos y conviene contrastarla con la de permutación. El próximo tema combina árboles también, pero en cadena en vez de en paralelo, y eso cambia todo.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="random-forest.js"></script>
+</body>
+</html>

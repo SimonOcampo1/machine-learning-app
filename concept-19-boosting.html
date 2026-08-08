@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Boosting · ML</title>
+  <meta name="description" content="Árboles en cadena, cada uno corrigiendo el error del anterior: AdaBoost, gradient boosting, y por qué XGBoost gana casi todas las competencias con datos tabulares.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-4">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 4</p>
+      <p class="eyebrow">{ Tema 19 · Árboles y no supervisado }</p>
+      <h1>Boosting</h1>
+      <p class="lede">La misma materia prima que el tema anterior, combinada al revés. El cambio parece menor y da vuelta todas las propiedades del modelo, incluida la que más importa.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La diferencia }</p>
+        <h2>En cadena, no en paralelo</h2>
+        <p>Random Forest entrena quinientos árboles <strong>en paralelo</strong>, cada uno sin saber que los demás existen, y después los hace votar. Es una asamblea: todos opinan a la vez y se cuenta.</p>
+        <p>Boosting entrena los árboles <strong>en cadena</strong>. Cada uno se entrena mirando lo que el conjunto de los anteriores hizo mal, y su trabajo es corregir eso. Es una fila donde cada uno arregla lo que dejó el de adelante.</p>
+        <figure class="diagram" id="d-cadena">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Arriba, tres árboles en paralelo que votan. Abajo, tres árboles en cadena donde cada uno recibe el error del anterior">
+            <text class="dlabel" x="30" y="26">bagging: en paralelo</text>
+            <rect class="dfill" x="120" y="40" width="80" height="34" rx="6"/>
+            <rect class="dfill" x="120" y="80" width="80" height="34" rx="6"/>
+            <rect class="dfill" x="120" y="120" width="80" height="34" rx="6"/>
+            <path class="dedge" d="M210 57 L 275 90"/>
+            <path class="dedge" d="M210 97 H 275"/>
+            <path class="dedge" d="M210 137 L 275 104"/>
+            <rect class="dnode-bg" x="285" y="80" width="80" height="34" rx="6"/>
+            <text class="dtxt" x="325" y="103" text-anchor="middle">voto</text>
+            <text class="dtxt-mute" x="480" y="90" text-anchor="middle">baja la varianza</text>
+            <text class="dtxt-mute" x="480" y="110" text-anchor="middle">el sesgo queda igual</text>
+
+            <line class="dedge-mute" x1="30" y1="175" x2="610" y2="175"/>
+
+            <text class="dlabel" x="30" y="205">boosting: en cadena</text>
+            <rect class="dfill" x="180" y="212" width="70" height="34" rx="6"/>
+            <path class="dedge" d="M258 229 H 300"/>
+            <text class="dtxt-mute" x="279" y="222" text-anchor="middle">error</text>
+            <rect class="dfill" x="308" y="212" width="70" height="34" rx="6"/>
+            <path class="dedge" d="M386 229 H 428"/>
+            <text class="dtxt-mute" x="407" y="222" text-anchor="middle">error</text>
+            <rect class="dfill" x="436" y="212" width="70" height="34" rx="6"/>
+            <path class="dedge" d="M514 229 H 556"/>
+            <text class="dtxt" x="580" y="235" text-anchor="middle">suma</text>
+          </svg>
+          <figcaption>Bagging paraleliza y por eso escala en varios procesadores. Boosting es inherentemente secuencial: el árbol 200 no puede entrenarse hasta que terminó el 199.</figcaption>
+        </figure>
+        <p>De ese cambio sale todo lo demás. Bagging ataca la <strong>varianza</strong> promediando modelos que ya son buenos por separado. Boosting ataca el <strong>sesgo</strong>, sumando modelos deliberadamente débiles hasta que entre todos capturan el patrón.</p>
+        <p>Por eso los árboles de un boosting son diminutos: profundidad 3 o 4, a veces un solo corte. No hace falta que cada uno sea bueno; hace falta que cada uno arregle un pedazo.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La primera versión }</p>
+        <h2>AdaBoost: subirle el peso a lo difícil</h2>
+        <p>La versión original, de 1995, funciona con pesos sobre las filas. Al principio todas las filas pesan igual. Se entrena un árbol chiquito, se mira cuáles clasificó mal, y <strong>se les sube el peso a esas</strong>. El árbol siguiente se entrena con esos pesos nuevos, así que le presta más atención a los casos que el anterior falló.</p>
+        <p>Se repite cientos de veces, y al final se vota, pero con voto ponderado: los árboles que anduvieron mejor pesan más.</p>
+        <p>La imagen es la de un estudiante que, después de cada simulacro, dedica más tiempo a los ejercicios que le salieron mal. La atención se va concentrando en la frontera difícil, que es donde se juega la clasificación.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La versión general }</p>
+        <h2>Gradient boosting: ajustar los residuos</h2>
+        <p>La formulación que se usa hoy es más simple de explicar y mucho más general. En vez de pesos, cada árbol nuevo se entrena para predecir <strong>los residuos</strong> que dejó la suma de todos los anteriores.</p>
+        <p>Con números concretos. Predecís precios de casas:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Paso</th><th>predicción acumulada</th><th>valor real</th><th>residuo que queda</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>inicio (el promedio)</td><td>200</td><td>260</td><td>60</td></tr>
+              <tr><td>+ árbol 1 (predice 40)</td><td>240</td><td>260</td><td>20</td></tr>
+              <tr><td>+ árbol 2 (predice 15)</td><td>255</td><td>260</td><td>5</td></tr>
+              <tr><td>+ árbol 3 (predice 4)</td><td>259</td><td>260</td><td>1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Cada árbol no predice el precio: predice <em>lo que falta</em>. La predicción final es la suma de todos. Y como cada uno trabaja sobre un residuo cada vez más chico, el modelo se va afinando de a poco.</p>
+        <p>El nombre viene de que ajustar los residuos es, matemáticamente, dar un paso de descenso de gradiente sobre la función de costo, con el árbol haciendo de gradiente. Es el mismo mecanismo del tema 10, aplicado en el espacio de las funciones en vez del de los coeficientes.</p>
+        <p>El <strong>learning rate</strong> reaparece acá con el mismo rol: en vez de sumar el árbol completo, se suma multiplicado por un factor chico, típicamente 0.1 o 0.05. Cada árbol aporta poquito y hacen falta muchos más, pero el resultado generaliza bastante mejor. La combinación que suele funcionar es <strong>learning rate chico y muchos árboles</strong>.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La contracara }</p>
+        <h2>Boosting sí sobreajusta</h2>
+        <p>Esta es la diferencia práctica más importante con el tema anterior, y la que más errores causa.</p>
+        <p>En Random Forest, agregar árboles nunca empeora: cada uno es una opinión más sobre el mismo problema y el promedio solo se estabiliza. Podés poner mil sin pensarlo.</p>
+        <p>En boosting, cada árbol nuevo <strong>reduce activamente el error de entrenamiento</strong>. Si lo dejás correr, va a seguir bajando hasta ajustar el ruido, y el error de validación, que venía bajando, empieza a subir. Es la curva en U del tema 08 recorrida a lo largo de las iteraciones.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>La cantidad de árboles pasa de ser un parámetro benigno a ser <strong>el hiperparámetro crítico</strong>. Se elige con <em>early stopping</em>: se monitorea el error de validación en cada iteración y se corta cuando deja de mejorar. Todas las implementaciones modernas lo traen incorporado y hay que usarlo.</div>
+        <p>Los tres hiperparámetros que importan interactúan: learning rate, cantidad de árboles y profundidad de cada uno. Bajar el learning rate exige subir la cantidad de árboles. Boosting necesita bastante más ajuste que Random Forest, y ese es su costo real.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo que se usa }</p>
+        <h2>XGBoost y LightGBM</h2>
+        <p>La implementación de gradient boosting que viene en scikit-learn funciona, pero en la práctica se usan librerías dedicadas: <strong>XGBoost</strong> y <strong>LightGBM</strong>. Son mucho más rápidas, manejan valores faltantes sin que haya que imputarlos, y traen regularización propia sobre la estructura de los árboles.</p>
+        <p>Y son las que ganan. En competencias de machine learning sobre <strong>datos tabulares</strong>, o sea tablas con filas y columnas, que es la enorme mayoría de los problemas empresariales, el boosting con árboles gana casi siempre. Le gana a las redes neuronales de forma consistente en ese terreno.</p>
+        <p>El motivo es que los datos tabulares tienen características heterogéneas, con escalas y significados distintos, muchas interacciones tipo umbral, y a menudo pocas filas para lo que una red necesita. Los árboles manejan todo eso naturalmente: no les molestan las escalas, capturan umbrales por construcción, y funcionan con datasets medianos.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>La regla práctica que conviene llevarse de toda la fase: para una tabla, empezá por Random Forest como baseline sólido sin ajuste, y si necesitás exprimir el máximo, pasá a gradient boosting y dedicale tiempo a los hiperparámetros. Las redes neuronales de la fase 5 son para imágenes, texto y audio, no para tablas.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre la cadena de residuos y el riesgo de dejarla correr de más.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Usar árboles profundos en boosting.</strong> Cada pieza tiene que ser débil: profundidad 3 a 6. Con árboles profundos, el primero ya ajusta casi todo y la cadena pierde sentido, además de sobreajustar mucho más rápido.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Ajustar learning rate y cantidad de árboles por separado.</strong> Están atados: bajar uno exige subir el otro. Lo práctico es fijar un learning rate chico y dejar que early stopping decida la cantidad.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Poner muchos árboles sin early stopping, por costumbre de Random Forest.</strong> Es el error que más se ve al pasar de un modelo al otro, porque el reflejo aprendido es «más árboles nunca hace daño». En boosting sí lo hace: el error de entrenamiento sigue bajando y se ve espectacular, mientras el de validación ya empezó a subir hace doscientas iteraciones. Nada falla y el modelo que se entrega es peor que el que había en la iteración 300.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Bagging entrena en paralelo y promedia para bajar la varianza; boosting entrena en cadena y suma para bajar el sesgo, con cada árbol corrigiendo lo que dejaron los anteriores. AdaBoost lo hace subiéndole el peso a las filas mal clasificadas; gradient boosting, la formulación general que se usa hoy, lo hace entrenando cada árbol nuevo sobre los residuos que quedan, lo cual equivale a un paso de descenso de gradiente con el árbol haciendo de gradiente. Los árboles son deliberadamente chicos, de profundidad 3 a 6, porque no hace falta que cada uno sea bueno sino que arregle un pedazo, y el learning rate hace que cada uno aporte poco: chico y con muchos árboles suele generalizar mejor. La diferencia práctica que hay que memorizar es que boosting sí sobreajusta si lo dejás correr, al revés que Random Forest, así que la cantidad de árboles pasa a ser el hiperparámetro crítico y se resuelve con early stopping. XGBoost y LightGBM son lo que se usa, y ganan casi todas las competencias con datos tabulares, incluso contra redes neuronales, porque los árboles manejan naturalmente escalas heterogéneas, interacciones por umbral y datasets medianos. El próximo tema abandona las etiquetas por primera vez en todo el sitio: agrupar sin saber cuáles son los grupos.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="boosting.js"></script>
+</body>
+</html>
