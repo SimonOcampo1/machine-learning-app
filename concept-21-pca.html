@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reducción de dimensionalidad: PCA · ML</title>
+  <meta name="description" content="Encontrar direcciones nuevas ordenadas por cuánta varianza capturan: autovectores, varianza explicada, y por qué las componentes pierden interpretación.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-4">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 4</p>
+      <p class="eyebrow">{ Tema 21 · Árboles y no supervisado }</p>
+      <h1>Reducción de dimensionalidad: PCA</h1>
+      <p class="lede">El otro método sin etiquetas, y el que ataca el problema que viene apareciendo desde el tema 14: demasiadas columnas.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>Demasiadas columnas</h2>
+        <p>Tener muchas características trae tres problemas distintos que conviene separar.</p>
+        <p><strong>No se puede ver nada.</strong> Con dos columnas hacés un gráfico; con tres, con esfuerzo. Con cincuenta no hay forma de mirar los datos, y el tema 06 insistía en que mirar es donde aparecen los problemas.</p>
+        <p><strong>Sobra información repetida.</strong> Superficie en metros, superficie en pies, cantidad de ambientes y cantidad de habitaciones están diciendo casi lo mismo cuatro veces. Esa redundancia es la multicolinealidad del tema 10 y la que hace estallar los coeficientes del tema 11.</p>
+        <p><strong>Todo se vuelve caro y frágil.</strong> Más columnas es más cómputo, más varianza según el tema 08, y la maldición de la dimensionalidad del tema 14, donde todas las distancias se parecen y los métodos basados en distancia dejan de funcionar.</p>
+        <p>La reacción obvia sería descartar columnas. PCA hace algo mejor: en vez de tirar columnas enteras, <strong>construye columnas nuevas que resumen a todas las viejas</strong>, y se queda con las que más información conservan.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La idea }</p>
+        <h2>Mirar desde otro ángulo</h2>
+        <p>Imaginá una nube de puntos alargada en diagonal, con superficie en un eje y precio en el otro. Los puntos ocupan una franja estirada de abajo a la izquierda hacia arriba a la derecha.</p>
+        <p>Las dos columnas originales, por separado, son malos resúmenes: cada una ignora la mitad de lo que pasa. Pero si mirás la nube desde la dirección de la diagonal, casi toda la variación está a lo largo de ella, y muy poca perpendicular. Un solo número, "qué tan lejos estoy sobre esa diagonal", describe casi todo el dataset.</p>
+        <p>Eso es una <strong>componente principal</strong>: una dirección nueva, hecha como combinación de las originales, elegida para capturar la mayor variación posible.</p>
+        <figure class="diagram" id="d-pca">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Una nube alargada en diagonal con dos flechas: la primera componente a lo largo del alargamiento y la segunda perpendicular y mucho más corta">
+            <line class="daxis" x1="60" y1="260" x2="600" y2="260"/>
+            <line class="daxis" x1="60" y1="260" x2="60" y2="30"/>
+            <text class="dtxt-mute" x="330" y="288" text-anchor="middle">superficie</text>
+            <text class="dtxt-mute" x="40" y="145" text-anchor="middle" transform="rotate(-90 40 145)">precio</text>
+            <circle class="dnode-solid" cx="130" cy="220" r="5"/>
+            <circle class="dnode-solid" cx="170" cy="200" r="5"/>
+            <circle class="dnode-solid" cx="200" cy="215" r="5"/>
+            <circle class="dnode-solid" cx="240" cy="180" r="5"/>
+            <circle class="dnode-solid" cx="280" cy="165" r="5"/>
+            <circle class="dnode-solid" cx="310" cy="180" r="5"/>
+            <circle class="dnode-solid" cx="350" cy="140" r="5"/>
+            <circle class="dnode-solid" cx="390" cy="125" r="5"/>
+            <circle class="dnode-solid" cx="420" cy="140" r="5"/>
+            <circle class="dnode-solid" cx="460" cy="100" r="5"/>
+            <circle class="dnode-solid" cx="500" cy="85" r="5"/>
+            <circle class="dnode-solid" cx="530" cy="100" r="5"/>
+            <path class="dedge" d="M120 215 L 545 80"/>
+            <text class="dlabel" x="480" y="55">PC1 · captura casi toda la varianza</text>
+            <path class="dedge" d="M300 160 L 340 285"/>
+            <text class="dlabel" x="370" y="250">PC2</text>
+          </svg>
+          <figcaption>PC1 va a lo largo del alargamiento. PC2 es perpendicular a ella y mucho más corta: la variación en esa dirección es chica, así que descartarla pierde poco.</figcaption>
+        </figure>
+        <p>El procedimiento es ordenado. La <strong>primera componente</strong> es la dirección de máxima varianza. La <strong>segunda</strong> es, entre todas las direcciones perpendiculares a la primera, la que más varianza captura de lo que quedó. Y así sucesivamente. Cada componente es perpendicular a todas las anteriores, y las varianzas van en orden decreciente.</p>
+        <p>Reducir dimensiones es entonces trivial: te quedás con las primeras y descartás el resto.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La maquinaria }</p>
+        <h2>Autovalores y autovectores</h2>
+        <p>El tema 03 se detuvo antes de esto porque no hacía falta todavía. Acá sí.</p>
+        <p>Una matriz, aplicada a un vector, generalmente lo estira y lo <em>rota</em>. Pero para cada matriz hay unas pocas direcciones especiales que <strong>no rotan</strong>: el vector resultante apunta exactamente para el mismo lado, solo cambió de largo. Esas direcciones son los <strong>autovectores</strong>, y cuánto se estiró cada una es su <strong>autovalor</strong>.</p>
+        <p>La matriz que importa acá es la <strong>matriz de covarianza</strong> de los datos: una tabla que en la diagonal tiene la varianza de cada columna, y fuera de ella, cuánto varían juntas cada par de columnas. Es la covarianza del tema 09, calculada para todos los pares.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>El resultado central del método: <strong>los autovectores de la matriz de covarianza son las componentes principales, y sus autovalores son cuánta varianza hay en cada una.</strong> Ordenar las componentes por importancia es simplemente ordenar los autovalores de mayor a menor.</div>
+        <p>Con eso, calcular PCA son tres pasos: estandarizar los datos, calcular la matriz de covarianza, y sacarle autovectores y autovalores. En NumPy es <code>np.linalg.eig</code>, y en la práctica se usa <code>PCA</code> de scikit-learn, que hace lo mismo por un camino numéricamente más estable.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cuántas conservar }</p>
+        <h2>Varianza explicada</h2>
+        <p>Cada autovalor dividido por la suma de todos da la <strong>proporción de varianza explicada</strong> por esa componente. Sumándolas en orden se obtiene la varianza explicada acumulada, y ese es el criterio para decidir cuántas componentes conservar.</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Componente</th><th>autovalor</th><th>varianza explicada</th><th>acumulada</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>PC1</td><td>6.0</td><td>60%</td><td>60%</td></tr>
+              <tr><td>PC2</td><td>2.5</td><td>25%</td><td>85%</td></tr>
+              <tr><td>PC3</td><td>1.0</td><td>10%</td><td>95%</td></tr>
+              <tr><td>PC4</td><td>0.5</td><td>5%</td><td>100%</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Con tres componentes de cuatro conservás el 95% de la variación. La regla habitual es quedarse con las que llegan al 90 o 95%, y si el objetivo es graficar, con dos, aceptando lo que se pierda.</p>
+        <p>También existe el gráfico de sedimentación, que grafica los autovalores en orden y busca el codo. Tiene el mismo problema que el codo del tema anterior: no siempre hay uno visible.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El precio }</p>
+        <h2>Las componentes no significan nada</h2>
+        <p>Esta es la contra grande, y hay que tenerla clara antes de usar PCA.</p>
+        <p>Una componente principal no es una de tus variables: es una <strong>combinación de todas</strong>. PC1 puede ser "0.4 × superficie + 0.5 × precio − 0.3 × antigüedad + 0.2 × ambientes + …". No tiene nombre, no tiene unidades, y no se le puede explicar a nadie.</p>
+        <p>Entonces, un modelo entrenado sobre componentes principales predice bien y es completamente opaco. Perdiste toda la interpretabilidad, que es exactamente lo contrario de lo que ofrecía el árbol de decisión del tema 17.</p>
+        <p>A veces las primeras componentes resultan interpretables (en datos de casas, PC1 suele ser algo así como "tamaño general"), pero eso es un regalo ocasional, no algo con lo que se pueda contar.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>PCA es <strong>no supervisado</strong>: maximiza varianza sin mirar la variable que querés predecir. Nada garantiza que la dirección de máxima varianza sea la más útil para tu problema. Se puede descartar una componente con poca varianza que era justo la que separaba las clases. Si el objetivo es clasificar, conviene comparar contra un método supervisado como LDA, o directamente contra no reducir nada.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre varianza explicada, autovectores y el efecto de no estandarizar.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Interpretar las componentes como variables.</strong> "PC1 subió" no significa nada en el mundo real. Si necesitás explicar el modelo, PCA es el método equivocado.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Ajustar PCA sobre todo el dataset.</strong> Es fuga de datos, igual que escalar antes de separar: las direcciones se calculan con información del test. Va dentro de un <code>Pipeline</code>, ajustado solo con train.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>No estandarizar antes.</strong> PCA busca direcciones de máxima varianza, y la varianza depende de las unidades. Si tenés precio en pesos, con valores de cientos de miles, y superficie en metros, con valores de dos dígitos, la varianza del precio es astronómicamente más grande: <strong>PC1 va a ser esencialmente la columna de precio</strong>, y las demás variables no van a aparecer en ninguna componente relevante. El método corre, devuelve componentes, la varianza explicada se ve altísima, y lo único que hiciste fue redescubrir tu columna de números más grandes. Con datos estandarizados, todas las columnas arrancan con varianza 1 y compiten en igualdad.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Demasiadas columnas traen tres problemas: no se puede visualizar nada, hay información repetida, y todo se vuelve caro y frágil por la maldición de la dimensionalidad. PCA no descarta columnas: construye direcciones nuevas, combinaciones de todas las originales, ordenadas por cuánta varianza capturan, cada una perpendicular a las anteriores. La maquinaria son los autovectores de la matriz de covarianza, que son las componentes, y sus autovalores, que son la varianza en cada dirección; ordenar por importancia es ordenar autovalores. Cuántas conservar se decide con la varianza explicada acumulada, quedándose con las que llegan al 90 o 95%, o con dos si el objetivo es graficar. El precio es la interpretabilidad: una componente es una mezcla de todas las variables, sin nombre ni unidades, así que un modelo entrenado sobre componentes es opaco. Y hay dos advertencias que van juntas: PCA es no supervisado y maximiza varianza sin mirar lo que querés predecir, así que puede descartar justo la dirección que separaba las clases; y sin estandarizar antes, la columna con las unidades más grandes se convierte en PC1 y el método no hace más que redescubrirla. Con esto cierra la fase 4 y todo el machine learning clásico. La fase 5 arranca de nuevo desde una sola neurona, que resulta ser un modelo que ya conocés con otro nombre.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="pca.js"></script>
+</body>
+</html>
