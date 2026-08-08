@@ -196,27 +196,34 @@ consciente del doc, por legibilidad.
 - Medida de lectura: **68ch** (`--medida`)
 - Columna de notas al margen: **`clamp(14rem, 22vw, 20rem)`** (`--margen`)
 
-### Grilla editorial de tres columnas
+### Un solo ancho
 
-Toda página de tema es `[riel del número 4rem] [prosa 68ch] [margen anotado]`.
-El margen no es aire sobrante: es donde viven las notas.
+**Todo bloque de una sección comparte borde izquierdo y borde derecho.** Prosa,
+avisos, fórmulas, diagramas, tablas, ejercicios y el filete de la sección: el
+mismo. Es el invariante del layout y se verifica midiendo el `right` de cada
+tipo de bloque, que tiene que dar un solo valor por página.
 
-| Qué | Dónde va |
-|---|---|
-| Párrafos | Columna de prosa, capados en 68ch, justificados |
-| Callout que **interrumpe** prosa | Flota al margen, a la altura del párrafo que lo dispara |
-| Callout que **cierra** una sección, o tira de varios | Prosa + margen, en dos columnas de ≥30rem |
-| Leyenda de diagrama (`figcaption`) | Margen, al lado de la figura |
-| Diagramas, tablas, ejercicios | Prosa + margen |
+Hubo una versión con dos anchos —prosa a 68ch y una columna de notas al
+margen— y se veía torcida: el párrafo terminaba a los 826px, el filete seguía
+hasta los 1360 y los avisos ocupaban todo el ancho. Tres bordes derechos en la
+misma pantalla.
 
-**Las notas al margen van con `float`, no con grid.** Un grid de dos columnas le
-da una FILA propia a cada hijo: el callout en la columna 2 empuja al párrafo
-siguiente por debajo suyo y deja un hueco de su alto en la columna de prosa. El
-float no consume fila, se cuelga al costado del flujo. Es además la técnica
-original de Tufte, no un rodeo.
+No se arregla al revés, estirando la prosa: a 1360px un renglón tiene 120
+caracteres y el ojo pierde la línea al volver. En un sitio que es para leer, la
+medida de lectura gana y el resto se alinea con ella. Por eso `--ancho` bajó de
+1280 a **960px**: el contenido no se acortó, se le sacó el margen muerto de la
+derecha.
 
-Por debajo de 1100px el margen colapsa y todo vuelve al flujo, en el orden del
-HTML.
+| Medida | Valor | Qué es |
+|---|---|---|
+| `--ancho` | 960px | Contenedor de página: nav, hero, secciones, pie |
+| riel del número | 4rem | Columna del `01`, `02`… a la izquierda |
+| columna de contenido | ~864px | Lo que queda: **71 caracteres a 21px** |
+| `--medida` | 74ch | Solo un tope de seguridad para texto fuera de una columna acotada |
+
+Un componente **no declara su propio ancho**. El día que lo haga en `ch`, va a
+encoger respecto de sus vecinos en los viewports donde el `clamp()` del cuerpo
+dé una letra más chica que la columna, y la asimetría vuelve.
 
 ### Justificado
 

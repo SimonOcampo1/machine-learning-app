@@ -125,25 +125,40 @@
         <p>Eso imprime cada precio duplicado, uno por línea. Fijate en dos cosas. Primero, los dos puntos al final de la línea del <code>for</code>. Segundo, y mucho más importante: <strong>la sangría</strong>.</p>
         <p>En casi todos los lenguajes, la sangría es decoración. En Python <em>es</em> el código. Lo que está indentado abajo del <code>for</code> es lo que se repite; lo que vuelve al margen ya está afuera del bucle y se ejecuta una sola vez. No hay llaves ni palabras de cierre: la única forma de saber dónde termina un bloque es mirar dónde vuelve el margen.</p>
         <figure class="diagram" id="d-sangria">
-          <svg viewBox="0 0 640 240" role="img" aria-label="Dos versiones del mismo bucle: en una el print está indentado y corre cuatro veces, en la otra está al margen y corre una sola vez">
-            <text class="dlabel" x="30" y="30">adentro del bucle</text>
-            <rect class="dnode-bg" x="30" y="45" width="250" height="30" rx="6"/>
-            <text class="dtxt" x="42" y="66">for p in precios:</text>
-            <rect class="dnode-solid" x="60" y="82" width="220" height="30" rx="6"/>
-            <text class="dtxt-mute" x="72" y="103">····print(p)</text>
-            <path class="dedge" d="M295 97 H 340"/>
-            <text class="dtxt" x="350" y="102">corre 4 veces</text>
+          <svg viewBox="0 0 640 390" role="img" aria-label="Dos programas con las mismas cuatro líneas. En el primero, print(total) está indentado dentro del for y se ejecuta en cada vuelta, cuatro veces. En el segundo, print(total) vuelve al margen y se ejecuta una sola vez, después de que el bucle terminó.">
+            <text class="dlabel" x="30" y="26">adentro del bucle</text>
+            <rect class="dnode-bg" x="30" y="40" width="290" height="28" rx="6"/>
+            <text class="dtxt" x="42" y="59">total = 0</text>
+            <rect class="dnode-bg" x="30" y="74" width="290" height="28" rx="6"/>
+            <text class="dtxt" x="42" y="93">for p in precios:</text>
+            <rect class="dnode-bg" x="58" y="108" width="262" height="28" rx="6"/>
+            <text class="dtxt" x="70" y="127">····total = total + p</text>
+            <!-- La línea marcada: la que cambia de lugar entre los dos programas.
+                 Va con relleno sólido del color de la fase y texto en el canvas
+                 casi negro. Antes era `.dtxt-mute` (gris claro) sobre ese mismo
+                 relleno: gris sobre cian es ilegible. El contraste es simétrico,
+                 así que negro sobre fase da lo mismo que fase sobre negro —entre
+                 7.4:1 y 15.8:1 en las seis fases, AAA en todas. -->
+            <rect class="dnode-solid" x="58" y="142" width="262" height="28" rx="6"/>
+            <text class="dtxt-sobre" x="70" y="161">····print(total)</text>
+            <path class="dedge" d="M335 156 H 385"/>
+            <text class="dtxt" x="395" y="161">corre 4 veces</text>
 
-            <line class="dedge-mute" x1="30" y1="140" x2="610" y2="140"/>
+            <line class="dedge-mute" x1="30" y1="196" x2="610" y2="196"/>
 
-            <text class="dlabel" x="30" y="175">afuera del bucle</text>
-            <rect class="dnode-bg" x="30" y="190" width="250" height="30" rx="6"/>
-            <text class="dtxt" x="42" y="211">for p in precios:</text>
-            <rect class="dnode-bg" x="30" y="227" width="250" height="8" rx="4"/>
-            <path class="dedge" d="M295 205 H 340"/>
-            <text class="dtxt" x="350" y="210">corre 1 vez</text>
+            <text class="dlabel" x="30" y="228">afuera del bucle</text>
+            <rect class="dnode-bg" x="30" y="242" width="290" height="28" rx="6"/>
+            <text class="dtxt" x="42" y="261">total = 0</text>
+            <rect class="dnode-bg" x="30" y="276" width="290" height="28" rx="6"/>
+            <text class="dtxt" x="42" y="295">for p in precios:</text>
+            <rect class="dnode-bg" x="58" y="310" width="262" height="28" rx="6"/>
+            <text class="dtxt" x="70" y="329">····total = total + p</text>
+            <rect class="dnode-solid" x="30" y="344" width="290" height="28" rx="6"/>
+            <text class="dtxt-sobre" x="42" y="363">print(total)</text>
+            <path class="dedge" d="M335 358 H 385"/>
+            <text class="dtxt" x="395" y="363">corre 1 vez</text>
           </svg>
-          <figcaption>El mismo <code>print</code>, cuatro espacios de diferencia, dos programas distintos. Cuatro espacios es la convención; lo importante es ser consistente.</figcaption>
+          <figcaption>Los dos programas tienen exactamente las mismas cuatro líneas. Lo único que cambia es dónde arranca <code>print(total)</code>: indentado corre en cada vuelta e imprime los totales parciales; al margen corre una sola vez, cuando el bucle ya terminó, e imprime el total final. Cuatro espacios es la convención; lo importante es ser consistente.</figcaption>
         </figure>
         <p>El otro bloque indentado que vas a ver es el <code>if</code>, que ejecuta algo solo si una condición se cumple. Se lee casi como inglés: <code>if precio &gt; 2000:</code> y abajo, indentado, lo que pasa en ese caso.</p>
         <div class="callout warn"><span class="etiqueta">Cuidado</span>Un solo <code>=</code> asigna, dos <code>==</code> comparan. <code>if x = 5</code> es un error de sintaxis; <code>if x == 5</code> es la pregunta "¿x vale 5?". Es el error de tipeo más frecuente de quien arranca.</div>

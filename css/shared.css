@@ -87,12 +87,11 @@
   --t-h1:      clamp(1.875rem, 1.057rem + 3.27vw, 4rem);     /* 30 → 64   */
   --t-display: clamp(2.75rem, 0.634rem + 8.46vw, 8.25rem);   /* 44 → 132  */
 
-  /* Las dos medidas del layout editorial. `--medida` es la columna de lectura
-     y no debe crecer con la pantalla: 68ch es el techo de legibilidad, más
-     ancho obliga al ojo a saltar de renglón. El ancho sobrante NO se le da a
-     la prosa, se le da a `--margen`, la columna de notas al costado. */
-  --medida: 68ch;
-  --margen: clamp(14rem, 22vw, 20rem);
+  /* `--medida` es un tope de seguridad para el texto que vive FUERA de una
+     columna ya acotada (el pie, el lede del hero). Adentro de una sección
+     nunca llega a aplicar: la columna ya mide menos que esto. El ancho real de
+     lectura lo fija `--ancho`, abajo. */
+  --medida: 74ch;
 
   /* Radios: solo tres valores en todo el sistema. */
   --r-card: 8px;
@@ -103,7 +102,12 @@
   --e6: 24px;   --e8: 32px;   --e10: 40px;  --e12: 48px;
   --e19: 76px;  --e24: 96px;  --e27: 108px;
 
-  --ancho: 1280px;
+  /* 960 y no 1280. Con el riel del número (4rem) y su gap, la columna de
+     contenido queda en ~864px, que a 21px son 71 caracteres: justo adentro del
+     rango legible de 65 a 75. El contenido no se acortó, se le sacó el margen
+     muerto de la derecha y quedó centrado. Es el ancho del que se deriva todo
+     lo demás. */
+  --ancho: 960px;
 
   /* Sin bounce, sin elastic: no pertenecen a este tono y `impeccable` los
      prohíbe. Todo sale con ease-out exponencial. */
@@ -222,6 +226,12 @@ p {
    cuando hay párrafo suficiente para repartir el error. */
 figcaption, .lede, .breadcrumb, .ej-q, .py-estado,
 .rm-phase-hint, .dist-truco, .tl-item p { text-align: left; hyphens: manual; }
+/* Las tarjetas son columnas angostas (~380px, unos 30 caracteres). Justificar
+   ahí abre agujeros enormes: en una línea de cinco palabras el navegador tiene
+   que repartir todo el sobrante entre cuatro espacios. El justificado necesita
+   renglón largo para que el error se diluya. */
+.pilar p, .dist p, .rm-card, .callout .etiqueta,
+.py-salida, .dg-nota, .concept-nav { text-align: left; hyphens: manual; }
 
 a { color: var(--fase); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
@@ -261,7 +271,14 @@ html.lenis, html.lenis body { height: auto; }
 .envoltura { width: min(var(--ancho), 100% - 2.5rem); margin-inline: auto; }
 
 /* ── Navegación ──────────────────────────────────────────── */
-nav {
+/* `body > nav` y no `nav` a secas. La navegación entre temas del pie también
+   es un `<nav>`, así que con el selector de elemento le caía TODO esto encima:
+   el borde inferior —que daba una segunda línea divisoria al pie de las 24
+   páginas, la que se veía de más—, `position: sticky`, el blur y un padding
+   lateral de 20px que la desalineaba del resto de la columna.
+   El de arriba es hijo directo de `<body>`; el de abajo vive dentro de `<main>`.
+   Un solo `>` los separa sin tocar los 27 HTML. */
+body > nav {
   position: sticky; top: 0; z-index: 50;
   display: flex; align-items: center; justify-content: space-between;
   gap: var(--e6);
@@ -287,9 +304,12 @@ nav {
 
 /* ── Pie ─────────────────────────────────────────────────── */
 /* Un paso de superficie más claro que el canvas: eso es el terminador. */
+/* Sin `border-top`. El pie ya cambia de superficie (`--panel` sobre el canvas)
+   y ese salto ES el terminador: agregarle además un filete daba dos líneas
+   divisorias en los últimos 300px de la página, una del bloque de navegación
+   entre temas y otra acá, con nada entre medio. */
 .pie {
   background: var(--panel);
-  border-top: 1px solid var(--rule);
   margin-top: var(--e27);
   padding-block: var(--e19);
   font-size: var(--t-body-sm); color: var(--ink-mute);
@@ -311,7 +331,44 @@ nav {
 }
 
 /* ── Hero ────────────────────────────────────────────────── */
+/* Dos columnas: el texto a la izquierda y la red decorativa a la derecha. Antes
+   el hero era una sola columna y al lado del título quedaban ~600px vacíos, que
+   en la página de entrada es justo donde más se nota. */
 .hero { padding-block: var(--e24) var(--e19); }
+
+/* La grilla de dos columnas solo donde HAY red, que es el home. `temas.html` y
+   `muestra.html` usan el mismo `.hero` y no la tienen: aplicándoselo a todos,
+   les reservaba una segunda columna vacía de 17rem que apretaba el título de
+   display contra la primera y lo hacía desbordar la página a 1024px.
+   `:has()` lo ata a la presencia real del elemento, así que el día que otra
+   página estrene una lo hereda sola y ninguna que no la tenga se rompe. */
+.hero:has(.hero-red) {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 17rem);
+  gap: var(--e12);
+  align-items: center;
+}
+.hero-txt { min-width: 0; }
+
+/* Red decorativa. Nodos y aristas en gris de filete; los pulsos, en el color
+   de la fase de la página. Que las aristas queden apenas visibles es el punto:
+   lo que tiene que verse moverse es el pulso, no el cableado. */
+.hero-red { min-width: 0; }
+.hero-red svg { width: 100%; height: auto; display: block; overflow: visible; }
+.red-arista { stroke: var(--s25); stroke-width: 0.75; }
+.red-nodo { fill: var(--panel); stroke: var(--s50); stroke-width: 1.25; }
+/* La primera capa y la última quedan en color: son la entrada y la salida, y
+   marcarlas es lo que hace que el dibujo se lea de izquierda a derecha. */
+.red-capa-0, .red-capa-3 { fill: var(--fase-tint); stroke: var(--fase); }
+.red-pulso { fill: var(--fase); r: 3.5; }
+
+@media (max-width: 800px) {
+  /* Apilada, la red va DEBAJO del texto y más chica: arriba empujaría el
+     título fuera de la primera pantalla, que es lo único que el hero tiene que
+     lograr. */
+  .hero:has(.hero-red) { grid-template-columns: 1fr; gap: var(--e8); }
+  .hero-red { max-width: 15rem; }
+}
 .hero-c { padding-block: var(--e19) var(--e8); }
 
 /* El display sangra hasta el borde del viewport a propósito: sin contenedor,
@@ -349,77 +406,29 @@ nav {
 .sec-body { min-width: 0; }
 .sec-body > :last-child { margin-bottom: 0; }
 
-/* ── Margen anotado ──────────────────────────────────────── */
-/* El problema que resuelve: `.sec-body` ocupa ~1180px pero `p` está capado en
-   68ch (~650px), así que media pantalla quedaba vacía en las 24 páginas de
-   teoría. La respuesta editorial no es ensanchar la prosa —68ch es el techo de
-   legibilidad— sino darle un destino a ese ancho: los avisos se van al margen
-   derecho, a la altura del párrafo que los dispara, y los diagramas, tablas y
-   ejercicios rompen a los dos anchos juntos.
-   Se hace con `float` y no con grid a propósito. Un grid de dos columnas le da
-   una FILA propia a cada hijo: el callout en la columna 2 empuja al párrafo
-   siguiente por debajo suyo y deja un hueco del alto del callout en la columna
-   de prosa. El float no consume fila, se cuelga al costado del flujo, que es
-   exactamente la nota al margen de un libro. Es además la técnica original de
-   Tufte, no un rodeo. */
-/* Solo se va al margen el callout que INTERRUMPE prosa y está solo. Las dos
-   exclusiones no son detalles:
-   - `:last-child` — un callout al final de la sección no tiene texto después
-     que fluya a su lado, así que flotando deja un vacío del alto de la nota a
-     su izquierda y la sección termina en un escalón.
-   - `:has(+ .callout)` — el primero de una tira de avisos ("Errores
-     frecuentes" son tres seguidos). Si flotara solo el primero, la tira se
-     partiría en dos anchos distintos.
-   Los dos casos caen abajo, en la coda. */
-.sec-body > p + .callout:not(.formula):not(:last-child):not(:has(+ .callout)) {
-  float: right;
-  clear: right;
-  width: min(var(--margen), 100%);
-  margin: 0 0 var(--e8) var(--e8);
-  font-size: var(--t-body-sm);
-}
+/* ── Un solo ancho ───────────────────────────────────────
+   Todo hijo directo de la sección llena la columna: prosa, avisos, fórmulas,
+   diagramas, tablas y ejercicios comparten borde izquierdo y borde derecho.
+   Ese es el invariante.
 
-/* La coda: el callout que cierra una sección, y las tiras de avisos. En vez de
-   quedarse a la medida de lectura dejando el margen vacío al costado, toma
-   prosa + margen. Un aviso ancho al final se lee como lo que es —el remate de
-   la sección— y no como un párrafo más que se quedó corto.
-   Va en una regla aparte de la de arriba a propósito: si `:has()` no existiera
-   en el navegador, la lista de selectores entera se descartaría y estos
-   callouts perderían también el ancho. Separadas, cada una falla sola. */
-/* `columns` y no un ancho suelto: una caja de 1184px con una sola columna de
-   texto da renglones de ~120 caracteres, casi el doble del techo de
-   legibilidad. Con `column-width` el navegador arma tantas columnas de ≥30rem
-   como entren —dos en una notebook, una en tablet— sin una sola media query, y
-   cada columna cae en el rango de 55 a 70 caracteres. Es lo que hace un diario
-   con un ancho que no puede achicar, y es la respuesta correcta a "usá el
-   ancho" que NO es "estirá el renglón". */
-.sec-body > .callout:not(.formula):last-child,
-.sec-body > .callout:not(.formula) + .callout:not(.formula) {
-  float: none; width: auto; max-width: none;
-  columns: 30rem; column-gap: var(--e8);
-}
-.sec-body > .callout:not(.formula):has(+ .callout:not(.formula)) {
-  float: none; width: auto; max-width: none;
-  columns: 30rem; column-gap: var(--e8);
-}
-/* La etiqueta abre la primera columna y no se parte a la mitad de un salto. */
-.callout .etiqueta { break-after: avoid; break-inside: avoid; }
+   La versión anterior tenía dos anchos —prosa a 68ch y una columna de notas al
+   margen— y se veía torcida: el párrafo terminaba a los 826px, el filete de la
+   sección seguía hasta los 1360 y los avisos de color ocupaban todo el ancho.
+   Tres bordes derechos distintos en la misma pantalla.
+   No se arregla al revés, estirando la prosa: a 1360px un renglón tiene 120
+   caracteres y el ojo pierde la línea al volver. En un sitio que es para leer,
+   la medida de lectura gana y todo lo demás se alinea con ella. */
+.sec-body > * { max-width: none; }
 
-/* El float se sale de la caja de su padre. Sin esto, el `border-top` de la
-   sección siguiente se dibujaría por encima de un callout que cuelga. */
-.sec-body::after { content: ""; display: block; clear: both; }
+/* Los avisos van en UNA sola columna de texto. Antes los largos se partían en
+   dos para no dar renglones de 120 caracteres cuando el bloque medía 1184px;
+   con la columna en 864px el renglón ya es legible sin partir nada, y partir
+   tenía su propio costo: el texto saltaba del pie de la primera columna al
+   tope de la segunda, que en un aviso de cuatro renglones se lee como si
+   estuviera cortado por la mitad. Una nota es un párrafo y se lee de corrido. */
+.sec-body > .callout { float: none; width: auto; max-width: none; columns: auto; }
 
-/* Los bloques anchos ignoran la medida de lectura y toman prosa + margen. */
-.diagram, .tabla-scroll, .ej, .aviso-error { max-width: none; }
 
-@media (max-width: 1100px) {
-  /* Por debajo de esto el margen quedaría más angosto que la nota que tiene que
-     alojar. El callout vuelve al flujo, en el mismo orden del HTML: nadie se
-     entera de que existía una columna. */
-  .sec-body > p + .callout:not(.formula) {
-    float: none; width: auto; margin: var(--e5) 0; font-size: inherit;
-  }
-}
 @media (max-width: 720px) {
   .section { grid-template-columns: minmax(0, 1fr); gap: var(--e3); padding-block: var(--e8); }
   .sec-no { position: static; }
@@ -439,7 +448,11 @@ nav {
      Con cuerpo de 21px, los 20px que había de cada lado quedaban por debajo de
      una sola línea de texto y todo se veía pegado. */
   margin-block: var(--e6) var(--e10);
-  max-width: var(--medida);
+  /* Sin `max-width` propio: el ancho lo decide la columna de la sección, que ya
+     ES la medida de lectura. Con un tope propio en `ch`, el callout encogía
+     respecto del resto en los viewports donde el `clamp()` del cuerpo daba una
+     letra más chica que la columna — a 1024px quedaba 17px más angosto que el
+     párrafo de al lado. Un solo ancho significa un solo lugar donde se decide. */
   min-width: 0;
 }
 .callout > :last-child { margin-bottom: 0; }
@@ -453,8 +466,6 @@ nav {
 .callout.formula {
   text-align: center;
   padding-block: var(--e6);
-  max-width: var(--medida);
-  margin-inline: auto;
 }
 /* La otra mitad de lo que antes era `.callout.formula`. De los 36 bloques,
    14 no eran matemática sino Python (`precios = np.array([...])`,
@@ -483,48 +494,42 @@ nav {
 }
 
 /* ── Diagramas ───────────────────────────────────────────── */
-/* El panel toma prosa + margen; adentro, la figura va a la izquierda y la
-   leyenda a la derecha, en la misma columna que las notas al margen. Antes la
-   leyenda iba debajo del SVG a ancho de lectura, lo que obligaba al SVG a
-   estirarse a los ~1120px del panel: con un viewBox de 640×380 eso es un
-   aumento de 1.75x y el texto de 14px del diagrama salía a 24px, más grande
-   que el h3 de la sección. Poniendo la leyenda al costado, el SVG se queda en
-   un ancho sano y el alto del bloque baja casi a la mitad. */
+/* Una sola columna, como todo el resto. La leyenda va debajo de la figura y no
+   al costado: al costado creaba una tercera medida de texto en la página. */
 .diagram {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--margen);
-  gap: var(--e8);
-  align-items: start;
+  /* `margin-inline: 0` explícito: `<figure>` trae `margin: 1em 40px` de la hoja
+     del navegador, y esos 40px de cada lado dejaban el diagrama 80px más
+     angosto que todo lo demás de la columna. Es exactamente el tipo de
+     desalineación que este layout viene a eliminar. */
   margin-block: var(--e8) var(--e12);
+  margin-inline: 0;
   padding: var(--e8);
   background: var(--panel);
   border-radius: var(--r-card);
 }
-/* Todo lo que no sea la leyenda vive en la columna de la figura: eso incluye
-   los controles del simulador, que son parte de la figura y no de la nota. */
-.diagram > :not(figcaption) { grid-column: 1; }
 /* `overflow: visible` es lo que deja que las formas desborden el marco, que es
    como se contienen en gsap.com: sueltas, pisando el texto vecino. */
 .diagram svg { width: 100%; height: auto; display: block; overflow: visible; }
 .diagram figcaption {
-  grid-column: 2; grid-row: 1;
+  margin-top: var(--e6);
   font-size: var(--t-body-sm); line-height: 1.45; color: var(--ink-mute);
   /* Filete corto arriba: la marca de que esto es una nota, no cuerpo. */
   padding-top: var(--e3); border-top: 1px solid var(--rule);
-}
-
-@media (max-width: 1100px) {
-  .diagram { grid-template-columns: 1fr; gap: var(--e5); }
-  .diagram figcaption { grid-column: 1; grid-row: auto; }
 }
 
 /* ── Diagrama paso a paso ────────────────────────────────── */
 /* Los controles de `Diagramas.montarPasos`. Un diagrama que se dibuja solo al
    pasar el scroll cuenta su historia una vez y a la velocidad del scroll; con
    esta barra el lector para donde quiera y vuelve atrás. */
+/* Centrados, y las marcas en su propio renglón. Antes los botones iban
+   pegados a la izquierda y la regleta de pasos se empujaba al extremo derecho
+   con `margin-left: auto`, así que quedaban en la misma línea, a los dos
+   costados de un vacío. Ahora los controles son un grupo centrado y la regleta
+   va debajo, separada, que es como se lee un reproductor. */
 .dg-ctrl {
-  display: flex; align-items: center; gap: var(--e2);
-  margin-top: var(--e6); flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: center;
+  gap: var(--e3); flex-wrap: wrap;
+  margin-top: var(--e8);
 }
 .dg-b { padding: var(--e2) var(--e4); font-size: var(--t-body-sm); line-height: 1; }
 .dg-b:disabled { opacity: 0.3; cursor: default; }
@@ -532,9 +537,14 @@ nav {
 
 /* La regleta de pasos. Es a la vez indicador y navegación: se ve cuántos pasos
    hay, en cuál se está y cuáles ya pasaron, y se puede saltar a cualquiera. */
-.dg-marcas { display: flex; gap: 4px; margin-left: auto; }
+.dg-marcas {
+  display: flex; justify-content: center; gap: 6px;
+  /* Renglón propio: sin esto las marcas comparten línea con los botones y
+     quedan pegadas a ellos. */
+  flex-basis: 100%; margin-top: var(--e5);
+}
 .dg-marca {
-  width: 26px; height: 4px; padding: 0; cursor: pointer;
+  width: 30px; height: 4px; padding: 0; cursor: pointer;
   background: var(--s25); border: 0; border-radius: var(--r-pill);
   transition: background var(--tr-rapida);
 }
@@ -543,21 +553,20 @@ nav {
 .dg-marca.en { background: var(--fase); }
 
 .dg-paso {
-  margin: var(--e5) 0 var(--e2); max-width: none;
+  margin: var(--e6) 0 var(--e2); max-width: none;
   font-size: var(--t-body-sm); font-weight: 600; color: var(--fase);
-  text-align: left; hyphens: manual;
+  text-align: center; hyphens: manual;
 }
 .dg-nota {
-  margin: 0; max-width: 62ch;
+  margin: 0 auto; max-width: 62ch;
   font-size: var(--t-body-sm); color: var(--ink-mute);
-  text-align: left; hyphens: manual;
+  text-align: center; hyphens: manual;
   /* Alto fijo de dos renglones: sin esto el diagrama entero salta de posición
      cada vez que la nota del paso siguiente tiene un renglón más o menos. */
   min-height: 2.9em;
 }
 
 @media (max-width: 560px) {
-  .dg-marcas { margin-left: 0; width: 100%; }
   .dg-marca { flex: 1; }
 }
 
@@ -569,6 +578,12 @@ nav {
 .dedge-mute { stroke: var(--s50); stroke-width: 1.5; fill: none; }
 .daxis { stroke: var(--s50); stroke-width: 1.5; fill: none; }
 .dtxt { fill: var(--ink); font-family: var(--font); font-size: 14px; }
+/* Texto SOBRE un relleno sólido de fase (`.dnode-solid`). Va en el canvas casi
+   negro, nunca en gris: el contraste es simétrico, así que negro sobre fase da
+   exactamente la misma razón que fase sobre negro —entre 7.4:1 y 15.8:1 según
+   la fase, AAA en las seis, medido por `npm run contraste`—. Con `--ink-mute`
+   encima de una fase clara como el cian de la fase 0 el texto desaparece. */
+.dtxt-sobre { fill: var(--just-black); font-family: var(--font); font-size: 14px; font-weight: 600; }
 .dtxt-mute {
   fill: var(--ink-mute); font-family: var(--font);
   font-variant-numeric: tabular-nums; font-size: 12px;
@@ -792,8 +807,8 @@ nav {
    líneas en su lugar") y había que deducir CUÁLES a ojo. */
 .pa-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
-  gap: var(--e8);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 15rem);
+  gap: var(--e6);
   margin-bottom: var(--e5);
   align-items: start;
 }
@@ -810,17 +825,42 @@ nav {
 /* Espejo del hover: pasar el mouse por un bloque resalta su nodo en el flujo, y
    al revés. Es lo que enseña que las dos cosas son la misma cosa. */
 .pa-item.senalada { border-color: var(--fase); }
-/* `white-space: pre` es obligatorio —la sangría ES el ejercicio, partir la
-   línea la destruiría— y por eso mismo el bloque tiene que poder scrollear
-   solo. Sin el `min-width: 0`, la línea más larga del ejercicio define el ancho
-   de la página entera. */
+/* Sin scroll horizontal. La sangría ya no vive en el texto —la pone
+   `margin-left` por nivel, ver `itemParsons`—, así que la línea puede envolver
+   en un espacio como cualquier texto en vez de forzar un scroll propio.
+   El par `padding-left` + `text-indent` negativo es la sangría francesa: la
+   primera línea arranca al ras y la continuación entra 1.4em, así se ve de un
+   vistazo que es la misma línea de código y no una nueva. Solo envuelven las
+   dos o tres líneas largas de cada ejercicio; el resto entra de una. */
 .pa-txt {
+  /* `display: block` no es cosmético: `<code>` es inline por defecto, y un
+     inline no respeta `min-width` ni establece su propia caja de envoltura, así
+     que en un teléfono la línea larga seguía empujando el bloque de costado por
+     más `pre-wrap` que tuviera.
+     `overflow-wrap: break-word` es el último recurso: si una sola palabra no
+     entra —una llamada larga sin espacios— se parte antes que desbordar. */
+  display: block; min-width: 0;
   font-family: var(--font-mono); font-size: var(--t-body-sm);
-  white-space: pre; min-width: 0; overflow-x: auto;
+  white-space: pre-wrap; overflow-wrap: break-word;
+  padding-left: 1.4em; text-indent: -1.4em;
+  line-height: 1.45;
+}
+@media (max-width: 560px) {
+  /* En 390px de ancho, 15px de mono dan 36 caracteres por renglón y casi toda
+     línea envuelve. A 13px entran 42 y el bloque baja de tres renglones a dos. */
+  .pa-txt { font-size: 0.8125rem; }
+  .pa-item { gap: var(--e2); padding: var(--e2); }
 }
 .pa-ctrl { display: flex; gap: 4px; flex-shrink: 0; }
+/* `display: grid` + `place-items: center` es lo que centra de verdad el glifo
+   adentro del círculo. Con el `display: block` que traía por defecto, el texto
+   se apoyaba en la línea de base y la caja del botón le agregaba el descendente
+   abajo: las flechas quedaban altas y la cruz corrida. El `line-height: 1` y el
+   `padding: 0` sacan las dos fuentes de descentrado que quedaban. */
 .pa-b {
-  width: 28px; height: 28px; cursor: pointer; line-height: 1; font: inherit;
+  display: grid; place-items: center;
+  width: 28px; height: 28px; padding: 0; cursor: pointer;
+  font: inherit; font-size: 14px; line-height: 1;
   background: none; color: var(--ink-mute);
   border: 1px solid var(--s25); border-radius: 50%;
   transition: color var(--tr-rapida), border-color var(--tr-rapida);
@@ -873,9 +913,11 @@ nav {
 .pa-nodo.falla { animation: pa-temblar 320ms var(--ease-out) 1; }
 @media (prefers-reduced-motion: reduce) { .pa-nodo.falla { animation: none; } }
 
-@media (max-width: 1000px) {
+@media (max-width: 760px) {
   /* El flujo pasa arriba de los bloques, no abajo: leerlo primero es lo que
-     ordena la tarea. Y deja de ser pegajoso, que en una columna no sirve. */
+     ordena la tarea. Y deja de ser pegajoso, que en una columna no sirve.
+     El corte bajó de 1000 a 760 por la misma razón que el de Python: la
+     columna mide 864 y a 1000 nunca habría quedado lado a lado. */
   .pa-split { grid-template-columns: 1fr; gap: var(--e5); }
   .pa-flujo { position: static; order: -1; }
 }
@@ -1036,9 +1078,10 @@ nav {
 .py-estado.ok { color: var(--ok); }
 .py-estado.no { color: var(--err); }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   /* Dos consolas de 300px lado a lado no son dos consolas, son dos columnas de
-     código partido. Se apilan. */
+     código partido. Se apilan. El corte está en 700 y no en 900 porque la
+     columna de contenido mide 864: a 900 se habría apilado siempre. */
   .py-split { grid-template-columns: 1fr; }
   .py-editor, .py-salida { min-height: 11rem; }
 }
@@ -1049,13 +1092,23 @@ nav {
 .sync-salir { font-size: var(--t-caption); color: var(--ink-mute); padding: 4px var(--e3); border-color: var(--s25); }
 
 /* ── Pilares ─────────────────────────────────────────────── */
-.pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--e6); }
+/* Las grillas de tarjetas no traían margen propio, así que el párrafo que
+   seguía arrancaba pegado al borde de la caja: se leía como si fuera parte de
+   la tarjeta. Llevan el mismo aire que el resto de los bloques —más abajo que
+   arriba— para que el ritmo vertical de la página sea uno solo. */
+.pillars, .dist-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--e6); margin-block: var(--e6) var(--e10);
+}
 .pilar { padding: var(--e6); background: var(--panel); border-radius: var(--r-card); }
 .pilar h3 { color: var(--fase); font-size: var(--t-sub); }
 .pilar-e, .pilar-s { font-size: var(--t-body-sm); color: var(--ink-mute); margin-bottom: var(--e2); }
 
 /* ── Línea de tiempo ─────────────────────────────────────── */
-.timeline { list-style: none; margin: 0; padding: 0 0 0 var(--e8); border-left: 1px solid var(--rule); }
+.timeline {
+  list-style: none; margin-block: var(--e6) var(--e10); padding: 0 0 0 var(--e8);
+  border-left: 1px solid var(--rule);
+}
 .tl-item { position: relative; display: grid; grid-template-columns: 5rem 1fr; gap: var(--e4); padding-block: var(--e5); }
 .tl-item::before {
   content: ""; position: absolute; left: calc(var(--e8) * -1 - 4px); top: var(--e8);
@@ -1084,7 +1137,9 @@ nav {
 @media (hover: none) { .ci-ver { opacity: 1; } }
 
 /* ── Distinciones ────────────────────────────────────────── */
-.dist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--e6); }
+/* `.dist-grid` comparte la regla de arriba con `.pillars`; acá solo su mínimo
+   propio, que es más ancho porque su contenido es una comparación de a pares. */
+.dist-grid { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .dist { padding: var(--e6); background: var(--panel); border-radius: var(--r-card); }
 .dist-vs { color: var(--fase); font-size: 0.8em; font-weight: 400; }
 .dist-trampa { font-size: var(--t-body-sm); }

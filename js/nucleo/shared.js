@@ -56,7 +56,16 @@ function montarBarra() {
 async function montarConceptNav() {
   const cont = document.querySelector(".concept-nav");
   if (!cont) return;
-  const archivo = location.pathname.split("/").pop() || "";
+  /* `vercel.json` tiene `cleanUrls: true`, así que en producción la URL de un
+     tema es `/concept-11-regularizacion`, SIN la extensión — el servidor
+     redirige desde el `.html`. El temario, en cambio, guarda el nombre de
+     archivo con extensión. Sin reponerla acá la búsqueda no encontraba nada y
+     el bloque de navegación entre temas quedaba vacío en las 24 páginas: se
+     veían dos filetes con 260px de nada entre medio al pie de cada tema.
+     En local con `file://` o con un servidor sin cleanUrls la URL sí trae el
+     `.html`, y por eso el bug no aparecía al desarrollar. */
+  const nombre = location.pathname.split("/").pop() || "";
+  const archivo = nombre.endsWith(".html") ? nombre : `${nombre}.html`;
   let temario;
   try {
     temario = await fetch("data/temario.json").then(r => r.json());
