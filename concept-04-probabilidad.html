@@ -67,7 +67,7 @@
         <h2>Varianza y desvío estándar</h2>
         <p>Saber el centro no alcanza. Dos grupos pueden tener la misma media y no parecerse en nada: uno con todos los datos apretados alrededor del promedio, otro con la mitad muy abajo y la mitad muy arriba.</p>
         <p>La <strong>varianza</strong> mide esa dispersión: para cada dato calculás cuánto se aleja de la media, elevás esa distancia al cuadrado, y promediás. El cuadrado está por el mismo motivo que en el tema 09: sin él, las desviaciones para arriba y para abajo se cancelarían y todo daría cero.</p>
-        <div class="callout formula">varianza = promedio de (xᵢ − media)²&nbsp;&nbsp;&nbsp;&nbsp;desvío = √varianza</div>
+        <div class="callout formula" data-tex="\text{varianza} = \text{promedio de } (x_i - \text{media})^2 \qquad \text{desvío} = \sqrt{\text{varianza}}">varianza = promedio de (xᵢ − media)²&nbsp;&nbsp;&nbsp;&nbsp;desvío = √varianza</div>
         <p>El problema de la varianza es que queda en unidades al cuadrado. Si medís sueldos en pesos, la varianza está en "pesos al cuadrado", que no significa nada que un ser humano pueda imaginar. Por eso casi siempre se reporta el <strong>desvío estándar</strong>, que es su raíz cuadrada: vuelve a las unidades originales y sí se puede leer. "Sueldo promedio 50.000, desvío 8.000" se entiende de inmediato.</p>
         <figure class="diagram" id="d-dispersion">
           <svg viewBox="0 0 640 240" role="img" aria-label="Dos grupos de puntos con la misma media pero distinta dispersión: uno apretado alrededor del centro y otro muy abierto">
@@ -163,7 +163,7 @@
         <p class="eyebrow">{ El resultado incómodo }</p>
         <h2>Bayes y el test que falla cuando acierta</h2>
         <p>El <strong>teorema de Bayes</strong> es la fórmula que da vuelta un condicional: te deja pasar de <code>P(B|A)</code>, que solés conocer, a <code>P(A|B)</code>, que es lo que en realidad querés saber.</p>
-        <div class="callout formula">P(A|B) = P(B|A) × P(A) / P(B)</div>
+        <div class="callout formula" data-tex="P(A \mid B) = \frac{P(B \mid A) \times P(A)}{P(B)}">P(A|B) = P(B|A) × P(A) / P(B)</div>
         <p>Escrita así no dice mucho. Lo que la vuelve inolvidable es este ejemplo, así que vale la pena hacerlo con números y sin fórmula.</p>
         <p>Hay una enfermedad que tiene 1 persona cada 1000. Existe un test que es muy bueno: si estás enfermo, da positivo el 99% de las veces, y si estás sano, da negativo el 99% de las veces. Te lo hacés y te da <strong>positivo</strong>. ¿Qué probabilidad hay de que estés enfermo?</p>
         <p>Casi todo el mundo contesta 99%. La respuesta real es alrededor del <strong>9%</strong>. Contémoslo sobre 100.000 personas:</p>
@@ -247,6 +247,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="probabilidad.js"></script>
 </body>
 </html>

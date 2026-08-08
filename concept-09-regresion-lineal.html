@@ -108,14 +108,14 @@
       <div class="sec-body">
         <h2>Mínimos cuadrados</h2>
         <p>En la sección anterior vimos que el error de una recta se mide sumando los cuadrados de sus residuos. Ahora sí, la pregunta que quedó pendiente: ¿qué recta hace que esa suma sea lo más chica posible? Resulta que existe una fórmula que la calcula directo, sin tener que probar rectas a mano ni ir ajustando por prueba y error.</p>
-        <div class="callout formula">β₁ = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²&nbsp;&nbsp;&nbsp;&nbsp;β₀ = ȳ − β₁x̄</div>
-        <p><strong>xᵢ, yᵢ</strong> — cada observación individual: el tamaño y el precio de una casa en particular, la i-ésima de tu lista de datos.</p>
-        <p><strong>x̄, ȳ</strong> — los promedios: el tamaño promedio de todas las casas, el precio promedio de todas las casas.</p>
-        <p><strong>(xᵢ − x̄)</strong> y <strong>(yᵢ − ȳ)</strong> — cuánto se aleja esa casa en particular del promedio general. Una casa grande da un (xᵢ − x̄) positivo; una casa chica, uno negativo. Lo mismo para el precio.</p>
-        <p><strong>El numerador, Σ(xᵢ − x̄)(yᵢ − ȳ)</strong> — para cada casa, multiplicás cuánto se aleja en tamaño por cuánto se aleja en precio, y sumás esos productos entre todas las casas. Si las casas grandes tienden a ser las caras, casi todos esos productos te van a dar positivo —grande por grande, o chico por chico, siempre da positivo— y la suma total sale un número grande. Eso es una <strong>covarianza</strong>: mide si dos cosas se mueven juntas, en la misma dirección.</p>
-        <p><strong>El denominador, Σ(xᵢ − x̄)²</strong> — lo mismo, pero solo con x, elevado al cuadrado. Como es una suma de cuadrados, nunca da negativo. Mide cuánto varían los tamaños entre sí, sin mirar el precio para nada. Eso es una <strong>varianza</strong> (bueno, casi: la varianza de verdad divide esto por n, pero para lo que necesitamos acá esa división se cancela y no hace falta).</p>
-        <p><strong>β₁, el resultado de dividir uno por el otro</strong> — covarianza sobre varianza. Te dice cuánto tiende a subir el precio por cada unidad que sube el tamaño, medido contra cuánto varían los tamaños en tus datos.</p>
-        <p><strong>β₀</strong> — una vez que tenés la pendiente, el intercepto sale solo: es el valor que hace que la recta pase exactamente por el punto (x̄, ȳ), el centro de gravedad de la nube de puntos. Todas las rectas de mínimos cuadrados pasan por ese punto, sin excepción.</p>
+        <div class="callout formula" data-tex="\beta_1 = \frac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2} \qquad \beta_0 = \bar{y} - \beta_1 \bar{x}">β₁ = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²&nbsp;&nbsp;&nbsp;&nbsp;β₀ = ȳ − β₁x̄</div>
+        <p><strong><span class="mate" data-tex="x_i">xᵢ</span>, <span class="mate" data-tex="y_i">yᵢ</span></strong> — cada observación individual: el tamaño y el precio de una casa en particular, la i-ésima de tu lista de datos.</p>
+        <p><strong><span class="mate" data-tex="\bar{x}">x̄</span>, <span class="mate" data-tex="\bar{y}">ȳ</span></strong> — los promedios: el tamaño promedio de todas las casas, el precio promedio de todas las casas.</p>
+        <p><strong>(<span class="mate" data-tex="x_i">xᵢ</span> − <span class="mate" data-tex="\bar{x}">x̄</span>)</strong> y <strong>(<span class="mate" data-tex="y_i">yᵢ</span> − <span class="mate" data-tex="\bar{y}">ȳ</span>)</strong> — cuánto se aleja esa casa en particular del promedio general. Una casa grande da un (<span class="mate" data-tex="x_i">xᵢ</span> − <span class="mate" data-tex="\bar{x}">x̄</span>) positivo; una casa chica, uno negativo. Lo mismo para el precio.</p>
+        <p><strong>El numerador, <span class="mate" data-tex="\sum">Σ</span>(<span class="mate" data-tex="x_i">xᵢ</span> − <span class="mate" data-tex="\bar{x}">x̄</span>)(<span class="mate" data-tex="y_i">yᵢ</span> − <span class="mate" data-tex="\bar{y}">ȳ</span>)</strong> — para cada casa, multiplicás cuánto se aleja en tamaño por cuánto se aleja en precio, y sumás esos productos entre todas las casas. Si las casas grandes tienden a ser las caras, casi todos esos productos te van a dar positivo —grande por grande, o chico por chico, siempre da positivo— y la suma total sale un número grande. Eso es una <strong>covarianza</strong>: mide si dos cosas se mueven juntas, en la misma dirección.</p>
+        <p><strong>El denominador, <span class="mate" data-tex="\sum">Σ</span>(<span class="mate" data-tex="x_i">xᵢ</span> − <span class="mate" data-tex="\bar{x}">x̄</span>)²</strong> — lo mismo, pero solo con x, elevado al cuadrado. Como es una suma de cuadrados, nunca da negativo. Mide cuánto varían los tamaños entre sí, sin mirar el precio para nada. Eso es una <strong>varianza</strong> (bueno, casi: la varianza de verdad divide esto por n, pero para lo que necesitamos acá esa división se cancela y no hace falta).</p>
+        <p><strong><span class="mate" data-tex="\beta_1">β₁</span>, el resultado de dividir uno por el otro</strong> — covarianza sobre varianza. Te dice cuánto tiende a subir el precio por cada unidad que sube el tamaño, medido contra cuánto varían los tamaños en tus datos.</p>
+        <p><strong><span class="mate" data-tex="\beta_0">β₀</span></strong> — una vez que tenés la pendiente, el intercepto sale solo: es el valor que hace que la recta pase exactamente por el punto (<span class="mate" data-tex="\bar{x}">x̄</span>, <span class="mate" data-tex="\bar{y}">ȳ</span>), el centro de gravedad de la nube de puntos. Todas las rectas de mínimos cuadrados pasan por ese punto, sin excepción.</p>
       </div>
     </section>
 
@@ -127,7 +127,7 @@
         <div class="tabla-scroll">
           <table class="tabla-calc">
             <thead>
-              <tr><th>i</th><th>x</th><th>y</th><th>x − x̄</th><th>y − ȳ</th><th>(x − x̄)(y − ȳ)</th><th>(x − x̄)²</th></tr>
+              <tr><th>i</th><th>x</th><th>y</th><th>x − <span class="mate" data-tex="\bar{x}">x̄</span></th><th>y − <span class="mate" data-tex="\bar{y}">ȳ</span></th><th>(x − <span class="mate" data-tex="\bar{x}">x̄</span>)(y − <span class="mate" data-tex="\bar{y}">ȳ</span>)</th><th>(x − <span class="mate" data-tex="\bar{x}">x̄</span>)²</th></tr>
             </thead>
             <tbody>
               <tr><td>1</td><td>1</td><td>2</td><td>−2</td><td>−2</td><td>4</td><td>4</td></tr>
@@ -137,11 +137,11 @@
               <tr><td>5</td><td>5</td><td>5</td><td>2</td><td>1</td><td>2</td><td>4</td></tr>
             </tbody>
             <tfoot>
-              <tr><td>suma</td><td>x̄ = 3</td><td>ȳ = 4</td><td>—</td><td>—</td><td>6</td><td>10</td></tr>
+              <tr><td>suma</td><td><span class="mate" data-tex="\bar{x}">x̄</span> = 3</td><td><span class="mate" data-tex="\bar{y}">ȳ</span> = 4</td><td>—</td><td>—</td><td>6</td><td>10</td></tr>
             </tfoot>
           </table>
         </div>
-        <p>El numerador quedó en 6, el denominador en 10. β₁ = 6 / 10 = 0.6. Y β₀ = ȳ − β₁x̄ = 4 − 0.6 × 3 = 2.2. La recta que mejor ajusta estos cinco puntos es ŷ = 2.2 + 0.6x. Guardá estos números: los ejercicios numéricos de más abajo parten de esta misma tabla.</p>
+        <p>El numerador quedó en 6, el denominador en 10. <span class="mate" data-tex="\beta_1">β₁</span> = 6 / 10 = 0.6. Y <span class="mate" data-tex="\beta_0">β₀</span> = <span class="mate" data-tex="\bar{y}">ȳ</span> − <span class="mate" data-tex="\beta_1\bar{x}">β₁x̄</span> = 4 − 0.6 × 3 = 2.2. La recta que mejor ajusta estos cinco puntos es <span class="mate" data-tex="\hat{y}">ŷ</span> = 2.2 + 0.6x. Guardá estos números: los ejercicios numéricos de más abajo parten de esta misma tabla.</p>
       </div>
     </section>
 
@@ -149,11 +149,11 @@
       <div class="sec-no">05</div>
       <div class="sec-body">
         <h2>Qué tan buena es la recta</h2>
-        <p>Una vez que tenés la recta, queda la pregunta de qué tan bien te sirve. Ahí entra <strong>R²</strong>, una manera de resumir en un solo número qué proporción de la variación en tus datos explica la recta.</p>
-        <div class="callout formula">R² = 1 − SCresidual / SCtotal</div>
-        <p><strong>SCresidual</strong> ya la conocés: es la suma de los residuos al cuadrado, la misma que mínimos cuadrados minimiza. <strong>SCtotal</strong> es distinta — es Σ(yᵢ − ȳ)², cuánto varían los precios si ni siquiera usaras el tamaño y solo predijeras siempre el promedio.</p>
-        <p>R² compara esas dos sumas. Si tu recta predice casi tan mal como el promedio solo, SCresidual queda casi igual a SCtotal y R² sale cerca de 0: la recta no aportó nada. Si tu recta explica casi toda la variación, SCresidual queda chiquito comparado con SCtotal y R² sale cerca de 1.</p>
-        <div class="callout warn"><span class="etiqueta">Cuidado</span>R² no te dice si la relación es realmente lineal, no te dice si hay un solo punto raro inflando o arruinando el ajuste, y no te dice si tiene sentido usar esta recta para el rango de datos que tenés. Un R² de 0.95 puede convivir perfectamente con un modelo inútil. Más abajo, en errores frecuentes, hay un ejemplo que lo deja bien claro.</div>
+        <p>Una vez que tenés la recta, queda la pregunta de qué tan bien te sirve. Ahí entra <strong><span class="mate" data-tex="R^2">R²</span></strong>, una manera de resumir en un solo número qué proporción de la variación en tus datos explica la recta.</p>
+        <div class="callout formula" data-tex="R^2 = 1 - \frac{SC_{\text{residual}}}{SC_{\text{total}}}">R² = 1 − SCresidual / SCtotal</div>
+        <p><strong>SCresidual</strong> ya la conocés: es la suma de los residuos al cuadrado, la misma que mínimos cuadrados minimiza. <strong>SCtotal</strong> es distinta — es <span class="mate" data-tex="\sum">Σ</span>(<span class="mate" data-tex="y_i">yᵢ</span> − <span class="mate" data-tex="\bar{y}">ȳ</span>)², cuánto varían los precios si ni siquiera usaras el tamaño y solo predijeras siempre el promedio.</p>
+        <p><span class="mate" data-tex="R^2">R²</span> compara esas dos sumas. Si tu recta predice casi tan mal como el promedio solo, SCresidual queda casi igual a SCtotal y <span class="mate" data-tex="R^2">R²</span> sale cerca de 0: la recta no aportó nada. Si tu recta explica casi toda la variación, SCresidual queda chiquito comparado con SCtotal y <span class="mate" data-tex="R^2">R²</span> sale cerca de 1.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span><span class="mate" data-tex="R^2">R²</span> no te dice si la relación es realmente lineal, no te dice si hay un solo punto raro inflando o arruinando el ajuste, y no te dice si tiene sentido usar esta recta para el rango de datos que tenés. Un <span class="mate" data-tex="R^2">R²</span> de 0.95 puede convivir perfectamente con un modelo inútil. Más abajo, en errores frecuentes, hay un ejemplo que lo deja bien claro.</div>
       </div>
     </section>
 
@@ -234,7 +234,7 @@
         <h2>Errores frecuentes</h2>
         <div class="callout warn"><span class="etiqueta">Trampa</span>Correlación no es causalidad. Que dos variables se muevan juntas no significa que una cause la otra. Las ventas de helado y los ahogamientos en playas suben juntos durante el verano — no porque el helado cause ahogamientos, sino porque el calor empuja las dos cosas por separado. Una recta que ajusta bien no te dice nada sobre qué causa qué.</div>
         <div class="callout warn"><span class="etiqueta">Trampa</span>Extrapolar fuera del rango de los datos. Tu recta se ajustó con las casas que tenías — digamos, entre 30 y 100 m². Usarla para predecir el precio de una casa de 500 m² es una apuesta a ciegas: no tenés ninguna evidencia de que la relación siga siendo lineal ahí afuera. Cuanto más lejos del rango que observaste, menos confianza merece la predicción.</div>
-        <div class="callout err"><span class="etiqueta">Error clásico</span>Un R² alto con un modelo inútil. Hay un ejemplo clásico —el cuarteto de Anscombe— donde cuatro conjuntos de datos completamente distintos dan exactamente el mismo R², la misma pendiente y el mismo intercepto: uno es realmente lineal, otro es una curva perfecta que la recta no capta, otro tiene un solo outlier que arma toda la pendiente, y otro tiene casi todos los puntos amontonados en una misma vertical con un único punto lejos definiendo la recta. Mirando solo los números, los cuatro parecen el mismo buen modelo. Mirando el gráfico, tres de los cuatro son un desastre.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>Un <span class="mate" data-tex="R^2">R²</span> alto con un modelo inútil. Hay un ejemplo clásico —el cuarteto de Anscombe— donde cuatro conjuntos de datos completamente distintos dan exactamente el mismo <span class="mate" data-tex="R^2">R²</span>, la misma pendiente y el mismo intercepto: uno es realmente lineal, otro es una curva perfecta que la recta no capta, otro tiene un solo outlier que arma toda la pendiente, y otro tiene casi todos los puntos amontonados en una misma vertical con un único punto lejos definiendo la recta. Mirando solo los números, los cuatro parecen el mismo buen modelo. Mirando el gráfico, tres de los cuatro son un desastre.</div>
       </div>
     </section>
 
@@ -242,7 +242,7 @@
       <div class="sec-no">10</div>
       <div class="sec-body">
         <h2>Síntesis</h2>
-        <p>La regresión lineal simple busca la recta que mejor resume la relación entre dos variables numéricas: una que se usa para predecir, otra que se quiere predecir. "Mejor" tiene una definición precisa —la que minimiza la suma de los residuos al cuadrado— y esa definición tiene una fórmula cerrada: la pendiente sale de dividir la covarianza entre x e y por la varianza de x, y el intercepto se ajusta para que la recta pase por el promedio de ambas variables. R² resume qué tan bien esa recta explica los datos, pero no reemplaza mirar el gráfico: relaciones no lineales, outliers y extrapolaciones pueden esconderse detrás de un R² que parece bueno. La regresión múltiple, el próximo tema, extiende esta misma idea a más de un predictor.</p>
+        <p>La regresión lineal simple busca la recta que mejor resume la relación entre dos variables numéricas: una que se usa para predecir, otra que se quiere predecir. "Mejor" tiene una definición precisa —la que minimiza la suma de los residuos al cuadrado— y esa definición tiene una fórmula cerrada: la pendiente sale de dividir la covarianza entre x e y por la varianza de x, y el intercepto se ajusta para que la recta pase por el promedio de ambas variables. <span class="mate" data-tex="R^2">R²</span> resume qué tan bien esa recta explica los datos, pero no reemplaza mirar el gráfico: relaciones no lineales, outliers y extrapolaciones pueden esconderse detrás de un <span class="mate" data-tex="R^2">R²</span> que parece bueno. La regresión múltiple, el próximo tema, extiende esta misma idea a más de un predictor.</p>
       </div>
     </section>
 
@@ -266,6 +266,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="regresion-lineal.js"></script>
 </body>
 </html>

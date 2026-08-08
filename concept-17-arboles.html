@@ -81,7 +81,7 @@
         <p>El algoritmo es directo y bastante bruto: en cada nodo prueba <strong>todos los cortes posibles de todas las variables</strong> y se queda con el que deja los dos grupos resultantes lo más "puros" posible. Después repite lo mismo dentro de cada grupo, y así hasta que decida parar.</p>
         <p>Puro significa que en el grupo hay una sola clase. Si un corte deja a la izquierda diez casas caras y cero baratas, ese lado es perfectamente puro. Si deja cinco y cinco, es lo más impuro que puede ser.</p>
         <p>La medida estándar es la <strong>impureza de Gini</strong>: 1 menos la suma de los cuadrados de las proporciones de cada clase.</p>
-        <div class="callout formula">Gini = 1 − Σ pᵢ²</div>
+        <div class="callout formula" data-tex="\text{Gini} = 1 - \sum_i p_i^2">Gini = 1 − Σ pᵢ²</div>
         <p>Con un grupo todo de una clase, p = 1 y Gini = 1 − 1 = 0. Con mitad y mitad, Gini = 1 − (0.25 + 0.25) = 0.5, que es el máximo con dos clases. Hagamos la cuenta completa sobre un corte:</p>
         <div class="tabla-scroll">
           <table class="tabla-calc">
@@ -179,6 +179,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="arboles.js"></script>
 </body>
 </html>

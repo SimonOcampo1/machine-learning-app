@@ -54,7 +54,7 @@
         <p class="eyebrow">{ La idea }</p>
         <h2>Agregar un castigo</h2>
         <p>La regresión común busca los coeficientes que minimizan la suma de los errores al cuadrado. Nada más. La regularización cambia el objetivo: ahora hay que minimizar el error <em>más</em> un castigo que crece con el tamaño de los coeficientes.</p>
-        <div class="callout formula">costo = error de siempre + α × (tamaño de los coeficientes)</div>
+        <div class="callout formula" data-tex="\text{costo} = \text{error de siempre} + \alpha \times (\text{tamaño de los coeficientes})">costo = error de siempre + α × (tamaño de los coeficientes)</div>
         <p>El modelo queda negociando entre dos cosas que tiran en direcciones opuestas. Bajar el error pide coeficientes grandes y específicos; bajar el castigo pide coeficientes chicos. El resultado es un modelo que solo se permite un coeficiente grande cuando de verdad le compra bastante error a cambio.</p>
         <p>Ese es exactamente el movimiento hacia la izquierda sobre la curva en U del tema 08: se sube un poco el sesgo a cambio de bajar bastante la varianza. La suma da menos.</p>
         <p>El <strong>alpha</strong> es cuánto pesa el castigo. Con alpha = 0 no hay castigo y volvés a la regresión común. Con alpha enorme, todos los coeficientes se van a cero y el modelo predice siempre el promedio. En el medio está el punto útil, y se elige con validación cruzada. No hay forma de calcularlo a mano.</p>
@@ -174,6 +174,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="regularizacion.js"></script>
 </body>
 </html>

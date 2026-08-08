@@ -92,7 +92,7 @@
         <p class="eyebrow">{ La pieza nueva }</p>
         <h2>La sigmoide, una función que aplasta</h2>
         <p>Lo que falta es una manera de tomar el número que sale de la recta, que puede ser cualquier cosa entre menos infinito y más infinito, y convertirlo en algo que siempre esté entre 0 y 1. Esa función existe, se llama sigmoide o logística, y es esta:</p>
-        <div class="callout formula">σ(z) = 1 / (1 + e<sup>−z</sup>)</div>
+        <div class="callout formula" data-tex="\sigma(z) = \frac{1}{1 + e^{-z}}">σ(z) = 1 / (1 + e<sup>−z</sup>)</div>
         <p>La <code>e</code> es el número de Euler, 2.718…, y la <code>σ</code> es la letra griega sigma minúscula, que es como se la nombra siempre. Mirá qué hace con tres valores de <code>z</code>:</p>
         <p>Si <code>z = 0</code>, entonces <code>e<sup>0</sup></code> vale 1, y la cuenta es <code>1 / (1 + 1) = 0.5</code>. Justo en el medio. Si <code>z</code> es un número positivo grande, digamos 5, entonces <code>e<sup>−5</sup></code> es 0.0067, casi cero, y la cuenta da <code>1 / 1.0067 = 0.993</code>. Casi 1. Y si <code>z</code> es negativo grande, digamos −5, entonces <code>e<sup>5</sup></code> es 148, y la cuenta da <code>1 / 149 = 0.0067</code>. Casi 0.</p>
         <p>Lo importante es el "casi". La sigmoide se acerca a 1 y a 0 pero <strong>nunca los toca</strong>: son asíntotas. Por más evidencia que tengas, un modelo logístico nunca va a devolver una certeza del 100%. Eso no es un defecto, es honestidad matemática, y va a tener consecuencias cuando veamos cómo se entrena.</p>
@@ -123,12 +123,12 @@
         <p class="eyebrow">{ Leer la salida }</p>
         <h2>Una probabilidad, y un corte que ponés vos</h2>
         <p>Acá está el modelo entero. Adentro sigue habiendo una recta, exactamente la misma combinación lineal de los temas 09 y 10: se multiplica cada variable por su coeficiente y se suma el intercepto. A ese resultado lo llamamos <code>z</code>. Después la sigmoide lo aplasta.</p>
-        <div class="callout formula">z = w · horas + b<br>p = σ(z)</div>
+        <div class="callout formula" data-tex="\begin{aligned} z &amp;= w \cdot \text{horas} + b \\ p &amp;= \sigma(z) \end{aligned}">z = w · horas + b<br>p = σ(z)</div>
         <p>Supongamos que el entrenamiento sobre los 200 alumnos devolvió <code>w = 1.2</code> y <code>b = −6</code>. Es decir, <code>z = 1.2 · horas − 6</code>. Con eso ya podés calcular la probabilidad para cualquier cantidad de horas:</p>
         <div class="tabla-scroll">
           <table class="tabla-calc">
             <thead>
-              <tr><th>horas</th><th>z = 1.2·horas − 6</th><th>p = σ(z)</th><th>decisión con umbral 0.5</th></tr>
+              <tr><th>horas</th><th>z = 1.2·horas − 6</th><th>p = <span class="mate" data-tex="\sigma">σ</span>(z)</th><th>decisión con umbral 0.5</th></tr>
             </thead>
             <tbody>
               <tr><td>3</td><td>−2.4</td><td>0.083</td><td>no aprueba</td></tr>
@@ -190,7 +190,7 @@
         <h2>Log-loss y descenso de gradiente</h2>
         <p>En regresión lineal simple había una fórmula cerrada: metías los datos y salían los coeficientes de una. Acá no existe esa fórmula. La sigmoide, al estar metida en el medio, arruina la posibilidad de despejar. Así que se entrena con <strong>descenso de gradiente</strong>, exactamente el procedimiento del tema 10: arrancás con coeficientes cualquiera, mirás para qué lado baja el error, das un paso, y repetís unos cuantos miles de veces.</p>
         <p>Lo que cambia es qué error se minimiza. No es el error cuadrático: es la <strong>log-loss</strong>, también llamada entropía cruzada binaria.</p>
-        <div class="callout formula">costo = − [ y · log(p) + (1 − y) · log(1 − p) ]</div>
+        <div class="callout formula" data-tex="\text{costo} = -\big[\, y \cdot \log(p) + (1 - y) \cdot \log(1 - p) \,\big]">costo = − [ y · log(p) + (1 − y) · log(1 − p) ]</div>
         <p>No hace falta que la sepas derivar, pero sí que entiendas qué castiga. Fijate que <code>y</code> vale 0 o 1, así que uno de los dos términos siempre se apaga. Si el alumno aprobó (<code>y = 1</code>), el costo queda <code>−log(p)</code>: si el modelo dijo 0.9 el costo es chico (0.105), si dijo 0.5 es mayor (0.69), y si dijo 0.01 el costo es enorme (4.6). Si el alumno no aprobó, pasa lo mismo al revés.</p>
         <p>Esa es la idea entera: <strong>la log-loss castiga la confianza equivocada mucho más que la duda</strong>. Equivocarse diciendo "no estoy seguro" sale barato. Equivocarse diciendo "estoy segurísimo" sale carísimo, y el costo tiende a infinito a medida que la probabilidad se acerca a la certeza equivocada. Acá se ve para qué sirve que la sigmoide nunca llegue exactamente a 0 o a 1: si llegara, un solo error de esos daría un costo infinito y el entrenamiento explotaría.</p>
         <p>¿Por qué no usar el error cuadrático de siempre? Porque con la sigmoide adentro, el error cuadrático deja de tener un único mínimo: el paisaje se llena de valles y mesetas, y el descenso de gradiente se queda trabado en cualquiera de ellos según dónde arrancó. Con log-loss, en cambio, el paisaje tiene un solo mínimo, y el descenso siempre llega al mismo lugar. Es exactamente el problema de mínimos locales del tema 10, y acá se resuelve eligiendo bien la función de costo en vez de peleándole al optimizador.</p>
@@ -246,6 +246,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="logistica.js"></script>
 </body>
 </html>

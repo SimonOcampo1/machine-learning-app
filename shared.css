@@ -58,19 +58,41 @@
   --font: "Inter Tight", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Escala fluida. El extremo superior de cada clamp es el valor exacto de
-     gsap.com; el inferior es lo que entra en un teléfono. */
-  --t-caption: 0.875rem;                                    /* 14 */
-  --t-body-sm: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);     /* 15 → 16 */
-  --t-body:    clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);  /* 17 → 19 */
-  --t-body-lg: clamp(1.1875rem, 1.05rem + 0.6vw, 1.4375rem);/* 19 → 23 */
-  --t-sub:     clamp(1.375rem, 1.1rem + 1.2vw, 2.125rem);   /* 22 → 34 */
-  --t-h3:      clamp(1.5rem, 1.2rem + 1.5vw, 2.75rem);      /* 24 → 44 */
-  --t-h2:      clamp(1.875rem, 1.3rem + 2.9vw, 4.125rem);   /* 30 → 66 */
-  --t-h1:      clamp(2.25rem, 1.4rem + 4.2vw, 6.3125rem);   /* 36 → 101 */
-  --t-display: clamp(3.75rem, 0.5rem + 15vw, 14rem);        /* 60 → 224 */
+  /* Escala fluida. Los techos de gsap.com (224/101/66/44/34) se bajaron un 35%:
+     eran valores de una home de marketing con tres palabras por título, y acá
+     los títulos son frases de tema ("Sesgo y varianza: el compromiso central").
+     A 101px, en una notebook de 1440px un h1 salía 83px reales y se partía en
+     tres renglones; los h2 a 63px competían con el h1 de la misma página.
+     Los títulos BAJAN y el cuerpo SUBE: son las dos mitades del mismo arreglo.
+     La jerarquía no se pierde —h1/cuerpo pasa de 5.3× a 3.0×, que sigue siendo
+     un salto grande— y lo que se gana es que el título entre en una línea y el
+     párrafo llene la columna.
+     La interpolación va de 400px a 1440px de viewport, que es donde vive el
+     lector real (teléfono ↔ notebook), no hasta 1920. */
+  --t-caption: 0.875rem;                                     /* 14        */
+  --t-body-sm: clamp(0.9375rem, 0.89rem + 0.19vw, 1.0625rem);/* 15 → 17   */
+  /* El cuerpo sube de 19 a 21px en pantalla ancha, y no es un capricho de
+     tamaño: es CÓMO se llena el ancho sin romper la medida de lectura. La
+     columna de texto tiene que quedarse en 68 caracteres —más que eso y el ojo
+     pierde el renglón al volver—, así que la única manera honesta de que ocupe
+     más píxeles es que cada caracter mida más. A 19px, 68ch son 747px y sobran
+     ~430px muertos; a 21px son ~825px y, con la columna de notas al lado, la
+     página llega al borde sin haber estirado un solo renglón.
+     El techo del sistema es 23px (DESIGN.md), así que 21 entra holgado. */
+  --t-body:    clamp(1.0625rem, 0.966rem + 0.385vw, 1.3125rem); /* 17 → 21 */
+  --t-body-lg: clamp(1.1875rem, 1.05rem + 0.6vw, 1.4375rem); /* 19 → 23   */
+  --t-sub:     clamp(1.25rem, 1.105rem + 0.58vw, 1.625rem);  /* 20 → 26   */
+  --t-h3:      clamp(1.375rem, 1.134rem + 0.96vw, 2rem);     /* 22 → 32   */
+  --t-h2:      clamp(1.625rem, 1.24rem + 1.54vw, 2.625rem);  /* 26 → 42   */
+  --t-h1:      clamp(1.875rem, 1.057rem + 3.27vw, 4rem);     /* 30 → 64   */
+  --t-display: clamp(2.75rem, 0.634rem + 8.46vw, 8.25rem);   /* 44 → 132  */
 
+  /* Las dos medidas del layout editorial. `--medida` es la columna de lectura
+     y no debe crecer con la pantalla: 68ch es el techo de legibilidad, más
+     ancho obliga al ojo a saltar de renglón. El ancho sobrante NO se le da a
+     la prosa, se le da a `--margen`, la columna de notas al costado. */
   --medida: 68ch;
+  --margen: clamp(14rem, 22vw, 20rem);
 
   /* Radios: solo tres valores en todo el sistema. */
   --r-card: 8px;
@@ -78,7 +100,8 @@
 
   /* Espaciado, base 4. Los nombres son el valor en px sobre 4. */
   --e2: 8px;    --e3: 12px;   --e4: 16px;   --e5: 20px;
-  --e6: 24px;   --e8: 32px;   --e19: 76px;  --e24: 96px;  --e27: 108px;
+  --e6: 24px;   --e8: 32px;   --e10: 40px;  --e12: 48px;
+  --e19: 76px;  --e24: 96px;  --e27: 108px;
 
   --ancho: 1280px;
 
@@ -117,6 +140,35 @@
    el salto instantáneo es justamente lo que corresponde. */
 html { -webkit-text-size-adjust: 100%; }
 
+/* ── Barras de scroll ────────────────────────────────────── */
+/* Una barra blanca del sistema operativo sobre un canvas casi negro es la cosa
+   más fuera de lugar de la página, y aparece en seis lugares: el documento, el
+   editor de Python, la terminal, la tabla de cálculo, los bloques de código y
+   cada línea larga del Parsons.
+   Se estila dos veces porque no hay una sola API: `scrollbar-color` es el
+   estándar (Firefox y Chrome moderno) y `::-webkit-scrollbar` es lo que
+   entienden Safari y los Chrome viejos. Las dos declaran lo mismo; la que el
+   navegador soporte gana y la otra se ignora. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--s25) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--s25);
+  border-radius: var(--r-pill);
+  /* El borde transparente con `background-clip: content-box` es lo que deja el
+     pulgar más fino que la canaleta sin tener que achicar el área de agarre:
+     el clic sigue teniendo 10px de blanco, el dibujo tiene 6. */
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--s50); background-clip: content-box; }
+/* La esquina donde se cruzan las dos barras: sin esto queda un cuadradito
+   blanco del sistema en la tabla de cálculo. */
+*::-webkit-scrollbar-corner { background: transparent; }
+
 body {
   margin: 0;
   background: var(--bg);
@@ -143,7 +195,33 @@ h1 { font-size: var(--t-h1); line-height: 1; }
 h2 { font-size: var(--t-h2); line-height: 1.1; }
 h3 { font-size: var(--t-h3); line-height: 1.2; }
 
-p { margin: 0 0 var(--e4); max-width: var(--medida); text-wrap: pretty; }
+/* Justificado, pero solo con partición de palabras activada. Justificar sin
+   `hyphens` en castellano es peor que no justificar: el idioma tiene palabras
+   largas ("sistemáticamente", "regularización") y el navegador, para llegar al
+   margen sin poder cortarlas, abre los espacios de la línea hasta que aparecen
+   los "ríos" —esos canales blancos verticales que atraviesan el párrafo—. Con
+   `hyphens: auto` y `lang="es"` en el <html>, el navegador usa el diccionario
+   de guionado del castellano, corta donde corresponde y los espacios se
+   mantienen parejos.
+   `text-wrap: pretty` NO va acá: pelea con `justify` por decidir el salto de
+   línea y en varios motores gana `pretty`, que deja la última línea corta pero
+   desarma el justificado del resto. Se queda solo en los títulos. */
+p {
+  margin: 0 0 var(--e5);
+  max-width: var(--medida);
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  /* Un límite de guiones seguidos: tres renglones terminados en guión son una
+     escalera y se leen peor que el río que vinimos a evitar. */
+  -webkit-hyphenate-limit-lines: 2;
+  hyphenate-limit-chars: 7 3 3;
+}
+/* Lo corto NO se justifica: una leyenda, un pie o un aviso de dos renglones
+   justificado queda con la única línea llena de agujeros. El justificado sirve
+   cuando hay párrafo suficiente para repartir el error. */
+figcaption, .lede, .breadcrumb, .ej-q, .py-estado,
+.rm-phase-hint, .dist-truco, .tl-item p { text-align: left; hyphens: manual; }
 
 a { color: var(--fase); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 
@@ -168,8 +246,16 @@ strong { font-weight: 600; }
    instanciarlo, así que si el CDN falla ninguna de estas reglas aplica y el
    scroll nativo queda intacto. */
 html.lenis, html.lenis body { height: auto; }
-.lenis.lenis-stopped { overflow: clip; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+/* Acá iba `.lenis.lenis-stopped { overflow: clip; }`, que es el boilerplate que
+   Lenis publica para bloquear el scroll detrás de un modal. Este sitio no tiene
+   modales, y el ÚNICO que llama a `lenis.stop()` es el parche de la barra de
+   scroll de anim.js — que la llama justo cuando el usuario agarró la barra.
+   Resultado: al apretar la barra, `overflow: clip` se la borraba de la pantalla
+   y el arrastre no movía nada. La barra "desaparecía" y el sitio quedaba
+   scrolleable solo con la rueda. La regla se saca entera: bloquear el scroll
+   cuando lo que se quiere es dejar scrollear a mano es exactamente al revés. */
 
 /* ── Layout ──────────────────────────────────────────────── */
 .envoltura { width: min(var(--ancho), 100% - 2.5rem); margin-inline: auto; }
@@ -245,8 +331,14 @@ nav {
 /* ── Secciones numeradas ─────────────────────────────────── */
 /* Filete de 1px a ancho completo, sin padding alrededor: el único separador
    del sistema. */
+/* `minmax(0, 1fr)` y no `1fr`: una pista `1fr` arranca con `min-width: auto`,
+   así que en vez de encoger a lo que hay se estira hasta el contenido más ancho
+   que no puede partirse — una línea de código del Parsons, una fórmula larga de
+   KaTeX, la tabla de cálculo. El resultado es scroll horizontal en TODA la
+   página en un teléfono. El `minmax(0, …)` es lo que le da permiso a la pista
+   para achicarse y deja que cada bloque resuelva su propio desborde adentro. */
 .section {
-  display: grid; grid-template-columns: 5rem 1fr;
+  display: grid; grid-template-columns: 4rem minmax(0, 1fr);
   gap: var(--e8); padding-block: var(--e19);
   border-top: 1px solid var(--rule);
 }
@@ -254,9 +346,82 @@ nav {
   font-size: var(--t-body-sm); font-weight: 600;
   color: var(--fase); position: sticky; top: 5rem; align-self: start;
 }
+.sec-body { min-width: 0; }
 .sec-body > :last-child { margin-bottom: 0; }
+
+/* ── Margen anotado ──────────────────────────────────────── */
+/* El problema que resuelve: `.sec-body` ocupa ~1180px pero `p` está capado en
+   68ch (~650px), así que media pantalla quedaba vacía en las 24 páginas de
+   teoría. La respuesta editorial no es ensanchar la prosa —68ch es el techo de
+   legibilidad— sino darle un destino a ese ancho: los avisos se van al margen
+   derecho, a la altura del párrafo que los dispara, y los diagramas, tablas y
+   ejercicios rompen a los dos anchos juntos.
+   Se hace con `float` y no con grid a propósito. Un grid de dos columnas le da
+   una FILA propia a cada hijo: el callout en la columna 2 empuja al párrafo
+   siguiente por debajo suyo y deja un hueco del alto del callout en la columna
+   de prosa. El float no consume fila, se cuelga al costado del flujo, que es
+   exactamente la nota al margen de un libro. Es además la técnica original de
+   Tufte, no un rodeo. */
+/* Solo se va al margen el callout que INTERRUMPE prosa y está solo. Las dos
+   exclusiones no son detalles:
+   - `:last-child` — un callout al final de la sección no tiene texto después
+     que fluya a su lado, así que flotando deja un vacío del alto de la nota a
+     su izquierda y la sección termina en un escalón.
+   - `:has(+ .callout)` — el primero de una tira de avisos ("Errores
+     frecuentes" son tres seguidos). Si flotara solo el primero, la tira se
+     partiría en dos anchos distintos.
+   Los dos casos caen abajo, en la coda. */
+.sec-body > p + .callout:not(.formula):not(:last-child):not(:has(+ .callout)) {
+  float: right;
+  clear: right;
+  width: min(var(--margen), 100%);
+  margin: 0 0 var(--e8) var(--e8);
+  font-size: var(--t-body-sm);
+}
+
+/* La coda: el callout que cierra una sección, y las tiras de avisos. En vez de
+   quedarse a la medida de lectura dejando el margen vacío al costado, toma
+   prosa + margen. Un aviso ancho al final se lee como lo que es —el remate de
+   la sección— y no como un párrafo más que se quedó corto.
+   Va en una regla aparte de la de arriba a propósito: si `:has()` no existiera
+   en el navegador, la lista de selectores entera se descartaría y estos
+   callouts perderían también el ancho. Separadas, cada una falla sola. */
+/* `columns` y no un ancho suelto: una caja de 1184px con una sola columna de
+   texto da renglones de ~120 caracteres, casi el doble del techo de
+   legibilidad. Con `column-width` el navegador arma tantas columnas de ≥30rem
+   como entren —dos en una notebook, una en tablet— sin una sola media query, y
+   cada columna cae en el rango de 55 a 70 caracteres. Es lo que hace un diario
+   con un ancho que no puede achicar, y es la respuesta correcta a "usá el
+   ancho" que NO es "estirá el renglón". */
+.sec-body > .callout:not(.formula):last-child,
+.sec-body > .callout:not(.formula) + .callout:not(.formula) {
+  float: none; width: auto; max-width: none;
+  columns: 30rem; column-gap: var(--e8);
+}
+.sec-body > .callout:not(.formula):has(+ .callout:not(.formula)) {
+  float: none; width: auto; max-width: none;
+  columns: 30rem; column-gap: var(--e8);
+}
+/* La etiqueta abre la primera columna y no se parte a la mitad de un salto. */
+.callout .etiqueta { break-after: avoid; break-inside: avoid; }
+
+/* El float se sale de la caja de su padre. Sin esto, el `border-top` de la
+   sección siguiente se dibujaría por encima de un callout que cuelga. */
+.sec-body::after { content: ""; display: block; clear: both; }
+
+/* Los bloques anchos ignoran la medida de lectura y toman prosa + margen. */
+.diagram, .tabla-scroll, .ej, .aviso-error { max-width: none; }
+
+@media (max-width: 1100px) {
+  /* Por debajo de esto el margen quedaría más angosto que la nota que tiene que
+     alojar. El callout vuelve al flujo, en el mismo orden del HTML: nadie se
+     entera de que existía una columna. */
+  .sec-body > p + .callout:not(.formula) {
+    float: none; width: auto; margin: var(--e5) 0; font-size: inherit;
+  }
+}
 @media (max-width: 720px) {
-  .section { grid-template-columns: 1fr; gap: var(--e3); padding-block: var(--e8); }
+  .section { grid-template-columns: minmax(0, 1fr); gap: var(--e3); padding-block: var(--e8); }
   .sec-no { position: static; }
 }
 
@@ -266,15 +431,43 @@ nav {
 .callout {
   border: 1px solid var(--fase);
   background: var(--fase-tint);
-  padding: var(--e4) var(--e5);
+  padding: var(--e5) var(--e6);
   border-radius: var(--r-card);
-  margin-block: var(--e5);
+  /* Más abajo que arriba, y a propósito. Un cuadro "pertenece" al párrafo que
+     lo precede y tiene que separarse del que lo sigue: con el mismo margen de
+     los dos lados el texto de abajo se lee como si siguiera adentro del cuadro.
+     Con cuerpo de 21px, los 20px que había de cada lado quedaban por debajo de
+     una sola línea de texto y todo se veía pegado. */
+  margin-block: var(--e6) var(--e10);
   max-width: var(--medida);
+  min-width: 0;
 }
 .callout > :last-child { margin-bottom: 0; }
+/* La fórmula NO lleva mono. Antes era JetBrains Mono con la notación tipeada a
+   mano en Unicode (`β₁ = Σ(xᵢ − x̄)(yᵢ − ȳ) / Σ(xᵢ − x̄)²`): los subíndices
+   caían fuera de la línea de base, la barra de división era un slash suelto y
+   el conjunto se leía como una línea de código, no como matemática. Ahora el
+   contenido es LaTeX y lo compone KaTeX, que trae su propia familia (una
+   Computer Modern) con las métricas correctas para fracciones, sumatorias y
+   subíndices. La mono queda donde el contenido ES código. */
 .callout.formula {
-  font-family: var(--font-mono); font-size: var(--t-body);
-  text-align: center; padding-block: var(--e5); max-width: none;
+  text-align: center;
+  padding-block: var(--e6);
+  max-width: var(--medida);
+  margin-inline: auto;
+}
+/* La otra mitad de lo que antes era `.callout.formula`. De los 36 bloques,
+   14 no eran matemática sino Python (`precios = np.array([...])`,
+   `modelo.fit(X_train, y_train)`): ahí la mono NO es un disfraz de técnico, el
+   contenido ES código y `--font-mono` es exactamente lo que corresponde. Se
+   separan porque piden lo contrario en todo lo demás: el código se alinea a la
+   izquierda y respeta los saltos de línea, la fórmula se centra en una sola. */
+.callout.codigo {
+  font-family: var(--font-mono);
+  font-size: var(--t-body-sm);
+  line-height: 1.7;
+  text-align: left;
+  overflow-x: auto;
 }
 /* Los tres sabores usan tres colores distintos de la MISMA paleta de seis: no
    se agrega un séptimo. Que cada uno coincida con el de alguna fase es
@@ -290,18 +483,82 @@ nav {
 }
 
 /* ── Diagramas ───────────────────────────────────────────── */
+/* El panel toma prosa + margen; adentro, la figura va a la izquierda y la
+   leyenda a la derecha, en la misma columna que las notas al margen. Antes la
+   leyenda iba debajo del SVG a ancho de lectura, lo que obligaba al SVG a
+   estirarse a los ~1120px del panel: con un viewBox de 640×380 eso es un
+   aumento de 1.75x y el texto de 14px del diagrama salía a 24px, más grande
+   que el h3 de la sección. Poniendo la leyenda al costado, el SVG se queda en
+   un ancho sano y el alto del bloque baja casi a la mitad. */
 .diagram {
-  margin: var(--e8) 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--margen);
+  gap: var(--e8);
+  align-items: start;
+  margin-block: var(--e8) var(--e12);
   padding: var(--e8);
   background: var(--panel);
   border-radius: var(--r-card);
 }
+/* Todo lo que no sea la leyenda vive en la columna de la figura: eso incluye
+   los controles del simulador, que son parte de la figura y no de la nota. */
+.diagram > :not(figcaption) { grid-column: 1; }
 /* `overflow: visible` es lo que deja que las formas desborden el marco, que es
    como se contienen en gsap.com: sueltas, pisando el texto vecino. */
 .diagram svg { width: 100%; height: auto; display: block; overflow: visible; }
 .diagram figcaption {
+  grid-column: 2; grid-row: 1;
+  font-size: var(--t-body-sm); line-height: 1.45; color: var(--ink-mute);
+  /* Filete corto arriba: la marca de que esto es una nota, no cuerpo. */
+  padding-top: var(--e3); border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 1100px) {
+  .diagram { grid-template-columns: 1fr; gap: var(--e5); }
+  .diagram figcaption { grid-column: 1; grid-row: auto; }
+}
+
+/* ── Diagrama paso a paso ────────────────────────────────── */
+/* Los controles de `Diagramas.montarPasos`. Un diagrama que se dibuja solo al
+   pasar el scroll cuenta su historia una vez y a la velocidad del scroll; con
+   esta barra el lector para donde quiera y vuelve atrás. */
+.dg-ctrl {
+  display: flex; align-items: center; gap: var(--e2);
+  margin-top: var(--e6); flex-wrap: wrap;
+}
+.dg-b { padding: var(--e2) var(--e4); font-size: var(--t-body-sm); line-height: 1; }
+.dg-b:disabled { opacity: 0.3; cursor: default; }
+.dg-play { padding: var(--e2) var(--e5); }
+
+/* La regleta de pasos. Es a la vez indicador y navegación: se ve cuántos pasos
+   hay, en cuál se está y cuáles ya pasaron, y se puede saltar a cualquiera. */
+.dg-marcas { display: flex; gap: 4px; margin-left: auto; }
+.dg-marca {
+  width: 26px; height: 4px; padding: 0; cursor: pointer;
+  background: var(--s25); border: 0; border-radius: var(--r-pill);
+  transition: background var(--tr-rapida);
+}
+.dg-marca:hover { background: var(--s50); }
+.dg-marca.vista { background: color-mix(in oklab, var(--fase) 45%, transparent); }
+.dg-marca.en { background: var(--fase); }
+
+.dg-paso {
+  margin: var(--e5) 0 var(--e2); max-width: none;
+  font-size: var(--t-body-sm); font-weight: 600; color: var(--fase);
+  text-align: left; hyphens: manual;
+}
+.dg-nota {
+  margin: 0; max-width: 62ch;
   font-size: var(--t-body-sm); color: var(--ink-mute);
-  margin-top: var(--e5); max-width: var(--medida);
+  text-align: left; hyphens: manual;
+  /* Alto fijo de dos renglones: sin esto el diagrama entero salta de posición
+     cada vez que la nota del paso siguiente tiene un renglón más o menos. */
+  min-height: 2.9em;
+}
+
+@media (max-width: 560px) {
+  .dg-marcas { margin-left: 0; width: 100%; }
+  .dg-marca { flex: 1; }
 }
 
 /* Helpers para el SVG. Ninguno lleva color literal: `verificar.js` falla si
@@ -312,12 +569,73 @@ nav {
 .dedge-mute { stroke: var(--s50); stroke-width: 1.5; fill: none; }
 .daxis { stroke: var(--s50); stroke-width: 1.5; fill: none; }
 .dtxt { fill: var(--ink); font-family: var(--font); font-size: 14px; }
-.dtxt-mute { fill: var(--ink-mute); font-family: var(--font-mono); font-size: 12px; }
+.dtxt-mute {
+  fill: var(--ink-mute); font-family: var(--font);
+  font-variant-numeric: tabular-nums; font-size: 12px;
+}
 .dlabel { fill: var(--fase); font-family: var(--font); font-size: 13px; font-weight: 600; }
 
 /* Relleno de gradiente para las formas orgánicas. Es el vocabulario de imagen
    de gsap.com: profundidad por gradiente interno, nunca por sombra. */
 .dfill { fill: url(#grad-fase); }
+
+/* ── Red de backpropagation ──────────────────────────────── */
+/* Tres estados por elemento, y el color los distingue sin ambigüedad: apagado
+   (gris, todavía no pasó nada), `activo` (color de fase, la pasada de ida) y
+   `grad` (color de error, la de vuelta). Que la ida y la vuelta tengan colores
+   distintos es lo que hace legible que son dos recorridos sobre la misma red. */
+.bp-nodo circle {
+  fill: var(--panel); stroke: var(--s25); stroke-width: 2;
+  transition: stroke var(--tr), fill var(--tr);
+}
+.bp-nodo .bp-nombre { fill: var(--ink-mute); font-family: var(--font); font-size: 13px; font-weight: 600; }
+.bp-nodo .bp-valor {
+  fill: var(--s50); font-family: var(--font);
+  font-variant-numeric: tabular-nums; font-size: 12px;
+  transition: fill var(--tr);
+}
+.bp-nodo.activo circle { stroke: var(--fase); fill: var(--fase-tint); }
+.bp-nodo.activo .bp-nombre, .bp-nodo.activo .bp-valor { fill: var(--ink); }
+.bp-nodo.grad circle { stroke: var(--err); fill: color-mix(in oklab, var(--err) 12%, var(--just-black)); }
+.bp-nodo.grad .bp-nombre { fill: var(--err); }
+.bp-nodo.grad .bp-valor { fill: var(--ink); }
+/* La línea de gradiente, afuera del círculo. Siempre en color de error: es
+   información de la pasada de vuelta, y el color es lo que la separa de la
+   activación que quedó adentro del nodo. */
+.bp-grad {
+  fill: var(--err); font-family: var(--font);
+  font-variant-numeric: tabular-nums; font-size: 11.5px; font-weight: 600;
+}
+
+.bp-arista {
+  stroke: var(--s25); stroke-width: 1.5; fill: none;
+  transition: stroke var(--tr), stroke-width var(--tr);
+}
+.bp-arista.activo { stroke: var(--fase); stroke-width: 2.5; }
+.bp-arista.grad { stroke: var(--err); stroke-width: 2.5; }
+
+.bp-peso {
+  fill: var(--s50); font-family: var(--font);
+  font-variant-numeric: tabular-nums; font-size: 12px;
+  transition: fill var(--tr);
+}
+.bp-peso.activo { fill: var(--fase); font-weight: 600; }
+.bp-peso.grad { fill: var(--err); font-weight: 600; }
+
+/* El arco de vuelta. En reposo es una insinuación; encendido es el recorrido.
+   `stroke-dasharray` acá SÍ significa algo —"esto no es un cable de la red,
+   es el camino por el que vuelve el error"— a diferencia de los tres segmentos
+   sueltos que había antes y que no tocaban ningún nodo. */
+.bp-vuelta {
+  stroke: var(--s25); stroke-width: 1.5; fill: none;
+  stroke-dasharray: 7 5;
+  transition: stroke var(--tr), stroke-width var(--tr);
+}
+.bp-vuelta.activo { stroke: var(--err); stroke-width: 2.5; }
+
+.bp-rotulo-ida { fill: var(--fase); font-family: var(--font); font-size: 13px; font-weight: 600; }
+.bp-rotulo-vuelta { fill: var(--err); font-family: var(--font); font-size: 13px; font-weight: 600; }
+.bp-objetivo { fill: var(--ink-mute); font-family: var(--font); font-variant-numeric: tabular-nums; font-size: 12px; }
 
 /* El gradiente se declara UNA vez por página, en un <svg> aparte al principio
    del body, y todos los diagramas lo referencian. Declararlo dentro de cada
@@ -346,7 +664,7 @@ nav {
 
 /* ── Ejercicios ──────────────────────────────────────────── */
 .ej {
-  padding: var(--e6); margin-block: var(--e5);
+  padding: var(--e6); margin-block: var(--e6) var(--e10);
   background: var(--panel); border-radius: var(--r-card);
 }
 .ej-q { font-weight: 400; margin-bottom: var(--e4); }
@@ -357,14 +675,77 @@ nav {
 .ej-opt.no { opacity: 0.45; }
 
 .ej-fila { display: flex; align-items: center; gap: var(--e3); flex-wrap: wrap; }
-.ej-input {
-  font-family: var(--font-mono); font-size: var(--t-body-sm); width: 9rem;
-  padding: var(--e3) var(--e4); background: var(--bg); color: var(--ink);
-  border: 1px solid var(--s25); border-radius: var(--r-pill);
+/* El input numérico y su par de flechas. Las flechas nativas de `type="number"`
+   son un widget del sistema operativo: gris claro, cuadrado, con su propio
+   borde, y no hay CSS que las pinte —solo se pueden esconder—. Así que se
+   esconden y se reponen como dos botones del sistema, hermanos de `.pa-b`.
+   El input sigue siendo `type="number"`: se conservan el teclado numérico del
+   teléfono, las flechas del teclado, la validación y `valueAsNumber`, que es
+   lo que lee el corrector. Solo se reemplaza el dibujo. */
+.ej-num-campo {
+  display: inline-flex; align-items: center;
+  background: var(--bg); border: 1px solid var(--s25); border-radius: var(--r-pill);
+  padding-right: 6px;
   transition: border-color var(--tr-rapida);
 }
-.ej-input:hover { border-color: var(--s50); }
+.ej-num-campo:hover { border-color: var(--s50); }
+.ej-num-campo:focus-within { border-color: var(--fase); }
+
+.ej-input {
+  font-family: var(--font); font-variant-numeric: tabular-nums;
+  font-size: var(--t-body-sm); width: 7rem;
+  padding: var(--e3) var(--e4); background: none; color: var(--ink);
+  border: 0; border-radius: var(--r-pill);
+}
+/* El foco lo marca el contenedor; un outline adentro de la píldora se ve como
+   un error de dibujo. */
+.ej-input:focus { outline: none; }
+.ej-input::-webkit-outer-spin-button,
+.ej-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.ej-input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+
+.ej-num-flechas { display: grid; gap: 2px; }
+.ej-num-b {
+  display: grid; place-items: center;
+  width: 22px; height: 15px; padding: 0; cursor: pointer;
+  font: inherit; font-size: 9px; line-height: 1;
+  background: none; color: var(--ink-mute);
+  border: 1px solid var(--s25); border-radius: 4px;
+  transition: color var(--tr-rapida), border-color var(--tr-rapida);
+}
+.ej-num-b:hover { color: var(--fase); border-color: var(--fase); }
+
 .ej-unidad { font-size: var(--t-body-sm); color: var(--ink-mute); }
+
+/* ── Slider ──────────────────────────────────────────────── */
+/* `accent-color` sola deja el riel gris del sistema, que sobre el panel oscuro
+   se ve como un elemento prestado. Se dibuja entero: riel de 1px como los
+   filetes del sistema, pulgar circular del color de la fase. */
+.sim-ctrl input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 20px; background: none; cursor: pointer;
+}
+.sim-ctrl input[type="range"]::-webkit-slider-runnable-track {
+  height: 2px; background: var(--s25); border-radius: var(--r-pill);
+}
+.sim-ctrl input[type="range"]::-moz-range-track {
+  height: 2px; background: var(--s25); border-radius: var(--r-pill);
+}
+.sim-ctrl input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--fase); border: 0;
+  /* El track mide 2px y el pulgar 14: sin este corrimiento webkit lo apoya
+     sobre el borde de arriba del riel en vez de centrarlo. */
+  margin-top: -6px;
+  transition: transform var(--tr-rapida);
+}
+.sim-ctrl input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--fase); border: 0;
+}
+.sim-ctrl input[type="range"]:hover::-webkit-slider-thumb { transform: scale(1.15); }
+.sim-ctrl input[type="range"]:focus-visible::-webkit-slider-thumb { transform: scale(1.15); }
 
 /* El CTA principal: la única escalación cromática permitida. Ghost con borde
    de gradiente, nunca relleno.
@@ -405,16 +786,38 @@ nav {
 .ej-fb.ok { --fase: var(--ok); }
 
 /* ── Parsons ─────────────────────────────────────────────── */
-.pa-lista { list-style: none; margin: 0 0 var(--e4); padding: 0; display: grid; gap: var(--e2); }
+/* Bloques a la izquierda, flujo de ejecución a la derecha. El flujo espeja el
+   orden de la lista en vivo: es lo que convierte "ordenar seis renglones de
+   texto" en "armar un camino". Sin él, comprobar devolvía una frase ("3 de 6
+   líneas en su lugar") y había que deducir CUÁLES a ojo. */
+.pa-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+  gap: var(--e8);
+  margin-bottom: var(--e5);
+  align-items: start;
+}
+.pa-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--e2); }
 .pa-item {
   display: flex; align-items: center; justify-content: space-between; gap: var(--e4);
-  padding: var(--e2) var(--e3); cursor: grab;
+  padding: var(--e2) var(--e3); cursor: grab; min-width: 0;
   background: var(--bg); border: 1px solid var(--s25); border-radius: var(--r-card);
+  transition: border-color var(--tr-rapida), opacity var(--tr-rapida);
 }
 .pa-item.arrastrando { opacity: 0.4; border-color: var(--fase); }
 .pa-item.descartada { opacity: 0.35; }
 .pa-item.descartada .pa-txt { text-decoration: line-through; }
-.pa-txt { font-family: var(--font-mono); font-size: var(--t-body-sm); white-space: pre; }
+/* Espejo del hover: pasar el mouse por un bloque resalta su nodo en el flujo, y
+   al revés. Es lo que enseña que las dos cosas son la misma cosa. */
+.pa-item.senalada { border-color: var(--fase); }
+/* `white-space: pre` es obligatorio —la sangría ES el ejercicio, partir la
+   línea la destruiría— y por eso mismo el bloque tiene que poder scrollear
+   solo. Sin el `min-width: 0`, la línea más larga del ejercicio define el ancho
+   de la página entera. */
+.pa-txt {
+  font-family: var(--font-mono); font-size: var(--t-body-sm);
+  white-space: pre; min-width: 0; overflow-x: auto;
+}
 .pa-ctrl { display: flex; gap: 4px; flex-shrink: 0; }
 .pa-b {
   width: 28px; height: 28px; cursor: pointer; line-height: 1; font: inherit;
@@ -423,6 +826,59 @@ nav {
   transition: color var(--tr-rapida), border-color var(--tr-rapida);
 }
 .pa-b:hover { color: var(--fase); border-color: var(--fase); }
+
+/* ── Flujo de ejecución del Parsons ──────────────────────── */
+.pa-flujo {
+  position: sticky; top: 5rem;
+  padding: var(--e5); background: var(--bg);
+  border: 1px solid var(--s25); border-radius: var(--r-card);
+}
+.pa-flujo-tit {
+  font-size: var(--t-caption); color: var(--ink-mute);
+  margin-bottom: var(--e4);
+}
+.pa-flujo svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+/* Estados del nodo. El reposo es gris: el flujo todavía no dice nada sobre si
+   el orden está bien, solo muestra qué forma tiene. Recién al comprobar el
+   camino se pinta. */
+.pa-nodo rect {
+  fill: var(--bg); stroke: var(--s25); stroke-width: 1.5;
+  transition: stroke var(--tr-rapida), fill var(--tr-rapida);
+}
+.pa-nodo text { fill: var(--ink-mute); font-family: var(--font-mono); font-size: 11px; }
+.pa-nodo.senalada rect { stroke: var(--fase); }
+.pa-nodo.ok rect { stroke: var(--fase); fill: var(--fase-tint); }
+.pa-nodo.ok text { fill: var(--ink); }
+.pa-nodo.falla rect { stroke: var(--err); fill: color-mix(in oklab, var(--err) 10%, var(--just-black)); }
+.pa-nodo.falla text { fill: var(--err); }
+.pa-nodo.descartada { opacity: 0.3; }
+
+.pa-arista { stroke: var(--s25); stroke-width: 1.5; fill: none; transition: stroke var(--tr-rapida); }
+.pa-arista.ok { stroke: var(--fase); }
+.pa-token { fill: var(--fase); }
+/* El anillo del token es lo que lo hace legible sobre un nodo del mismo color:
+   sin él, al detenerse encima de un nodo `ok` desaparece. */
+.pa-token-halo { fill: none; stroke: var(--fase); stroke-width: 1.5; opacity: 0.45; }
+
+/* La sacudida del nodo que falla. Es la única animación de "error" del sistema
+   y dura una sola pasada: repetirla sería regañar. */
+@keyframes pa-temblar {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
+}
+.pa-nodo.falla { animation: pa-temblar 320ms var(--ease-out) 1; }
+@media (prefers-reduced-motion: reduce) { .pa-nodo.falla { animation: none; } }
+
+@media (max-width: 1000px) {
+  /* El flujo pasa arriba de los bloques, no abajo: leerlo primero es lo que
+     ordena la tarea. Y deja de ser pegajoso, que en una columna no sirve. */
+  .pa-split { grid-template-columns: 1fr; gap: var(--e5); }
+  .pa-flujo { position: static; order: -1; }
+}
 
 /* ── Roadmap ─────────────────────────────────────────────── */
 .rm-phase {
@@ -483,8 +939,16 @@ nav {
 /* ── Tabla de cálculo ────────────────────────────────────── */
 /* El wrapper con scroll propio, no la tabla: si la tabla scrollea sola con
    `display:block` pierde el `border-collapse` y los bordes se duplican. */
-.tabla-scroll { overflow-x: auto; margin-block: var(--e5); }
-.tabla-calc { width: 100%; border-collapse: collapse; font-family: var(--font-mono); font-size: var(--t-body-sm); }
+.tabla-scroll { overflow-x: auto; margin-block: var(--e6) var(--e10); }
+/* Sin mono. La mono estaba acá por una sola razón —que los dígitos alineen en
+   columna— y `font-variant-numeric: tabular-nums` da exactamente eso: Inter
+   Tight tiene cifras de ancho fijo y las usa cuando se le pide. Se conserva la
+   alineación y se pierde la textura cuadrada de JetBrains Mono, que en una
+   tabla de cuentas no comunicaba nada (el contenido no es código). */
+.tabla-calc {
+  width: 100%; border-collapse: collapse; font-size: var(--t-body-sm);
+  font-variant-numeric: tabular-nums;
+}
 .tabla-calc th, .tabla-calc td { padding: var(--e2) var(--e3); border-bottom: 1px solid var(--rule); text-align: right; white-space: nowrap; }
 .tabla-calc th:first-child, .tabla-calc td:first-child { text-align: left; }
 .tabla-calc thead th { color: var(--ink-mute); font-weight: 400; }
@@ -494,24 +958,90 @@ nav {
 /* ── Simulador ───────────────────────────────────────────── */
 .sim-ctrl { display: grid; gap: var(--e3); margin-top: var(--e5); }
 .sim-ctrl label { display: grid; grid-template-columns: 7rem 1fr 3.5rem; align-items: center; gap: var(--e3); font-size: var(--t-body-sm); }
-.sim-ctrl output { font-family: var(--font-mono); text-align: right; }
+/* Cifras que cambian en vivo: `tabular-nums` es lo que impide que el número
+   salte de ancho al pasar de "1.0" a "-1.9" mientras se arrastra el slider.
+   Mono no hace falta para eso y acá el contenido no es código. */
+.sim-ctrl output { font-variant-numeric: tabular-nums; text-align: right; }
 .sim-ctrl input[type="range"] { accent-color: var(--fase); }
 .sim-error { font-size: var(--t-body-sm); color: var(--ink-mute); }
-.sim-error strong { font-family: var(--font-mono); color: var(--fase); }
+.sim-error strong { font-variant-numeric: tabular-nums; color: var(--fase); }
 
 /* ── Python vivo ─────────────────────────────────────────── */
-.py-editor {
-  width: 100%; font-family: var(--font-mono); font-size: var(--t-body-sm); line-height: 1.6;
-  padding: var(--e4); margin-bottom: var(--e3); resize: vertical; tab-size: 4;
-  background: var(--bg); color: var(--ink);
-  border: 1px solid var(--s25); border-radius: var(--r-card);
+/* Editor y terminal lado a lado, del mismo alto, como cualquier consola real.
+   Antes era editor arriba / salida abajo: había que scrollear para ver el
+   resultado del código que se acababa de escribir, y el `<pre>` de salida
+   aparecía de la nada empujando la página. Con el split, el error queda a la
+   altura de la línea que lo causó y el bloque no cambia de alto al ejecutar. */
+.py-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--e4);
+  margin-bottom: var(--e4);
 }
-.py-salida {
-  font-family: var(--font-mono); font-size: var(--t-body-sm); white-space: pre-wrap;
-  margin-top: var(--e4); padding: var(--e4); max-height: 22rem; overflow: auto;
+.py-panel {
+  display: flex; flex-direction: column; min-width: 0;
   background: var(--bg); border: 1px solid var(--s25); border-radius: var(--r-card);
+  overflow: hidden;
 }
-.py-estado { font-size: var(--t-body-sm); color: var(--ink-mute); }
+/* Barra de título: es lo que hace leer las dos cajas como panel y no como
+   input suelto. Nombre a la izquierda, estado a la derecha. */
+.py-barra {
+  display: flex; align-items: center; justify-content: space-between; gap: var(--e3);
+  padding: var(--e2) var(--e4);
+  font-size: var(--t-caption); color: var(--ink-mute);
+  border-bottom: 1px solid var(--s25);
+}
+.py-nombre { font-family: var(--font-mono); }
+
+.py-editor {
+  flex: 1; width: 100%; min-height: 15rem;
+  font-family: var(--font-mono); font-size: var(--t-body-sm); line-height: 1.6;
+  padding: var(--e4); resize: vertical; tab-size: 4;
+  background: none; color: var(--ink); border: 0;
+}
+.py-editor:focus { outline: none; }
+/* El foco se marca en el panel entero, no en el textarea: el textarea no tiene
+   borde propio y un outline adentro de la caja se ve como un error de dibujo. */
+.py-panel:has(.py-editor:focus-visible) { border-color: var(--fase); }
+
+.py-salida {
+  flex: 1; margin: 0; padding: var(--e4);
+  font-family: var(--font-mono); font-size: var(--t-body-sm); line-height: 1.6;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+  min-height: 15rem; max-height: 30rem; overflow: auto;
+  color: var(--s75);
+}
+/* El prompt y los avisos del runtime son del sistema, no del programa: van
+   apagados para que la salida real del código resalte en crema. */
+.py-linea-sistema { color: var(--s50); }
+.py-linea-salida { color: var(--ink); }
+.py-linea-error { color: var(--err); }
+
+/* Cursor de bloque parpadeante mientras corre. Es la única señal de que el
+   proceso sigue vivo durante los 20s que tarda Pyodide la primera vez. */
+.py-cursor {
+  display: inline-block; width: 0.55em; height: 1.05em;
+  vertical-align: text-bottom; background: var(--fase);
+  animation: py-latir 1.06s steps(2, start) infinite;
+}
+/* El JS apaga el cursor con `hidden`, pero el `display: none` que trae ese
+   atributo viene de la hoja del navegador y cualquier `display` de autor le
+   gana. Sin esta línea el cursor sigue latiendo después de que el programa
+   terminó, que es justo lo contrario de lo que el cursor significa. */
+.py-cursor[hidden] { display: none; }
+@keyframes py-latir { 50% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .py-cursor { animation: none; } }
+
+.py-estado { font-size: var(--t-body-sm); color: var(--ink-mute); font-variant-numeric: tabular-nums; }
+.py-estado.ok { color: var(--ok); }
+.py-estado.no { color: var(--err); }
+
+@media (max-width: 900px) {
+  /* Dos consolas de 300px lado a lado no son dos consolas, son dos columnas de
+     código partido. Se apilan. */
+  .py-split { grid-template-columns: 1fr; }
+  .py-editor, .py-salida { min-height: 11rem; }
+}
 
 /* ── Sincronización con Google ──────────────────────────── */
 .sync { display: flex; align-items: center; gap: var(--e3); }
@@ -531,7 +1061,7 @@ nav {
   content: ""; position: absolute; left: calc(var(--e8) * -1 - 4px); top: var(--e8);
   width: 7px; height: 7px; border-radius: 50%; background: var(--fase);
 }
-.tl-anio { font-family: var(--font-mono); font-weight: 700; color: var(--fase); }
+.tl-anio { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--fase); }
 .tl-item h3 { margin-bottom: var(--e2); font-size: var(--t-sub); }
 .tl-item p { font-size: var(--t-body-sm); color: var(--ink-mute); margin: 0; }
 
@@ -564,4 +1094,52 @@ nav {
   padding: var(--e6); margin-block: var(--e8);
   border: 1px solid var(--s25); border-radius: var(--r-card);
   background: var(--panel); color: var(--ink-mute); font-size: var(--t-body-sm);
+}
+
+/* ── Matemática ──────────────────────────────────────────── */
+/* Lo mínimo para que KaTeX deje de ser un injerto. Su hoja trae color propio,
+   tamaño propio y márgenes propios; acá se le devuelven los del sistema. */
+.katex { color: inherit; }
+
+/* `position: relative` no es cosmético, arregla un scroll horizontal real.
+   KaTeX emite dos veces cada fórmula: el HTML que se ve y un MathML paralelo
+   —`.katex-mathml`— que es lo que leen los lectores de pantalla. Ese MathML va
+   `position: absolute` y, sin un ancestro posicionado, su bloque contenedor
+   pasa a ser el documento: se escapa de cualquier contenedor con `overflow`
+   que lo envuelva. En la tabla de cálculo, que scrollea sola dentro de
+   `.tabla-scroll`, la anotación de 343px se salía del wrapper y hacía que la
+   PÁGINA ENTERA scrolleara 70px de lado en un teléfono. Con `relative` el
+   MathML se ancla a su propia fórmula y queda adentro. Borrarlo con
+   `display: none` también lo arreglaba, pero al precio de dejar las 94
+   fórmulas del sitio mudas para un lector de pantalla. */
+.katex { position: relative; }
+/* KaTeX compone a 1.21em por defecto, pensado para matemática suelta sobre
+   texto de 16px. Dentro de un párrafo de 19px eso empuja el interlineado y
+   abre huecos entre renglones. A 1.06em la fórmula sigue leyéndose un punto
+   más grande que la prosa —que es lo correcto, la notación necesita aire— sin
+   deformar el bloque. */
+.katex { font-size: 1.06em; }
+
+/* Fórmula de bloque: la de `.callout.formula`. */
+.katex-display { margin: 0; }
+/* Una fórmula larga en una pantalla angosta se scrollea sola, no se sale del
+   callout ni fuerza scroll horizontal en el <body>. Se resuelve con
+   `overflow-x` y NO dejando que la fórmula se parta: una ecuación cortada a la
+   mitad de un renglón es ilegible, un scroll de dos centímetros no. */
+.callout.formula .katex-display {
+  overflow-x: auto; overflow-y: hidden;
+  padding-block: 2px;   /* aire para que el scroll no recorte los límites de Σ */
+}
+.callout.formula .katex { font-size: 1.15em; }
+
+/* La notación inline dentro de la prosa. `.mate` es el gancho del HTML; el
+   `data-tex` lo lee shared.js. */
+.mate { white-space: nowrap; }
+
+/* El respaldo en Unicode se ve hasta que KaTeX compone. Sin esto, entre el
+   primer pintado y la carga del CDN los subíndices tipeados a mano (β₁, xᵢ)
+   saltan de tamaño al ser reemplazados. `font-variant-numeric` los deja lo más
+   parecido posible al resultado final. */
+.mate:not(:has(.katex)), .callout.formula:not(:has(.katex)) {
+  font-variant-numeric: tabular-nums;
 }

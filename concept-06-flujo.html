@@ -123,7 +123,7 @@
         <h2>Separar, entrenar, evaluar</h2>
         <p>Antes de entrenar se aparta una porción de los datos, típicamente entre el 20% y el 30%, y no se toca hasta el final. Ese es el conjunto de <strong>test</strong>, y su único trabajo es responder una pregunta que ningún otro dato puede responder: cómo se comporta el modelo con casos que nunca vio.</p>
         <p>Entrenar es la parte corta. Con scikit-learn son dos líneas, y la mayoría de las veces se prueban varios modelos simples antes de complicarse.</p>
-        <div class="callout formula">modelo.fit(X_train, y_train)<br>predicciones = modelo.predict(X_test)</div>
+        <div class="callout codigo">modelo.fit(X_train, y_train)<br>predicciones = modelo.predict(X_test)</div>
         <p>Evaluar es comparar esas predicciones contra <code>y_test</code> usando la medida que definiste en la etapa 1, y contra el baseline. El tema 07 desarrolla la mecánica de la separación y el 13 las métricas.</p>
         <div class="callout warn"><span class="etiqueta">Cuidado</span>El conjunto de test se usa <strong>una sola vez</strong>, al final. Si probás veinte modelos y elegís el que mejor da en test, ese resultado ya no estima nada: elegiste en función de él, así que está contaminado. Para elegir entre modelos está el conjunto de validación, que es el tema 07.</div>
       </div>
@@ -186,6 +186,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="flujo.js"></script>
 </body>
 </html>

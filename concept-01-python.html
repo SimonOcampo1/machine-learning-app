@@ -56,7 +56,7 @@
         <p class="eyebrow">{ Lo primero }</p>
         <h2>Variables: nombres pegados a valores</h2>
         <p>Una variable es un nombre que apunta a un valor. El signo <code>=</code> no significa "es igual a" como en matemática: significa "de ahora en más, este nombre apunta a esto".</p>
-        <div class="callout formula">precio = 1500</div>
+        <div class="callout codigo">precio = 1500</div>
         <p>Después de esa línea, cada vez que escribas <code>precio</code>, Python va a buscar el 1500. Y si más adelante escribís <code>precio = 2000</code>, el nombre se despega del 1500 y se pega al 2000. El valor viejo se pierde. Esto es lo que hace que la línea <code>x = x + 1</code>, que en matemática sería un absurdo, en programación sea perfectamente normal: "tomá lo que hay en x, sumale uno, y volvé a pegar el nombre x a ese resultado nuevo".</p>
         <figure class="diagram" id="d-variables">
           <svg viewBox="0 0 640 220" role="img" aria-label="Tres nombres apuntando a tres valores: precio a 1500, nombre a la palabra casa, y activo al valor verdadero">
@@ -87,7 +87,7 @@
         <p class="eyebrow">{ Muchos valores juntos }</p>
         <h2>Listas</h2>
         <p>Una lista guarda varios valores en orden, entre corchetes y separados por comas. Es la estructura que más vas a usar: un conjunto de datos es, en el fondo, una lista de listas.</p>
-        <div class="callout formula">precios = [1500, 2000, 1800, 2400]</div>
+        <div class="callout codigo">precios = [1500, 2000, 1800, 2400]</div>
         <p>Para sacar un elemento se usan corchetes con su posición. Y acá viene lo único verdaderamente contraintuitivo de esta sección: <strong>se cuenta desde cero</strong>. El primer elemento es el <code>0</code>, el segundo es el <code>1</code>, y así. Una lista de cuatro elementos tiene posiciones 0, 1, 2 y 3, y pedir la posición 4 da error.</p>
         <figure class="diagram" id="d-listas">
           <svg viewBox="0 0 640 200" role="img" aria-label="Una lista de cuatro precios con sus índices desde cero por arriba y sus índices negativos por abajo">
@@ -121,7 +121,7 @@
         <p class="eyebrow">{ Repetir sin repetirse }</p>
         <h2>Bucles y la sangría que manda</h2>
         <p>Un bucle <code>for</code> recorre una lista y ejecuta lo mismo para cada elemento. La variable que va después del <code>for</code> es un nombre que vos elegís: en cada vuelta se pega a un elemento distinto.</p>
-        <div class="callout formula">for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;print(p * 2)</div>
+        <div class="callout codigo">for p in precios:<br>&nbsp;&nbsp;&nbsp;&nbsp;print(p * 2)</div>
         <p>Eso imprime cada precio duplicado, uno por línea. Fijate en dos cosas. Primero, los dos puntos al final de la línea del <code>for</code>. Segundo, y mucho más importante: <strong>la sangría</strong>.</p>
         <p>En casi todos los lenguajes, la sangría es decoración. En Python <em>es</em> el código. Lo que está indentado abajo del <code>for</code> es lo que se repite; lo que vuelve al margen ya está afuera del bucle y se ejecuta una sola vez. No hay llaves ni palabras de cierre: la única forma de saber dónde termina un bloque es mirar dónde vuelve el margen.</p>
         <figure class="diagram" id="d-sangria">
@@ -156,7 +156,7 @@
         <p class="eyebrow">{ Empaquetar una idea }</p>
         <h2>Funciones</h2>
         <p>Una función es un pedazo de código con nombre, al que le podés pasar valores y que te devuelve un resultado. Se define con <code>def</code>, y lo que devuelve sale por <code>return</code>.</p>
-        <div class="callout formula">def promedio(numeros):<br>&nbsp;&nbsp;&nbsp;&nbsp;return sum(numeros) / len(numeros)</div>
+        <div class="callout codigo">def promedio(numeros):<br>&nbsp;&nbsp;&nbsp;&nbsp;return sum(numeros) / len(numeros)</div>
         <p>Definirla no hace nada todavía: es como escribir una receta. Recién cuando la <em>llamás</em> —<code>promedio([1500, 2000, 1800])</code>— se ejecuta y devuelve 1766.67.</p>
         <p>La palabra <code>return</code> hace dos cosas a la vez: entrega el valor y termina la función ahí mismo. Cualquier línea que venga después no se ejecuta nunca. Y una función sin <code>return</code> devuelve <code>None</code>, que es el valor especial de Python para "nada": si alguna vez ves un <code>None</code> donde esperabas un número, casi siempre es un <code>return</code> olvidado.</p>
         <figure class="diagram" id="d-funcion">
@@ -183,7 +183,7 @@
         <p class="eyebrow">{ Buscar por nombre }</p>
         <h2>Diccionarios</h2>
         <p>Una lista guarda cosas en orden y las buscás por posición. Un diccionario las guarda por etiqueta y las buscás por nombre. Se escribe con llaves, y cada entrada es <code>clave: valor</code>.</p>
-        <div class="callout formula">casa = {"m2": 85, "precio": 2400, "barrio": "Flores"}</div>
+        <div class="callout codigo">casa = {"m2": 85, "precio": 2400, "barrio": "Flores"}</div>
         <p>Y se lee con corchetes, igual que una lista, pero pasando la clave en vez de un número: <code>casa["m2"]</code> devuelve 85. El orden acá no importa y no se usa nunca; lo que importa es el nombre.</p>
         <p>Los vas a encontrar en todos lados: los resultados de un modelo, sus parámetros de configuración y la mayoría de las respuestas de librerías vienen como diccionarios. Cuando veas <code>modelo.get_params()</code> devolviendo algo con llaves y dos puntos, es esto.</p>
         <div class="callout"><span class="etiqueta">Clave</span>La regla rápida para elegir: si vas a recorrer todo en orden, lista. Si vas a buscar un valor puntual por su nombre, diccionario.</div>
@@ -239,6 +239,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="python.js"></script>
 </body>
 </html>

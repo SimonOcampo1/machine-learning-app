@@ -96,7 +96,7 @@
         <p class="eyebrow">{ La operación que importa }</p>
         <h2>El producto punto</h2>
         <p>Esta es la que hay que entender de verdad. El <strong>producto punto</strong> entre dos vectores del mismo tamaño multiplica los pares que están en la misma posición y suma todo. El resultado no es un vector: es un solo número.</p>
-        <div class="callout formula">[85, 3] · [1200, 50000] = 85×1200 + 3×50000 = 252.000</div>
+        <div class="callout formula" data-tex="[85,\ 3] \cdot [1200,\ 50000] = 85 \times 1200 + 3 \times 50000 = 252.000">[85, 3] · [1200, 50000] = 85×1200 + 3×50000 = 252.000</div>
         <p>Leelo despacio, porque acabás de ver una predicción. El primer vector es una casa: 85 m² y 3 ambientes. El segundo son los coeficientes de un modelo: 1200 pesos por metro cuadrado y 50.000 pesos por ambiente. El producto punto de los dos es el precio que ese modelo predice para esa casa.</p>
         <p><strong>Eso es todo lo que hace un modelo lineal.</strong> La regresión lineal del tema 09, la regresión múltiple del 10, la regresión logística del 12 y cada neurona de las redes del 22: todas calculan un producto punto entre las características de una observación y un vector de coeficientes. Lo único que cambia entre ellas es cómo se eligen esos coeficientes y qué se hace con el número que sale.</p>
         <figure class="diagram" id="d-punto">
@@ -138,7 +138,7 @@
         <h2>Matriz por vector</h2>
         <p>Un producto punto predice el precio de <em>una</em> casa. Si tenés cuatro, la reacción natural es un bucle. Pero ya sabemos del tema 02 que eso es lo que hay que evitar.</p>
         <p>Multiplicar una matriz por un vector es exactamente eso, hecho de una sola vez: se toma cada fila de la matriz y se hace su producto punto con el vector. Con <code>X</code> de forma (4, 2) y un vector de coeficientes de forma (2,), el resultado es un vector de forma (4,): una predicción por casa.</p>
-        <div class="callout formula">predicciones = X @ beta</div>
+        <div class="callout codigo">predicciones = X @ beta</div>
         <p>Esa línea es, literalmente, "aplicá el modelo a todo el dataset". Es la línea que está adentro de casi todas las librerías que vas a usar, y la razón por la que vale la pena haber leído hasta acá: <code>X @ beta</code> deja de ser un símbolo raro y pasa a leerse como una frase.</p>
         <p>Las formas tienen que encajar, y la regla es una sola: <strong>el número de columnas del primero tiene que ser igual al número de filas del segundo</strong>. (4, 2) con (2,) funciona porque el 2 coincide, y el resultado se queda con lo de afuera: (4,). Si no coinciden, NumPy tira un error que menciona las dos formas, y ese error es tu amigo.</p>
         <div class="callout warn"><span class="etiqueta">Cuidado</span>En NumPy, <code>A * B</code> y <code>A @ B</code> son cosas distintas. El asterisco multiplica elemento por elemento; la arroba hace el producto matricial. Con formas que casualmente encajan para las dos, el asterisco no da error: da otro resultado. Para modelos siempre es <code>@</code>.</div>
@@ -151,7 +151,7 @@
         <p class="eyebrow">{ Medir }</p>
         <h2>Norma: el largo de un vector</h2>
         <p>La <strong>norma</strong> de un vector es su largo. Se calcula elevando cada componente al cuadrado, sumando todo y sacando la raíz. Con dos componentes es exactamente el teorema de Pitágoras: el vector [3, 4] tiene norma 5.</p>
-        <div class="callout formula">‖v‖ = √(v₁² + v₂² + … + vₙ²)</div>
+        <div class="callout formula" data-tex="\|v\| = \sqrt{v_1^2 + v_2^2 + \dots + v_n^2}">‖v‖ = √(v₁² + v₂² + … + vₙ²)</div>
         <p>Sirve para dos cosas que vas a usar mucho. La primera es medir <strong>distancia</strong>: la distancia entre dos puntos es la norma de su diferencia, <code>‖u − v‖</code>. Ese es el corazón del tema 14, donde clasificar consiste en buscar los vecinos más cercanos, y del 20, donde agrupar consiste en asignar cada punto al centro más cercano.</p>
         <p>La segunda es medir <strong>tamaño</strong>. Cuando en el tema 11 se hable de "castigar coeficientes grandes", lo que se va a castigar es la norma del vector de coeficientes. Ridge usa la suma de cuadrados, que es la norma de recién sin la raíz; Lasso usa la suma de los valores absolutos, que es otra norma. La diferencia entre esas dos formas de medir el mismo vector es la diferencia entre los dos métodos.</p>
         <p>En NumPy: <code>np.linalg.norm(v)</code>.</p>
@@ -204,6 +204,7 @@
   <script src="anim.js"></script>
   <script src="progreso.js"></script>
   <script src="ejercicios.js"></script>
+  <script src="diagramas.js"></script>
   <script src="algebra.js"></script>
 </body>
 </html>
