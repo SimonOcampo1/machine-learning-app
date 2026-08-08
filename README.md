@@ -100,6 +100,25 @@ Tres archivos, en orden de abstracción:
 
 `muestra.html` es el kitchen sink: todos los componentes en las seis fases, en una sola página. No se enlaza desde la nav.
 
+## Despliegue
+
+Vercel, sin build step. Framework preset **Other**, build command y output
+directory **vacíos**: los archivos se sirven tal cual y las dos funciones de
+`api/` las detecta solo por estar en esa carpeta.
+
+`vercel.json` **no declara `functions.runtime`**, y no es un olvido. Esa clave
+existe para runtimes de la comunidad y espera un paquete con versión
+(`vercel-php@0.6.0`); un identificador de Node como `nodejs20.x` la hace fallar
+en el primer segundo del build con *"Function Runtimes must have a valid
+version"*. Las funciones de Node no se declaran: alcanza con que estén en
+`api/` y exporten un handler con `module.exports`. La versión de Node sale de
+`engines.node` en `package.json`, y si hay que forzarla, de Project Settings →
+Node.js Version.
+
+Después del primer despliegue hay que cargar la URL de producción en Google
+Cloud Console → el ID de cliente → **Orígenes autorizados de JavaScript**. Sin
+eso Google rechaza el botón de sesión.
+
 ## Variables de entorno
 
 Ver `.env.example` para la plantilla. Sin estas cuatro, el sitio sigue funcionando completo contra `localStorage` — solo se pierde la sincronización entre dispositivos:
