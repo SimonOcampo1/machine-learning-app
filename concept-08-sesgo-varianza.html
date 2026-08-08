@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sesgo, varianza y overfitting · ML</title>
+  <meta name="description" content="Por qué un modelo más complejo no siempre es mejor: el compromiso entre sesgo y varianza, diagnosticado mirando el error de train contra el de test.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-1">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 1</p>
+      <p class="eyebrow">{ Tema 08 · Aprender de los datos }</p>
+      <h1>Sesgo, varianza y overfitting</h1>
+      <p class="lede">La tensión central de todo el machine learning, y el motivo por el que un modelo más potente empeora los resultados con una frecuencia que sorprende.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dos formas de fallar }</p>
+        <h2>Demasiado simple y demasiado complejo</h2>
+        <p>Tenés diez puntos que siguen, más o menos, una curva suave, con algo de ruido encima. Vas a ajustarles un polinomio y podés elegir el grado.</p>
+        <p>Con <strong>grado 1</strong> obtenés una recta. No importa cuántos datos le des: una recta no puede seguir una curva, y se va a equivocar sistemáticamente. Eso es <strong>underfitting</strong>: el modelo es demasiado rígido para la forma real del patrón.</p>
+        <p>Con <strong>grado 9</strong> y diez puntos, el polinomio pasa exactamente por los diez. Error de entrenamiento: cero. Y entre punto y punto pega unos saltos absurdos, porque no aprendió la curva: memorizó los diez puntos, ruido incluido. Eso es <strong>overfitting</strong>.</p>
+        <p>Con <strong>grado 3</strong> sigue la curva sin perseguir cada punto individual. No acierta perfecto en ninguno y acierta razonablemente en todos, incluidos los que todavía no vio.</p>
+        <figure class="diagram" id="d-grados">
+          <svg viewBox="0 0 640 240" role="img" aria-label="Los mismos puntos ajustados con una recta que no los sigue, una curva suave que sí, y un polinomio que pasa por todos con oscilaciones absurdas">
+            <text class="dlabel" x="105" y="24" text-anchor="middle">grado 1</text>
+            <line class="daxis" x1="30" y1="200" x2="185" y2="200"/>
+            <path class="dedge" d="M35 175 L 180 120"/>
+            <circle class="dnode-solid" cx="55" cy="180" r="4"/>
+            <circle class="dnode-solid" cx="85" cy="145" r="4"/>
+            <circle class="dnode-solid" cx="115" cy="120" r="4"/>
+            <circle class="dnode-solid" cx="145" cy="115" r="4"/>
+            <circle class="dnode-solid" cx="172" cy="128" r="4"/>
+            <text class="dtxt-mute" x="105" y="228" text-anchor="middle">underfitting</text>
+
+            <text class="dlabel" x="320" y="24" text-anchor="middle">grado 3</text>
+            <line class="daxis" x1="245" y1="200" x2="400" y2="200"/>
+            <path class="dedge" d="M250 182 C 300 130, 340 105, 395 130"/>
+            <circle class="dnode-solid" cx="270" cy="180" r="4"/>
+            <circle class="dnode-solid" cx="300" cy="145" r="4"/>
+            <circle class="dnode-solid" cx="330" cy="120" r="4"/>
+            <circle class="dnode-solid" cx="360" cy="115" r="4"/>
+            <circle class="dnode-solid" cx="387" cy="128" r="4"/>
+            <text class="dtxt-mute" x="320" y="228" text-anchor="middle">el punto justo</text>
+
+            <text class="dlabel" x="535" y="24" text-anchor="middle">grado 9</text>
+            <line class="daxis" x1="460" y1="200" x2="615" y2="200"/>
+            <path class="dedge" d="M485 180 C 495 100, 505 190, 515 145 C 525 90, 535 160, 545 120 C 555 80, 565 150, 575 115 C 585 95, 595 150, 602 128"/>
+            <circle class="dnode-solid" cx="485" cy="180" r="4"/>
+            <circle class="dnode-solid" cx="515" cy="145" r="4"/>
+            <circle class="dnode-solid" cx="545" cy="120" r="4"/>
+            <circle class="dnode-solid" cx="575" cy="115" r="4"/>
+            <circle class="dnode-solid" cx="602" cy="128" r="4"/>
+            <text class="dtxt-mute" x="535" y="228" text-anchor="middle">overfitting</text>
+          </svg>
+          <figcaption>El de la derecha tiene el mejor error de entrenamiento de los tres y es el peor de los tres. Por eso el error de entrenamiento no sirve para elegir.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Los nombres }</p>
+        <h2>Sesgo y varianza</h2>
+        <p>Esas dos formas de fallar tienen nombre técnico, y entenderlos como <em>experimentos mentales repetidos</em> es lo que los vuelve claros. Imaginá que pudieras conseguir muchos conjuntos de entrenamiento distintos del mismo fenómeno, y entrenar un modelo con cada uno.</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>Sesgo <span class="dist-vs">bias</span></h3>
+            <p class="dist-trampa">Cuánto se equivoca el modelo <strong>en promedio</strong>, aun con todos los datos del mundo. Es error por rigidez: la forma que el modelo puede tomar no alcanza para la forma real del patrón.</p>
+            <p class="dist-truco">Una recta ajustando una curva tiene sesgo alto, y agregar datos no lo baja.</p>
+          </article>
+          <article class="dist">
+            <h3>Varianza <span class="dist-vs">variance</span></h3>
+            <p class="dist-trampa">Cuánto <strong>cambia</strong> el modelo si le cambiás un poco los datos de entrenamiento. Es error por inestabilidad: el modelo está siguiendo ruido, y el ruido es distinto en cada muestra.</p>
+            <p class="dist-truco">El polinomio de grado 9 tiene varianza altísima: sacá un punto y la curva cambia por completo.</p>
+          </article>
+        </div>
+        <p>La analogía del tiro al blanco ayuda. Sesgo alto es tirar siempre agrupado pero lejos del centro: consistente y equivocado. Varianza alta es tirar disperso alrededor del centro: en promedio bien, pero ningún tiro confiable.</p>
+        <p>El error total de un modelo se descompone en tres partes: sesgo, varianza, y un ruido irreducible que viene de los datos mismos y que ningún modelo puede eliminar. Esa tercera parte es importante recordarla, porque marca el piso: si dos casas idénticas se vendieron a precios distintos, ningún modelo va a poder acertarles a las dos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El compromiso }</p>
+        <h2>Por qué el error tiene forma de U</h2>
+        <p>Acá está la parte incómoda: <strong>bajar uno sube el otro</strong>. Un modelo más flexible se adapta mejor al patrón real (baja el sesgo) pero también se adapta mejor al ruido (sube la varianza). Un modelo más rígido hace lo contrario.</p>
+        <p>Como el error total es la suma, y una parte baja mientras la otra sube, la suma tiene forma de U. Existe un punto de complejidad óptimo, y pasarse es tan malo como quedarse corto.</p>
+        <figure class="diagram" id="d-u">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Curvas de sesgo bajando y varianza subiendo con la complejidad, y su suma con forma de U y un mínimo en el medio">
+            <line class="daxis" x1="60" y1="230" x2="600" y2="230"/>
+            <line class="daxis" x1="60" y1="230" x2="60" y2="30"/>
+            <path class="dedge-mute" d="M70 60 C 200 210, 300 215, 590 220"/>
+            <text class="dtxt-mute" x="120" y="55">sesgo</text>
+            <path class="dedge-mute" d="M70 222 C 350 215, 430 130, 590 40"/>
+            <text class="dtxt-mute" x="530" y="60">varianza</text>
+            <path class="dedge" d="M70 90 C 180 190, 250 195, 320 190 C 420 185, 500 110, 590 45"/>
+            <text class="dlabel" x="200" y="150">error total</text>
+            <path class="dedge-mute" d="M330 190 V 230" stroke-dasharray="4 4"/>
+            <circle class="dnode-solid" cx="330" cy="190" r="6"/>
+            <text class="dlabel" x="330" y="252" text-anchor="middle">el punto justo</text>
+            <text class="dtxt-mute" x="120" y="270">← más simple</text>
+            <text class="dtxt-mute" x="540" y="270">más complejo →</text>
+          </svg>
+          <figcaption>Elegir un modelo es elegir un punto sobre este eje. Toda técnica de regularización, poda o early stopping es una forma de moverse hacia la izquierda desde un modelo que se pasó.</figcaption>
+        </figure>
+        <div class="callout"><span class="etiqueta">Clave</span>"Complejidad" no es una sola perilla: es la profundidad de un árbol, el grado de un polinomio, la cantidad de vecinos en KNN (al revés: menos vecinos, más complejo), el alpha de Ridge, la cantidad de capas de una red. Todos esos hiperparámetros se eligen con validación cruzada, que es exactamente lo que hace el tema anterior.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El diagnóstico }</p>
+        <h2>Dos números te dicen dónde estás</h2>
+        <p>Esta es la parte más práctica del tema y conviene memorizarla. Calculás el error sobre entrenamiento y sobre validación, y los mirás juntos:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Error en train</th><th>Error en validación</th><th>Diagnóstico</th><th>Qué hacer</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>alto</td><td>alto</td><td>underfitting</td><td>modelo más complejo, más características</td></tr>
+              <tr><td>bajo</td><td>alto</td><td>overfitting</td><td>regularizar, simplificar, más datos</td></tr>
+              <tr><td>bajo</td><td>bajo</td><td>bien</td><td>nada, ya está</td></tr>
+              <tr><td>alto</td><td>bajo</td><td>algo está mal</td><td>revisar el código, no es un caso real</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>La cuarta fila casi nunca es un modelo raro: es un bug. Un corte mal hecho, un conjunto de validación más fácil que el de entrenamiento, o una métrica calculada sobre el conjunto equivocado.</p>
+        <p>La distancia entre los dos errores se llama <strong>brecha de generalización</strong>, y es la medida directa del overfitting. Un modelo con 0.98 en train y 0.72 en validación tiene una brecha enorme; uno con 0.84 y 0.82 está sano aunque su número absoluto sea más bajo, y casi siempre es el que conviene poner en producción.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La herramienta }</p>
+        <h2>Curvas de aprendizaje</h2>
+        <p>Una curva de aprendizaje grafica los dos errores en función de <strong>cuántos datos de entrenamiento</strong> usás. Sirve para responder una pregunta concreta y cara: ¿conviene salir a conseguir más datos?</p>
+        <p>Si las dos curvas convergen y se juntan en un valor alto, tenés sesgo alto: el modelo ya aprendió todo lo que su forma le permite, y más datos no van a mover nada. Hay que cambiar de modelo.</p>
+        <p>Si quedan separadas, con el error de entrenamiento bajo y el de validación alto y todavía bajando, tenés varianza alta: más datos sí van a ayudar, porque le hacen más difícil memorizar.</p>
+        <p>Es la diferencia entre gastar tres meses etiquetando datos que no van a servir para nada, y gastarlos en lo único que faltaba.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios de diagnóstico: leer dos números y decidir qué hacer.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que más complejo es mejor.</strong> Cambiar una regresión lineal por un boosting de mil árboles sobre doscientas filas casi siempre empeora los resultados. La complejidad del modelo tiene que ir con la cantidad de datos, no con las ganas.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Combatir overfitting con más características.</strong> Es el reflejo equivocado: agregar columnas sube la varianza. Contra overfitting va menos complejidad, más regularización o más filas.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Mirar solo el error de validación y no la brecha.</strong> Entre un modelo con 0.86 en validación y brecha de 0.13, y otro con 0.84 y brecha de 0.02, el reflejo es quedarse con el primero. Pero esa brecha grande significa que está siguiendo ruido, y en producción los datos traen ruido nuevo: el 0.86 no se sostiene. El número de validación sale bien, la decisión sale mal, y el problema recién aparece semanas después con datos reales.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Hay dos formas de fallar: underfitting, cuando el modelo es demasiado rígido para el patrón real, y overfitting, cuando es tan flexible que memoriza el ruido junto con la señal. Sus nombres técnicos son sesgo y varianza: el sesgo es cuánto te equivocás en promedio aunque tengas todos los datos del mundo, y la varianza es cuánto cambia el modelo si le cambiás un poco los datos. Bajar uno sube el otro, así que el error total tiene forma de U y existe un punto de complejidad óptimo que se elige con validación cruzada. El diagnóstico práctico son dos números: los dos errores altos es underfitting, train bajo y validación alto es overfitting, y la distancia entre ambos, la brecha de generalización, es la medida directa de cuánto está memorizando. Un modelo con número absoluto un poco más bajo y brecha chica casi siempre le gana en producción a uno con número alto y brecha grande. Y las curvas de aprendizaje responden si conviene conseguir más datos: si las dos curvas ya convergieron, no; si siguen separadas, sí. Con esto cierra la fase 1 y el vocabulario está completo. La fase 2 arranca entrenando el primer modelo de verdad: la regresión lineal, que es el ejemplo canónico de sesgo alto y varianza baja.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="sesgo-varianza.js"></script>
+</body>
+</html>
