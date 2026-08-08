@@ -37,7 +37,7 @@ Crudos de GSAP. Nunca se usan directo fuera del bloque `:root`.
 su canvas da 4.52:1 — pasa AA raspando. Pero acá el texto secundario también vive
 dentro de las tarjetas (`#191919`), y ahí cae a **4.16:1**: no llega. En vez de
 bajar el piso, el token de texto pasa a ser `--s75` (9.72:1 y 8.95:1) y `--s50`
-queda para lo no-textual, donde el piso es 3. Medido por `node contraste.js`, que
+queda para lo no-textual, donde el piso es 3. Medido por `npm run contraste`, que
 falla con código 1 si alguna fila baja.
 
 ### Taxonomía de fase
@@ -54,7 +54,7 @@ calculan: son los hex de GSAP. La variable `--fase` es el único knob.
 | 4 | Árboles y no supervisado | `#fec5fb` | Pink (Scroll) | 13.27:1 |
 | 5 | Redes neuronales | `#abff84` | Light Green (Other) | 15.79:1 |
 
-Los seis pasan AAA sobre `#0e100f`. Valores medidos, no estimados: `node contraste.js`.
+Los seis pasan AAA sobre `#0e100f`. Valores medidos, no estimados: `npm run contraste`.
 
 ### Colores de estado
 
@@ -76,7 +76,7 @@ El 10% es estético: apenas tiñe. `--cream` encima queda entre 15.56:1 y 16.43:
 en las seis fases, muy holgado sobre el piso AAA de 7 — el límite no está cerca,
 así que subirlo es una decisión de gusto, no de contraste. Lo que sí es
 obligatorio: si se toca el porcentaje acá, se toca la constante `TINTE` de
-`contraste.js` y se vuelve a correr.
+`scripts/contraste.js` y se vuelve a correr.
 
 ## Tokens — Typography
 
@@ -180,7 +180,7 @@ de formas de GSAP: domos, píldoras, blobs con gradiente lineal interno de dos
 paradas (color de fase → variante clara), **sin `drop-shadow`**, con desborde
 suelto respecto del marco.
 
-Ningún color literal dentro del `<svg>`: todo por variable. `verificar.js` lo
+Ningún color literal dentro del `<svg>`: todo por variable. `scripts/verificar.js` lo
 exige y falla el build si aparece un hex.
 
 ### Bloque de ejercicio

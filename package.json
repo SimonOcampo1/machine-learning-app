@@ -4,7 +4,9 @@
   "type": "commonjs",
   "engines": { "node": ">=20" },
   "scripts": {
-    "verificar": "node verificar.js",
-    "test": "node --test"
+    "verificar": "node scripts/verificar.js",
+    "contraste": "node scripts/contraste.js",
+    "test": "node --test",
+    "check": "npm run verificar && npm run contraste && npm test"
   }
 }

@@ -1,7 +1,9 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const RAIZ = __dirname;
+// El script vive en `scripts/`, pero todo lo que revisa cuelga de la raiz del
+// proyecto: los HTML, data/temario.json y los modulos de js/.
+const RAIZ = path.join(__dirname, "..");
 
 // Slugs y números únicos, formato de archivo válido, y prefijo de archivo == n
 function _chequearTemas(temas) {
@@ -186,6 +188,17 @@ function _chequearEnlaces(html, archivo, existentes, declarados) {
   return errores;
 }
 
+/* Todos los .js bajo un directorio, recursivo. Los de test quedan afuera:
+   declaran ids a proposito repetidos para probar el chequeo. */
+function _jsDelSitio(dir) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+    const p = path.join(dir, e.name);
+    if (e.isDirectory()) return _jsDelSitio(p);
+    return e.name.endsWith(".js") && !e.name.endsWith(".test.js") ? [p] : [];
+  });
+}
+
 function verificar() {
   let temario;
   try {
@@ -225,12 +238,11 @@ function verificar() {
     errores.push(..._chequearRespaldoTex(html, archivo));
   }
 
-  // Ids de ejercicio duplicados en cada archivo JS (salvo los de test)
-  for (const archivo of archivosEnDisco) {
-    if (archivo.endsWith(".js") && !archivo.endsWith(".test.js")) {
-      const js = fs.readFileSync(path.join(RAIZ, archivo), "utf8");
-      errores.push(..._chequearIds(js));
-    }
+  // Ids de ejercicio duplicados en cada archivo JS. Se recorre `js/` entero y
+  // no solo un nivel: los pegamentos de tema, que son los que declaran los
+  // ejercicios, viven en `js/temas/`.
+  for (const archivo of _jsDelSitio(path.join(RAIZ, "js"))) {
+    errores.push(..._chequearIds(fs.readFileSync(archivo, "utf8")));
   }
 
   return errores;

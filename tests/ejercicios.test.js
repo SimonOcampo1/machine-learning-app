@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert");
-const E = require("./ejercicios.js");
+const E = require("../js/nucleo/ejercicios.js");
 
 const mcq = { tipo: "mcq", id: "m1", q: "¿?", opts: ["a", "b", "c", "d"], c: 2, expl: "porque sí" };
 

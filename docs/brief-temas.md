@@ -22,11 +22,11 @@ exacto que se te indicó. `NN` va con dos dígitos.
 Estos archivos son compartidos y los edita otro. Si los tocás, se pisan:
 
 - `data/temario.json`
-- `shared.css`, `shared.js`, `anim.js`, `ejercicios.js`, `progreso.js`
-- `index.js`, `index.html`, `temas.html`, `temas.js`, `verificar.js`
+- `css/shared.css`, `js/nucleo/shared.js`, `js/nucleo/anim.js`, `js/nucleo/ejercicios.js`, `js/nucleo/progreso.js`
+- `js/paginas/index.js`, `index.html`, `temas.html`, `js/paginas/temas.js`, `scripts/verificar.js`
 - Cualquier `concept-*.html` que no sea tuyo
 
-**No corras `node verificar.js`.** Va a marcar tus archivos como error hasta
+**No corras `npm run verificar`.** Va a marcar tus archivos como error hasta
 que se agreguen al temario, cosa que hace otro al final. Corré `node --test`
 solo si tocaste algo fuera de tus dos archivos, que no deberías.
 
@@ -84,7 +84,7 @@ fallar el verificador o rompe la coherencia visual.
   verificador lo rechaza.
 - **Ni `border-left` de acento, ni `box-shadow`, ni `background-clip: text`.**
 - **No inventes clases CSS ni escribas `<style>`.** Usá solo las que existen en
-  `shared.css`. Si te falta un componente, resolvelo con los que hay.
+  `css/shared.css`. Si te falta un componente, resolvelo con los que hay.
 - **Nada de emoji.**
 - Usá `<code>` para nombres de función, variables y fragmentos de código.
 

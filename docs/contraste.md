@@ -1,7 +1,7 @@
-# Contraste WCAG — tokens de `shared.css`
+# Contraste WCAG — tokens de `css/shared.css`
 
-Generado por `node contraste.js`. **No editar a mano**: para actualizar la tabla,
-correr `node contraste.js --markdown` y pegar la salida.
+Generado por `npm run contraste`. **No editar a mano**: para actualizar la tabla,
+correr `npm run contraste -- --markdown` y pegar la salida.
 
 El script sale con código 1 si alguna fila baja de su piso, así que sirve como
 chequeo antes de commitear un cambio de color. Los tintes de fase se calculan en
