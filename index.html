@@ -23,10 +23,26 @@
 
   <main class="envoltura">
     <header class="hero">
-      <p class="eyebrow">{ De cero a redes neuronales }</p>
-      <h1><span class="w1">Machine</span><span class="w2">Learning</span></h1>
-      <p class="lede">Veinticuatro temas, seis fases. Empieza en "qué es una variable" y termina en una red que aprende sola. Cada concepto se ve moverse y se practica antes de pasar al siguiente.</p>
-      <p class="progreso-global">Progreso: <strong id="pct">0</strong>% · <span id="completos">0</span> de 24 temas</p>
+      <div class="hero-txt">
+        <p class="eyebrow">{ De cero a redes neuronales }</p>
+        <h1><span class="w1">Machine</span><span class="w2">Learning</span></h1>
+        <p class="lede">Veinticuatro temas, seis fases. Empieza en "qué es una variable" y termina en una red que aprende sola. Cada concepto se ve moverse y se practica antes de pasar al siguiente.</p>
+        <p class="progreso-global">Progreso: <strong id="pct">0</strong>% · <span id="completos">0</span> de 24 temas</p>
+      </div>
+
+      <!-- Decoración, y nada más que eso: una red de 3-5-5-2 con pulsos que la
+           recorren de izquierda a derecha, en bucle. No lleva datos, no reporta
+           nada y por eso va `aria-hidden`: para un lector de pantalla es ruido.
+           Las aristas y los nodos están completos y quietos en el HTML, así que
+           sin JS se ve la red igual, sin pulsos. `index.js` agrega el
+           movimiento; si GSAP no carga, no pasa nada. -->
+      <div class="hero-red" aria-hidden="true">
+        <svg viewBox="0 0 300 260" data-red focusable="false">
+          <g data-red-aristas></g>
+          <g data-red-nodos></g>
+          <g data-red-pulsos></g>
+        </svg>
+      </div>
     </header>
 
     <section id="roadmap" aria-label="Roadmap de aprendizaje"></section>

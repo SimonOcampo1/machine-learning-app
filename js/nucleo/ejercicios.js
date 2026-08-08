@@ -450,8 +450,17 @@ const Ejercicios = (() => {
     li.dataset.linea = texto;
     li.draggable = true;
 
-    const pre = nodo("code", "pa-txt", texto);
-    pre.style.paddingLeft = `${(texto.length - texto.trimStart().length) * 0.5}rem`;
+    /* La sangría se dibuja con un margen por NIVEL, y el texto se muestra sin
+       los espacios de adelante. Antes se pintaba el texto tal cual, con un
+       padding de 0.5rem por espacio: cuatro espacios de Python son 2rem, así
+       que un bloque de tercer nivel arrancaba 96px adentro y la línea más larga
+       obligaba a scrollear cada bloque de costado para leerla — insoportable en
+       teléfono. A 1.5rem por nivel el mismo bloque arranca a 72px.
+       `dataset.linea` conserva el texto ORIGINAL con sus espacios: es lo que
+       compara el corrector, y la sangría sigue siendo parte de la respuesta. */
+    const nivel = (texto.length - texto.trimStart().length) / 4;
+    const pre = nodo("code", "pa-txt", texto.trimStart());
+    if (nivel) pre.style.marginLeft = `${nivel * 1.5}rem`;
 
     const ctrl = nodo("div", "pa-ctrl");
     const arriba = nodo("button", "pa-b", "↑");
