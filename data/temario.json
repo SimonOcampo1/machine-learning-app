@@ -4,8 +4,8 @@
       "temas": [
         { "n": 1, "titulo": "Python esencial", "slug": "python", "archivo": "concept-01-python.html", "escrito": true, "ejercicios": 5 },
         { "n": 2, "titulo": "NumPy y pensar en vectores", "slug": "numpy", "archivo": "concept-02-numpy.html", "escrito": true, "ejercicios": 5 },
-        { "n": 3, "titulo": "Álgebra lineal mínima", "slug": "algebra", "archivo": "concept-03-algebra.html" },
-        { "n": 4, "titulo": "Probabilidad y estadística mínima", "slug": "probabilidad", "archivo": "concept-04-probabilidad.html" }
+        { "n": 3, "titulo": "Álgebra lineal mínima", "slug": "algebra", "archivo": "concept-03-algebra.html", "escrito": true, "ejercicios": 5 },
+        { "n": 4, "titulo": "Probabilidad y estadística mínima", "slug": "probabilidad", "archivo": "concept-04-probabilidad.html", "escrito": true, "ejercicios": 5 }
       ] },
     { "n": 1, "nombre": "Aprender de los datos", "hint": "Qué significa que una máquina aprenda", "hue": 285,
       "temas": [
@@ -17,12 +17,12 @@
     { "n": 2, "nombre": "Regresión", "hint": "Predecir un número", "hue": 145,
       "temas": [
         { "n": 9, "titulo": "Regresión lineal simple", "slug": "regresion-lineal", "archivo": "concept-09-regresion-lineal.html", "escrito": true, "ejercicios": 5 },
-        { "n": 10, "titulo": "Regresión múltiple y descenso de gradiente", "slug": "gradiente", "archivo": "concept-10-gradiente.html" },
+        { "n": 10, "titulo": "Regresión múltiple y descenso de gradiente", "slug": "gradiente", "archivo": "concept-10-gradiente.html", "escrito": true, "ejercicios": 5 },
         { "n": 11, "titulo": "Regularización: Ridge y Lasso", "slug": "regularizacion", "archivo": "concept-11-regularizacion.html" }
       ] },
     { "n": 3, "nombre": "Clasificación", "hint": "Predecir una categoría", "hue": 55,
       "temas": [
-        { "n": 12, "titulo": "Clasificación y regresión logística", "slug": "logistica", "archivo": "concept-12-logistica.html" },
+        { "n": 12, "titulo": "Clasificación y regresión logística", "slug": "logistica", "archivo": "concept-12-logistica.html", "escrito": true, "ejercicios": 5 },
         { "n": 13, "titulo": "Métricas de clasificación", "slug": "metricas", "archivo": "concept-13-metricas.html" },
         { "n": 14, "titulo": "K vecinos más cercanos", "slug": "knn", "archivo": "concept-14-knn.html" },
         { "n": 15, "titulo": "Naïve Bayes", "slug": "naive-bayes", "archivo": "concept-15-naive-bayes.html" },

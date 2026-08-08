@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Probabilidad y estadística mínima · ML</title>
+  <meta name="description" content="Media, mediana, desvío, la normal y el teorema de Bayes: lo mínimo para no leer un modelo de memoria, con el ejemplo del test médico.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-0">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 0</p>
+      <p class="eyebrow">{ Tema 04 · Piso }</p>
+      <h1>Probabilidad y estadística mínima</h1>
+      <p class="lede">Último tema del piso. Termina con el resultado más contraintuitivo de toda la fase: un test que acierta el 99% de las veces puede equivocarse la mayoría de las veces que da positivo.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El centro }</p>
+        <h2>Media y mediana</h2>
+        <p>La <strong>media</strong> es el promedio de toda la vida: sumás todo y dividís por la cantidad. La <strong>mediana</strong> es el valor que queda justo en el medio cuando ordenás los datos de menor a mayor: la mitad queda por debajo y la mitad por arriba.</p>
+        <p>Con datos parejos las dos dan casi lo mismo y la distinción parece burocrática. Deja de serlo apenas aparece un valor extremo. Tomá los sueldos de cinco personas en una oficina: 40, 45, 50, 55 y 60 mil pesos. La media es 50 y la mediana también. Ahora entra el dueño, que gana 900 mil.</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Grupo</th><th>Datos</th><th>Media</th><th>Mediana</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>sin el dueño</td><td>40, 45, 50, 55, 60</td><td>50</td><td>50</td></tr>
+              <tr><td>con el dueño</td><td>40, 45, 50, 55, 60, 900</td><td>191.7</td><td>52.5</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>La media saltó a 191.700, un sueldo que no gana absolutamente nadie en esa oficina. La mediana apenas se movió a 52.500. Un solo dato extremo arrastró la media casi cuatro veces; la mediana ni se enteró.</p>
+        <p>Eso se llama <strong>robustez</strong>, y la regla práctica es simple: si sospechás que hay valores extremos, mirá la mediana. Si media y mediana están muy separadas, casi seguro tenés outliers, y vale la pena ir a buscarlos antes de entrenar nada.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Un outlier no es automáticamente un error que hay que borrar. A veces es el dato más importante que tenés: en detección de fraude, los outliers <em>son</em> lo que estás buscando. Primero entendelo, después decidí.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La dispersión }</p>
+        <h2>Varianza y desvío estándar</h2>
+        <p>Saber el centro no alcanza. Dos grupos pueden tener la misma media y no parecerse en nada: uno con todos los datos apretados alrededor del promedio, otro con la mitad muy abajo y la mitad muy arriba.</p>
+        <p>La <strong>varianza</strong> mide esa dispersión: para cada dato calculás cuánto se aleja de la media, elevás esa distancia al cuadrado, y promediás. El cuadrado está por el mismo motivo que en el tema 09: sin él, las desviaciones para arriba y para abajo se cancelarían y todo daría cero.</p>
+        <div class="callout formula">varianza = promedio de (xᵢ − media)²&nbsp;&nbsp;&nbsp;&nbsp;desvío = √varianza</div>
+        <p>El problema de la varianza es que queda en unidades al cuadrado. Si medís sueldos en pesos, la varianza está en "pesos al cuadrado", que no significa nada que un ser humano pueda imaginar. Por eso casi siempre se reporta el <strong>desvío estándar</strong>, que es su raíz cuadrada: vuelve a las unidades originales y sí se puede leer. "Sueldo promedio 50.000, desvío 8.000" se entiende de inmediato.</p>
+        <figure class="diagram" id="d-dispersion">
+          <svg viewBox="0 0 640 240" role="img" aria-label="Dos grupos de puntos con la misma media pero distinta dispersión: uno apretado alrededor del centro y otro muy abierto">
+            <text class="dlabel" x="30" y="30">desvío chico</text>
+            <line class="daxis" x1="30" y1="80" x2="610" y2="80"/>
+            <circle class="dnode-solid" cx="290" cy="80" r="6"/>
+            <circle class="dnode-solid" cx="305" cy="80" r="6"/>
+            <circle class="dnode-solid" cx="320" cy="80" r="6"/>
+            <circle class="dnode-solid" cx="335" cy="80" r="6"/>
+            <circle class="dnode-solid" cx="350" cy="80" r="6"/>
+            <path class="dedge" d="M320 55 V 68"/>
+            <text class="dlabel" x="320" y="48" text-anchor="middle">media</text>
+
+            <text class="dlabel" x="30" y="150">desvío grande</text>
+            <line class="daxis" x1="30" y1="200" x2="610" y2="200"/>
+            <circle class="dnode-solid" cx="90" cy="200" r="6"/>
+            <circle class="dnode-solid" cx="180" cy="200" r="6"/>
+            <circle class="dnode-solid" cx="320" cy="200" r="6"/>
+            <circle class="dnode-solid" cx="460" cy="200" r="6"/>
+            <circle class="dnode-solid" cx="550" cy="200" r="6"/>
+            <path class="dedge" d="M320 175 V 188"/>
+            <text class="dlabel" x="320" y="168" text-anchor="middle">media</text>
+            <text class="dtxt-mute" x="320" y="230" text-anchor="middle">la misma media, dos conjuntos que no se parecen en nada</text>
+          </svg>
+          <figcaption>Reportar solo el promedio esconde la mitad de la historia. El desvío es lo que dice si ese promedio representa a alguien.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La forma más común }</p>
+        <h2>La distribución normal</h2>
+        <p>Una <strong>distribución</strong> describe qué valores aparecen y con qué frecuencia. La más famosa es la <strong>normal</strong>, la campana: la mayoría de los datos se amontonan cerca del promedio y son cada vez más raros a medida que te alejás, de forma simétrica para los dos lados.</p>
+        <p>Aparece por todos lados (alturas, errores de medición, ruido) y queda completamente determinada por dos números: dónde está el centro (la media) y qué tan ancha es (el desvío). Con esos dos la tenés entera.</p>
+        <p>La regla que conviene memorizar es la <strong>68-95-99,7</strong>: en una normal, el 68% de los datos cae a menos de un desvío de la media, el 95% a menos de dos, y el 99,7% a menos de tres.</p>
+        <figure class="diagram" id="d-normal">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Curva de campana con las bandas de uno, dos y tres desvíos marcadas y sus porcentajes acumulados">
+            <line class="daxis" x1="40" y1="210" x2="600" y2="210"/>
+            <path class="dfill" d="M60 210 C 180 210, 220 40, 320 40 C 420 40, 460 210, 580 210 Z"/>
+            <path class="dedge" d="M60 210 C 180 210, 220 40, 320 40 C 420 40, 460 210, 580 210"/>
+            <path class="dedge-mute" d="M320 40 V 210"/>
+            <path class="dedge-mute" d="M235 210 V 130"/>
+            <path class="dedge-mute" d="M405 210 V 130"/>
+            <path class="dedge-mute" d="M150 210 V 185"/>
+            <path class="dedge-mute" d="M490 210 V 185"/>
+            <text class="dlabel" x="320" y="232" text-anchor="middle">media</text>
+            <text class="dtxt-mute" x="235" y="232" text-anchor="middle">−1σ</text>
+            <text class="dtxt-mute" x="405" y="232" text-anchor="middle">+1σ</text>
+            <text class="dtxt-mute" x="150" y="232" text-anchor="middle">−2σ</text>
+            <text class="dtxt-mute" x="490" y="232" text-anchor="middle">+2σ</text>
+            <text class="dtxt" x="320" y="120" text-anchor="middle">68%</text>
+            <text class="dtxt-mute" x="320" y="255" text-anchor="middle">entre −2σ y +2σ entra el 95%</text>
+          </svg>
+          <figcaption>Un dato a más de tres desvíos de la media pasa 3 veces cada 1000. No es imposible, pero amerita ir a mirar por qué.</figcaption>
+        </figure>
+        <p>Esto conecta directo con lo que ya venís haciendo. Cuando en el tema 02 escribiste <code>(X - X.mean(axis=0)) / X.std(axis=0)</code>, estabas <strong>estandarizando</strong>: dejando cada columna con media 0 y desvío 1. El resultado se lee como "cuántos desvíos me alejo del promedio", y esa unidad es comparable entre variables de escalas totalmente distintas. Por eso estandarizar es obligatorio antes de KNN, SVM, PCA y regularización.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>No todo es normal. Los sueldos, los precios de las casas y las visitas a un sitio web tienen colas largas hacia la derecha: hay pocos valores enormes que estiran todo. Aplicarles razonamientos de campana lleva a subestimar bastante seguido lo extremo que puede ser un caso.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Probabilidad con información }</p>
+        <h2>Condicional e independencia</h2>
+        <p>Una probabilidad es un número entre 0 y 1 que dice qué tan seguido pasa algo. La <strong>probabilidad condicional</strong>, que se escribe <code>P(A|B)</code> y se lee "probabilidad de A dado B", es qué tan seguido pasa A <em>entre los casos en que ya sabés que pasó B</em>.</p>
+        <p>La forma más segura de entenderla es contando. Imaginá 100 mails: 30 son spam y 70 no. De los 30 spam, 24 contienen la palabra "gratis". De los 70 legítimos, 7 la contienen.</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th></th><th>tiene "gratis"</th><th>no la tiene</th><th>total</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>spam</td><td>24</td><td>6</td><td>30</td></tr>
+              <tr><td>legítimo</td><td>7</td><td>63</td><td>70</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>total</td><td>31</td><td>69</td><td>100</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p><code>P(gratis | spam)</code> se lee sobre la fila de spam: de los 30 spam, 24 tienen la palabra, o sea 24/30 = 0,80. <code>P(spam | gratis)</code> se lee sobre la columna: de los 31 mails con "gratis", 24 son spam, o sea 24/31 = 0,77.</p>
+        <p>Fijate que son números distintos. <strong>Dar vuelta el condicional cambia la respuesta</strong>, y confundir los dos es el error de razonamiento más común que existe con probabilidades. Es exactamente el error que la próxima sección desarma.</p>
+        <p>Dos eventos son <strong>independientes</strong> si saber uno no te dice nada del otro: <code>P(A|B) = P(A)</code>. Acá no lo son, porque saber que un mail es spam cambia bastante la chance de encontrar "gratis". Cuando dos cosas sí son independientes, la probabilidad de que pasen las dos es el producto de las dos por separado. Esa multiplicación es toda la idea del tema 15.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El resultado incómodo }</p>
+        <h2>Bayes y el test que falla cuando acierta</h2>
+        <p>El <strong>teorema de Bayes</strong> es la fórmula que da vuelta un condicional: te deja pasar de <code>P(B|A)</code>, que solés conocer, a <code>P(A|B)</code>, que es lo que en realidad querés saber.</p>
+        <div class="callout formula">P(A|B) = P(B|A) × P(A) / P(B)</div>
+        <p>Escrita así no dice mucho. Lo que la vuelve inolvidable es este ejemplo, así que vale la pena hacerlo con números y sin fórmula.</p>
+        <p>Hay una enfermedad que tiene 1 persona cada 1000. Existe un test que es muy bueno: si estás enfermo, da positivo el 99% de las veces, y si estás sano, da negativo el 99% de las veces. Te lo hacés y te da <strong>positivo</strong>. ¿Qué probabilidad hay de que estés enfermo?</p>
+        <p>Casi todo el mundo contesta 99%. La respuesta real es alrededor del <strong>9%</strong>. Contémoslo sobre 100.000 personas:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Grupo</th><th>Cuántos</th><th>Dan positivo</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>enfermos</td><td>100</td><td>99</td></tr>
+              <tr><td>sanos</td><td>99.900</td><td>999</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>positivos totales</td><td>—</td><td>1.098</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p>De cada 100.000 personas, 100 están enfermas y el test agarra a 99 de ellas. Pero de las 99.900 sanas, el 1% en el que el test se equivoca son 999 personas que también dan positivo. Total de positivos: 1.098, de los cuales solo 99 están realmente enfermos. 99/1098 = 0,09.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>El test no es malo: la enfermedad es rarísima. Como hay mil veces más gente sana que enferma, incluso un error del 1% sobre ese grupo enorme produce muchos más falsos positivos que verdaderos. Cuando la clase que buscás es rara, la mayoría de tus positivos van a ser falsos aunque el modelo sea muy bueno.</div>
+        <figure class="diagram" id="d-bayes">
+          <svg viewBox="0 0 640 240" role="img" aria-label="Los positivos del test divididos en 99 verdaderos y 999 falsos, mostrando que la gran mayoría son falsos">
+            <text class="dlabel" x="30" y="30">1.098 positivos del test</text>
+            <rect class="dnode-solid" x="30" y="50" width="49" height="60" rx="4"/>
+            <rect class="dnode-bg" x="85" y="50" width="495" height="60" rx="4"/>
+            <text class="dtxt" x="54" y="135" text-anchor="middle">99</text>
+            <text class="dtxt" x="332" y="135" text-anchor="middle">999</text>
+            <text class="dlabel" x="54" y="160" text-anchor="middle">enfermos</text>
+            <text class="dtxt-mute" x="332" y="160" text-anchor="middle">sanos, falsos positivos</text>
+            <path class="dedge" d="M30 195 H 79"/>
+            <text class="dtxt" x="200" y="200">solo el 9% de los positivos está realmente enfermo</text>
+          </svg>
+          <figcaption>La barra es la respuesta. El pedacito de la izquierda son los verdaderos positivos; todo lo demás es gente sana a la que el test asustó.</figcaption>
+        </figure>
+        <p>Esto no es una curiosidad de examen. Es el motivo por el que el tema 13 dedica una sección entera a por qué la exactitud es una métrica engañosa, y el motivo por el que el clasificador del tema 15 se llama, justamente, Naïve <em>Bayes</em>.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios: dos conceptuales, uno de cuentas sobre el test médico, uno de armar código y uno de Python real.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Dar vuelta el condicional.</strong> <code>P(enfermo | positivo)</code> y <code>P(positivo | enfermo)</code> son números completamente distintos, y en el ejemplo de arriba difieren en un factor de once. Cada vez que leas una probabilidad, preguntate cuál es el grupo sobre el que se está contando.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Ignorar la frecuencia base.</strong> Es la misma trampa vista de otro lado: al evaluar qué tan confiable es un resultado positivo, hay que mirar también qué tan común es lo que se busca. Un modelo con 99% de aciertos suena impecable hasta que ves que la clase que te importa es el 0,1% de los datos.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Reportar solo el promedio.</strong> Sin el desvío al lado, un promedio no dice si describe a alguien o si es el punto medio entre dos grupos que no se parecen. Y si además hay outliers, la media misma ya está corrida. Nada de esto tira error: los números salen, se ponen en un informe, y las conclusiones están mal. Media, mediana y desvío juntos, siempre.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>La media es el promedio y la mediana es el valor del medio; la mediana resiste los valores extremos y la media no, así que verlas separadas es la señal de que hay outliers. La varianza mide la dispersión pero queda en unidades al cuadrado, y por eso se reporta el desvío estándar, que vuelve a las unidades originales y sí se puede leer. La distribución normal queda definida por media y desvío, y la regla 68-95-99,7 dice cuánto cae dentro de una, dos y tres desviaciones; estandarizar es reexpresar cualquier variable en esa unidad, que es lo que la hace comparable con otra de escala distinta. La probabilidad condicional se cuenta sobre un subgrupo, y darla vuelta cambia la respuesta: el teorema de Bayes es la fórmula que permite darla vuelta bien. El ejemplo del test médico es el que hay que recordar: cuando lo que buscás es raro, la mayoría de tus positivos van a ser falsos aunque el test sea muy bueno, y eso no es una falla del test sino aritmética. Con esto cierra la fase 0 y el piso está completo: ya hay Python, NumPy, álgebra y probabilidad. La fase 1 arranca preguntando qué significa exactamente que una máquina aprenda.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="probabilidad.js"></script>
+</body>
+</html>
