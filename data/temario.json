@@ -18,13 +18,13 @@
       "temas": [
         { "n": 9, "titulo": "Regresión lineal simple", "slug": "regresion-lineal", "archivo": "concept-09-regresion-lineal.html", "escrito": true, "ejercicios": 5 },
         { "n": 10, "titulo": "Regresión múltiple y descenso de gradiente", "slug": "gradiente", "archivo": "concept-10-gradiente.html", "escrito": true, "ejercicios": 5 },
-        { "n": 11, "titulo": "Regularización: Ridge y Lasso", "slug": "regularizacion", "archivo": "concept-11-regularizacion.html" }
+        { "n": 11, "titulo": "Regularización: Ridge y Lasso", "slug": "regularizacion", "archivo": "concept-11-regularizacion.html", "escrito": true, "ejercicios": 5 }
       ] },
     { "n": 3, "nombre": "Clasificación", "hint": "Predecir una categoría", "hue": 55,
       "temas": [
         { "n": 12, "titulo": "Clasificación y regresión logística", "slug": "logistica", "archivo": "concept-12-logistica.html", "escrito": true, "ejercicios": 5 },
-        { "n": 13, "titulo": "Métricas de clasificación", "slug": "metricas", "archivo": "concept-13-metricas.html" },
-        { "n": 14, "titulo": "K vecinos más cercanos", "slug": "knn", "archivo": "concept-14-knn.html" },
+        { "n": 13, "titulo": "Métricas de clasificación", "slug": "metricas", "archivo": "concept-13-metricas.html", "escrito": true, "ejercicios": 5 },
+        { "n": 14, "titulo": "K vecinos más cercanos", "slug": "knn", "archivo": "concept-14-knn.html", "escrito": true, "ejercicios": 5 },
         { "n": 15, "titulo": "Naïve Bayes", "slug": "naive-bayes", "archivo": "concept-15-naive-bayes.html" },
         { "n": 16, "titulo": "SVM y el truco del kernel", "slug": "svm", "archivo": "concept-16-svm.html" }
       ] },

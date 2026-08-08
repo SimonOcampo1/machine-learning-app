@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Regularización: Ridge y Lasso · ML</title>
+  <meta name="description" content="Castigar coeficientes grandes para que el modelo deje de memorizar: qué hace Ridge, por qué Lasso selecciona características, y por qué hay que estandarizar antes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-2">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 2</p>
+      <p class="eyebrow">{ Tema 11 · Regresión }</p>
+      <h1>Regularización: Ridge y Lasso</h1>
+      <p class="lede">El tema 08 dijo que contra el overfitting va menos complejidad. Este es el mecanismo concreto con el que se logra sin cambiar de modelo: pedirle a la regresión que no exagere.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El síntoma }</p>
+        <h2>Coeficientes que se disparan</h2>
+        <p>Agregar características a una regresión múltiple siempre baja el error de entrenamiento. Nunca lo sube: en el peor caso el modelo le pone coeficiente cero a la columna nueva y queda igual. Por eso el error de entrenamiento no puede decidir cuántas usar, y por eso hay que mirar validación, como en el tema 07.</p>
+        <p>Lo que pasa cuando hay demasiadas características para la cantidad de filas es un fenómeno muy reconocible: los coeficientes se vuelven enormes y de signos opuestos. El modelo encuentra que sumando 84.000 por una variable y restando 83.000 por otra que se le parece mucho, puede seguir el ruido de los datos de entrenamiento con precisión.</p>
+        <p>Ese es el aspecto que tiene el overfitting en una regresión. Y es una pista aprovechable: <strong>coeficientes gigantes son la firma del problema</strong>. Si el síntoma es que los coeficientes crecen, la cura es no dejarlos crecer.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Esto se agrava cuando dos columnas dicen casi lo mismo, que es la multicolinealidad del tema 10. Con dos variables casi idénticas, hay infinitas combinaciones de coeficientes que dan la misma predicción, y nada elige entre ellas: los valores quedan indeterminados y saltan de forma salvaje con el menor cambio en los datos.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La idea }</p>
+        <h2>Agregar un castigo</h2>
+        <p>La regresión común busca los coeficientes que minimizan la suma de los errores al cuadrado. Nada más. La regularización cambia el objetivo: ahora hay que minimizar el error <em>más</em> un castigo que crece con el tamaño de los coeficientes.</p>
+        <div class="callout formula">costo = error de siempre + α × (tamaño de los coeficientes)</div>
+        <p>El modelo queda negociando entre dos cosas que tiran en direcciones opuestas. Bajar el error pide coeficientes grandes y específicos; bajar el castigo pide coeficientes chicos. El resultado es un modelo que solo se permite un coeficiente grande cuando de verdad le compra bastante error a cambio.</p>
+        <p>Ese es exactamente el movimiento hacia la izquierda sobre la curva en U del tema 08: se sube un poco el sesgo a cambio de bajar bastante la varianza. La suma da menos.</p>
+        <p>El <strong>alpha</strong> es cuánto pesa el castigo. Con alpha = 0 no hay castigo y volvés a la regresión común. Con alpha enorme, todos los coeficientes se van a cero y el modelo predice siempre el promedio. En el medio está el punto útil, y se elige con validación cruzada. No hay forma de calcularlo a mano.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dos formas de medir el tamaño }</p>
+        <h2>Ridge y Lasso</h2>
+        <p>"El tamaño de los coeficientes" se puede medir de dos maneras, y esa elección cambia todo el comportamiento del método. Son las dos normas que aparecieron en el tema 03.</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>Ridge <span class="dist-vs">L2</span></h3>
+            <p class="dist-trampa">Castiga la <strong>suma de los cuadrados</strong> de los coeficientes.</p>
+            <p class="dist-truco">Encoge todos hacia cero de forma proporcional, pero nunca llega a anular ninguno. Todas las variables siguen en el modelo, cada una con menos peso. Es la opción por defecto, y funciona muy bien cuando hay grupos de variables correlacionadas: les reparte el peso entre todas en vez de elegir arbitrariamente una.</p>
+          </article>
+          <article class="dist">
+            <h3>Lasso <span class="dist-vs">L1</span></h3>
+            <p class="dist-trampa">Castiga la <strong>suma de los valores absolutos</strong>.</p>
+            <p class="dist-truco">Lleva coeficientes a <strong>exactamente cero</strong>, no a un valor chico. Eso equivale a sacar esas variables del modelo, así que Lasso hace selección de características de forma automática. Con cientos de columnas de las cuales pocas importan, es lo que querés.</p>
+          </article>
+        </div>
+        <p>El motivo de esa diferencia es geométrico, y la intuición corta es esta: elevar al cuadrado un número ya chico lo vuelve insignificante, así que a Ridge dejar de encogerlo casi no le cuesta nada y se detiene cerca de cero. El valor absoluto, en cambio, sigue castigando con la misma fuerza por más chico que sea el coeficiente, así que a Lasso siempre le conviene empujarlo hasta el cero exacto.</p>
+        <figure class="diagram" id="d-encoge">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Los mismos seis coeficientes bajo Ridge y bajo Lasso: Ridge los encoge a todos, Lasso anula tres por completo">
+            <text class="dlabel" x="30" y="28">sin castigo</text>
+            <rect class="dnode-bg" x="30" y="40" width="24" height="52" rx="3"/>
+            <rect class="dnode-bg" x="62" y="52" width="24" height="40" rx="3"/>
+            <rect class="dnode-bg" x="94" y="62" width="24" height="30" rx="3"/>
+            <rect class="dnode-bg" x="126" y="72" width="24" height="20" rx="3"/>
+            <rect class="dnode-bg" x="158" y="78" width="24" height="14" rx="3"/>
+            <rect class="dnode-bg" x="190" y="82" width="24" height="10" rx="3"/>
+            <line class="daxis" x1="25" y1="92" x2="220" y2="92"/>
+
+            <text class="dlabel" x="250" y="28">Ridge</text>
+            <rect class="dfill" x="250" y="58" width="24" height="34" rx="3"/>
+            <rect class="dfill" x="282" y="66" width="24" height="26" rx="3"/>
+            <rect class="dfill" x="314" y="73" width="24" height="19" rx="3"/>
+            <rect class="dfill" x="346" y="79" width="24" height="13" rx="3"/>
+            <rect class="dfill" x="378" y="83" width="24" height="9" rx="3"/>
+            <rect class="dfill" x="410" y="86" width="24" height="6" rx="3"/>
+            <line class="daxis" x1="245" y1="92" x2="440" y2="92"/>
+            <text class="dtxt-mute" x="342" y="115" text-anchor="middle">todos más chicos, ninguno en cero</text>
+
+            <text class="dlabel" x="30" y="168">Lasso</text>
+            <rect class="dfill" x="30" y="182" width="24" height="38" rx="3"/>
+            <rect class="dfill" x="62" y="194" width="24" height="26" rx="3"/>
+            <rect class="dfill" x="94" y="206" width="24" height="14" rx="3"/>
+            <line class="daxis" x1="25" y1="220" x2="220" y2="220"/>
+            <text class="dtxt-mute" x="166" y="216" text-anchor="middle">0</text>
+            <text class="dtxt-mute" x="122" y="245">tres variables salieron del modelo</text>
+          </svg>
+          <figcaption>Con el mismo alpha, Ridge deja seis variables con peso reducido y Lasso deja tres y descarta las otras tres. Cuál conviene depende de si creés que todas aportan algo o que solo unas pocas importan.</figcaption>
+        </figure>
+        <p>Existe también <strong>Elastic Net</strong>, que mezcla los dos castigos con una proporción configurable. Es lo que se usa cuando querés selección de variables pero tenés grupos correlacionados, donde Lasso solo elegiría una del grupo casi al azar.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El paso que no se puede saltear }</p>
+        <h2>Estandarizar es obligatorio</h2>
+        <p>Esta sección es la más importante del tema en términos prácticos, porque saltearla produce un modelo malo que no da ningún error.</p>
+        <p>El castigo mira el tamaño de los coeficientes, y el tamaño de un coeficiente depende de las unidades de su variable. Tomá una superficie: si la medís en metros cuadrados, su coeficiente puede ser 1.200; si la medís en hectáreas, la misma relación exige un coeficiente diez mil veces más grande.</p>
+        <p>Nada del fenómeno cambió, pero el castigo sí. Al ser mucho más grande, ese coeficiente aporta muchísimo más al término de penalización, y el modelo lo encoge con mucha más fuerza que a los demás. <strong>La variable medida en unidades chicas queda castigada de más, y termina pesando menos de lo que le corresponde.</strong></p>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>Sin estandarizar, la regularización castiga en función de la unidad de medida en vez de la importancia real de cada variable. El modelo entrena, predice y no falla nunca; simplemente distribuyó mal el peso. Por eso <code>StandardScaler</code> antes de <code>Ridge</code> o <code>Lasso</code> no es una recomendación: es parte del método. Y va dentro de un <code>Pipeline</code>, para que se ajuste en cada pliegue y no filtre datos, como en el tema 07.</div>
+        <p>Detalle fino: el intercepto no se castiga. Representa el nivel base de la respuesta y no tiene nada que ver con la complejidad del modelo. Las implementaciones de scikit-learn ya lo excluyen solas.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre elegir el método, leer alpha y no olvidarse de escalar.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Elegir alpha mirando el error de entrenamiento.</strong> Ese error siempre es mínimo con alpha = 0, así que el procedimiento devuelve siempre "no regularices" y no sirve para nada. Alpha se elige por validación cruzada, sin excepción.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Leer los coeficientes de Lasso como un ranking de importancia.</strong> Entre dos variables muy correlacionadas, Lasso deja una y anula la otra por razones prácticamente arbitrarias. La que quedó en cero puede ser tan predictiva como la que sobrevivió.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Regularizar sin estandarizar.</strong> El castigo pasa a depender de las unidades de cada columna en vez de su aporte real, así que las variables con escalas grandes quedan protegidas y las de escalas chicas, aplastadas. No hay error, no hay advertencia, y el modelo queda peor de lo que podría con todo funcionando aparentemente bien.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Cuando sobran características para la cantidad de filas, los coeficientes de una regresión se disparan y se compensan entre sí para seguir el ruido: coeficientes gigantes son la firma del overfitting en un modelo lineal. La regularización cambia el objetivo, sumándole al error un castigo proporcional al tamaño de los coeficientes, con un alpha que decide cuánto pesa ese castigo y que solo se puede elegir por validación cruzada. Ridge mide el tamaño con la suma de cuadrados y encoge todos los coeficientes sin anular ninguno, lo que va bien cuando hay grupos correlacionados; Lasso lo mide con la suma de valores absolutos y lleva coeficientes exactamente a cero, con lo cual selecciona características solo, aunque entre dos variables parecidas elija una casi al azar. Y el paso que no se puede saltear es estandarizar antes: sin eso el castigo depende de las unidades de medida en vez de la importancia real, y el modelo queda mal sin dar ningún error. Con esto cierra la regresión. La fase 3 cambia de pregunta: en vez de predecir un número, predecir a qué categoría pertenece algo.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="regularizacion.js"></script>
+</body>
+</html>
