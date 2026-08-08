@@ -1,4 +1,23 @@
-const CLIENT_ID = "REEMPLAZAR_CON_EL_CLIENT_ID.apps.googleusercontent.com";
+/* El client id de Google NO se escribe acá. Viene de `GET /api/config`, que lo
+   lee de la variable de entorno de Vercel — la MISMA que usa `api/progress.js`
+   para validar el `aud` del token. Escrito a mano acá serían dos copias del
+   mismo valor, y si se separaban el botón se dibujaba bien, el login andaba
+   bien, y recién al guardar salía un 401 genérico.
+   No es un tema de secreto: el client id es público por diseño y viaja igual al
+   navegador. Es un tema de tener una sola fuente. */
+async function clientId() {
+  try {
+    const r = await fetch("api/config");
+    if (!r.ok) return null;
+    const { clientId } = await r.json();
+    return clientId || null;
+  } catch {
+    // Sin API —abierto con `npx serve`, o desplegado sin la variable— no hay
+    // sesión y no se dibuja el botón. El sitio funciona completo contra
+    // localStorage, así que esto es un estado válido, no un error.
+    return null;
+  }
+}
 
 /* Cuántos ejercicios corregibles tiene cada tema sale de `data/temario.json`,
    del campo `ejercicios` de cada tema. Antes vivía en un registro manual acá
@@ -195,6 +214,8 @@ function montarRed() {
 addEventListener("DOMContentLoaded", () => {
   pintarRoadmap();
   try { montarRed(); } catch (e) { console.warn("red del hero:", e); }
-  Sync.montar("#sync", CLIENT_ID);
+  // El botón de sesión se monta recién cuando se sabe contra qué app de Google
+  // hablar. Sin id no se monta: mejor ningún botón que uno que va a fallar.
+  clientId().then(id => { if (id) Sync.montar("#sync", id); });
 });
 addEventListener("progreso-actualizado", pintarRoadmap);

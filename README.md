@@ -106,7 +106,7 @@ Ver `.env.example` para la plantilla. Sin estas cuatro, el sitio sigue funcionan
 
 | Variable | De dónde sale |
 |---|---|
-| `GOOGLE_CLIENT_ID` | Google Cloud Console → Credenciales → ID de cliente de OAuth (app web). Es el mismo valor que va hardcodeado en la constante `CLIENT_ID` de `js/paginas/index.js`. |
+| `GOOGLE_CLIENT_ID` | Google Cloud Console → Credenciales → ID de cliente de OAuth (app web). **Es el único lugar donde se escribe.** El front no lo tiene hardcodeado: lo pide a `GET /api/config`, que lo lee de acá. Así no hay dos copias que puedan separarse — y separadas, el botón se dibuja bien, el login anda bien, y recién al guardar sale un 401 genérico. En "Orígenes autorizados" de Google hay que cargar la URL de producción. |
 | `EMAILS_PERMITIDOS` | **Opcional, y vacía por defecto: el sitio es abierto.** Sin definir, cualquier cuenta de Google verificada puede loguearse y guardar su progreso. Con correos separados por coma, se vuelve una allowlist y todo el resto recibe 401. Es un interruptor de entorno y no de código: se cierra desde el panel de Vercel, sin volver a desplegar. Abrirlo no toca la arquitectura porque el progreso ya se guarda por `sub` de Google, no en un blob compartido: nadie puede leer ni pisar el de otro. |
 | `KV_REST_API_URL` | Lo inyecta solo la integración de Upstash for Redis al conectarla desde el Marketplace de Vercel. |
 | `KV_REST_API_TOKEN` | Idem. `api/progress.js` también acepta `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` por si el marketplace inyecta esos nombres en vez de los de Vercel KV. |
