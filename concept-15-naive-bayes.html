@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Naïve Bayes · ML</title>
+  <meta name="description" content="Un clasificador construido sobre el teorema de Bayes con una suposición que casi nunca es cierta, y que funciona muy bien igual. Con el filtro de spam paso a paso.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-3">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 3</p>
+      <p class="eyebrow">{ Tema 15 · Clasificación }</p>
+      <h1>Naïve Bayes</h1>
+      <p class="lede">Un clasificador que se apoya en una suposición falsa, lo admite en el nombre, y aun así gana en clasificación de texto. Entender por qué funciona igual es lo interesante del tema.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ De dónde viene }</p>
+        <h2>Bayes, aplicado a clasificar</h2>
+        <p>En el tema 04 vimos que el teorema de Bayes da vuelta un condicional: permite pasar de lo que sabés, <code>P(evidencia | causa)</code>, a lo que querés, <code>P(causa | evidencia)</code>. Ese es exactamente el problema de un clasificador.</p>
+        <p>Lo que tenés en los datos de entrenamiento es fácil de contar: entre los mails que ya sabés que son spam, ¿cuántos contenían la palabra "gratis"? Eso es <code>P(gratis | spam)</code>. Lo que querés al recibir un mail nuevo es lo contrario: viendo que dice "gratis", ¿qué probabilidad hay de que sea spam?</p>
+        <div class="callout formula">P(spam | palabras) ∝ P(palabras | spam) × P(spam)</div>
+        <p>El símbolo ∝ significa "proporcional a": el denominador de Bayes es el mismo para todas las clases, así que para decidir cuál gana no hace falta calcularlo. Solo hay que evaluar esa expresión para cada clase y quedarse con la más grande.</p>
+        <p>El segundo factor, <code>P(spam)</code>, es la frecuencia base del tema 04: qué proporción de los mails son spam antes de mirar nada. El primero es el que trae el problema.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La suposición }</p>
+        <h2>Por qué se llama ingenuo</h2>
+        <p>Calcular <code>P(palabras | spam)</code> para un mail completo es imposible en la práctica. Un mail con veinte palabras exigiría haber visto antes esa combinación exacta de veinte palabras, en ese orden, suficientes veces como para estimar su frecuencia. No existe tal cosa: casi todo mail es una combinación única en la historia.</p>
+        <p>La salida es una suposición, y es la que le da nombre al método: <strong>asumir que, dentro de una clase, las palabras aparecen independientes unas de otras.</strong> Con eso, la probabilidad de todas juntas es el producto de las probabilidades de cada una por separado, que es la multiplicación de eventos independientes del tema 04.</p>
+        <div class="callout formula">P(w₁, w₂, …, wₙ | spam) ≈ P(w₁|spam) × P(w₂|spam) × … × P(wₙ|spam)</div>
+        <p>Y ahora sí es calculable: cada factor es un conteo simple sobre el entrenamiento.</p>
+        <p>El problema es que la suposición es <strong>falsa</strong>, y no un poquito. En castellano, ver "buenos" hace muchísimo más probable ver "días" a continuación. Las palabras no son independientes ni cerca. Por eso <em>naïve</em>: el método sabe que está asumiendo algo que no se cumple.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El resultado raro }</p>
+        <h2>Anda bien igual</h2>
+        <p>Lo interesante es que, con una suposición tan mal, el clasificador funciona muy bien. La explicación tiene que ver con qué se le pide.</p>
+        <p>Las probabilidades que produce Naïve Bayes están mal calibradas, y sistemáticamente: como multiplica factores tratándolos como independientes cuando en realidad se refuerzan, cuenta la misma evidencia varias veces y termina dando números pegados a 0 o a 1. Un mail que "probablemente" sea spam puede salir con 0,9999.</p>
+        <p>Pero para clasificar <strong>no hace falta que el número sea correcto: hace falta que el orden entre clases lo sea.</strong> Solo se compara el puntaje de spam contra el de no-spam y gana el mayor. Los errores de calibración tienden a afectar a las dos clases en la misma dirección, así que la comparación sobrevive aunque los valores absolutos sean fantasía.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>La consecuencia práctica: usá Naïve Bayes para <em>decidir</em>, no para <em>reportar la probabilidad</em>. Si alguien necesita "este mail tiene 73% de chance de ser spam" para tomar una decisión con ese número, Naïve Bayes no es el modelo. Para clasificar y seguir, es excelente.</div>
+        <p>Sus otras virtudes son prácticas: se entrena contando, así que es rapidísimo incluso con millones de documentos; funciona bien con muchísimas columnas, donde KNN se derrumba; y necesita pocos datos para arrancar. Es el baseline obligatorio de cualquier problema de texto.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La cuenta completa }</p>
+        <h2>Un filtro de spam a mano</h2>
+        <p>Volvamos a los 100 mails del tema 04: 30 spam y 70 legítimos. Contamos en cuántos aparece cada palabra:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Palabra</th><th>en spam (30)</th><th>P(w|spam)</th><th>en legítimo (70)</th><th>P(w|legítimo)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>gratis</td><td>24</td><td>0.80</td><td>7</td><td>0.10</td></tr>
+              <tr><td>reunión</td><td>3</td><td>0.10</td><td>42</td><td>0.60</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Llega un mail que contiene las dos palabras. Calculamos el puntaje de cada clase multiplicando su frecuencia base por las probabilidades de las palabras:</p>
+        <div class="callout formula">spam: 0.30 × 0.80 × 0.10 = 0.024<br>legítimo: 0.70 × 0.10 × 0.60 = 0.042</div>
+        <figure class="diagram" id="d-puntajes">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Los dos puntajes calculados en paralelo: cada clase multiplica su frecuencia base por las probabilidades de las dos palabras, y gana el mayor">
+            <text class="dlabel" x="30" y="30">spam</text>
+            <rect class="dnode-bg" x="30" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="75" y="71" text-anchor="middle">0.30</text>
+            <text class="dtxt-mute" x="132" y="71" text-anchor="middle">×</text>
+            <rect class="dnode-bg" x="145" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="190" y="71" text-anchor="middle">0.80</text>
+            <text class="dtxt-mute" x="247" y="71" text-anchor="middle">×</text>
+            <rect class="dnode-bg" x="260" y="45" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="305" y="71" text-anchor="middle">0.10</text>
+            <path class="dedge" d="M362 65 H 420"/>
+            <rect class="dnode-bg" x="430" y="45" width="120" height="40" rx="6"/>
+            <text class="dtxt" x="490" y="71" text-anchor="middle">0.024</text>
+
+            <text class="dtxt-mute" x="75" y="112" text-anchor="middle">base</text>
+            <text class="dtxt-mute" x="190" y="112" text-anchor="middle">gratis</text>
+            <text class="dtxt-mute" x="305" y="112" text-anchor="middle">reunión</text>
+
+            <line class="dedge-mute" x1="30" y1="140" x2="610" y2="140"/>
+
+            <text class="dlabel" x="30" y="180">legítimo</text>
+            <rect class="dnode-bg" x="30" y="195" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="75" y="221" text-anchor="middle">0.70</text>
+            <text class="dtxt-mute" x="132" y="221" text-anchor="middle">×</text>
+            <rect class="dnode-bg" x="145" y="195" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="190" y="221" text-anchor="middle">0.10</text>
+            <text class="dtxt-mute" x="247" y="221" text-anchor="middle">×</text>
+            <rect class="dnode-bg" x="260" y="195" width="90" height="40" rx="6"/>
+            <text class="dtxt" x="305" y="221" text-anchor="middle">0.60</text>
+            <path class="dedge" d="M362 215 H 420"/>
+            <rect class="dfill" x="430" y="195" width="120" height="40" rx="6"/>
+            <text class="dtxt" x="490" y="221" text-anchor="middle">0.042</text>
+            <text class="dlabel" x="490" y="265" text-anchor="middle">gana este</text>
+            <text class="dtxt-mute" x="320" y="290" text-anchor="middle">los dos puntajes se comparan entre sí · sus valores absolutos no significan nada</text>
+          </svg>
+          <figcaption>Una fila por clase, siempre los mismos factores: la frecuencia base y una probabilidad por palabra. Con veinte palabras la fila tiene veintiún factores, y por eso hace falta pasar a logaritmos.</figcaption>
+        </figure>
+        <p>Gana legítimo. El "gratis" empujaba fuerte hacia spam, pero "reunión" empujó más fuerte en la otra dirección y la frecuencia base también favorecía a legítimo.</p>
+        <p>Fijate que los dos números son chicos y no suman 1: son proporcionales a las probabilidades reales, no iguales a ellas. Para el orden entre clases alcanza, que es todo lo que necesitamos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dos arreglos obligatorios }</p>
+        <h2>El cero que mata y el desborde</h2>
+        <p>La cuenta de arriba tiene dos problemas que aparecen apenas la escalás, y los dos tienen solución estándar.</p>
+        <p><strong>El primero es el cero.</strong> Si una palabra nunca apareció en spam durante el entrenamiento, su probabilidad estimada es 0. Y como todo se multiplica, un solo cero convierte el producto entero en cero: da igual que las otras diecinueve palabras del mail griten spam a coro. Una sola palabra nueva veta a toda la evidencia.</p>
+        <p>La solución es el <strong>suavizado de Laplace</strong>: sumarle 1 a todos los conteos antes de calcular las proporciones. Nunca hay un cero, la evidencia no se puede vetar, y con conteos grandes el efecto de ese 1 es despreciable.</p>
+        <div class="callout formula">P(w|clase) = (veces que aparece + 1) / (total de la clase + cantidad de palabras distintas)</div>
+        <p><strong>El segundo es el desborde.</strong> Un mail de doscientas palabras multiplica doscientos números menores que 1. El resultado es tan chico que la computadora ya no puede representarlo y lo redondea a cero. Las dos clases dan cero y el clasificador no puede decidir.</p>
+        <p>La solución es trabajar con <strong>logaritmos</strong>. El logaritmo convierte productos en sumas, y sumar doscientos números negativos moderados no desborda nada. Como el logaritmo es creciente, el orden entre clases se conserva exactamente, que es lo único que importa. Toda implementación real hace esto.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre la cuenta del filtro, el suavizado y los logaritmos.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Reportar sus probabilidades como si fueran reales.</strong> Naïve Bayes cuenta la evidencia correlacionada varias veces, así que sus salidas se pegan a 0 y a 1. Sirven para ordenar, no para informar un porcentaje.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Olvidar la frecuencia base.</strong> Es el factor <code>P(clase)</code>, y con clases desbalanceadas pesa mucho. Saltearlo equivale a suponer que todas las clases son igual de comunes, que es justo el error del test médico del tema 04.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>No suavizar.</strong> Sin Laplace, una sola palabra que no estaba en el entrenamiento pone el producto en cero y el mail se clasifica por defecto hacia la otra clase, ignorando toda la evidencia restante. El modelo entrena bien, la mayoría de los casos funcionan, y hay una fracción de predicciones absurdas sin ningún error visible. Como los datos de test siempre traen palabras nuevas, es un problema garantizado, no una posibilidad.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Naïve Bayes usa el teorema de Bayes del tema 04 para dar vuelta el condicional: convierte lo que se puede contar en el entrenamiento en lo que se quiere saber al predecir. Como calcular la probabilidad de una combinación completa de palabras es imposible, asume que dentro de una clase las palabras son independientes, y así el conjunto se vuelve un producto de factores contables. Esa suposición es falsa y de ahí el nombre, pero el clasificador funciona igual porque para decidir no hace falta que las probabilidades sean correctas, solo que el orden entre clases lo sea, y los errores de calibración empujan a las dos clases en la misma dirección. La contracara es que sus probabilidades no se pueden reportar: sirven para decidir, no para informar. Dos arreglos son obligatorios: el suavizado de Laplace, que evita que una sola palabra nueva ponga todo el producto en cero y vete el resto de la evidencia, y trabajar en logaritmos, que convierte el producto en suma y evita el desborde numérico. Es rapidísimo, aguanta muchísimas columnas donde KNN se derrumba, y es el baseline obligatorio de cualquier problema de texto. El próximo tema es el último clasificador de la fase, y el que trae la idea más elegante: proyectar los datos a más dimensiones sin calcular la proyección.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="naive-bayes.js"></script>
+</body>
+</html>

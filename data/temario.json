@@ -25,8 +25,8 @@
         { "n": 12, "titulo": "Clasificación y regresión logística", "slug": "logistica", "archivo": "concept-12-logistica.html", "escrito": true, "ejercicios": 5 },
         { "n": 13, "titulo": "Métricas de clasificación", "slug": "metricas", "archivo": "concept-13-metricas.html", "escrito": true, "ejercicios": 5 },
         { "n": 14, "titulo": "K vecinos más cercanos", "slug": "knn", "archivo": "concept-14-knn.html", "escrito": true, "ejercicios": 5 },
-        { "n": 15, "titulo": "Naïve Bayes", "slug": "naive-bayes", "archivo": "concept-15-naive-bayes.html" },
-        { "n": 16, "titulo": "SVM y el truco del kernel", "slug": "svm", "archivo": "concept-16-svm.html" }
+        { "n": 15, "titulo": "Naïve Bayes", "slug": "naive-bayes", "archivo": "concept-15-naive-bayes.html", "escrito": true, "ejercicios": 5 },
+        { "n": 16, "titulo": "SVM y el truco del kernel", "slug": "svm", "archivo": "concept-16-svm.html", "escrito": true, "ejercicios": 5 }
       ] },
     { "n": 4, "nombre": "Árboles y no supervisado", "hint": "Decidir por ramas, y aprender sin etiquetas", "hue": 350,
       "temas": [
