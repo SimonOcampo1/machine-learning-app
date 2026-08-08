@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>K vecinos más cercanos · ML</title>
+  <meta name="description" content="El algoritmo que no entrena nada: mirá los k puntos más parecidos y votá. Con el efecto de k, por qué hay que estandarizar, y qué es la maldición de la dimensionalidad.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-3">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 3</p>
+      <p class="eyebrow">{ Tema 14 · Clasificación }</p>
+      <h1>K vecinos más cercanos</h1>
+      <p class="lede">El algoritmo entero cabe en una frase: mirá los k puntos más parecidos y quedate con lo que diga la mayoría. No tiene entrenamiento, y eso lo vuelve el mejor ejemplo de varias cosas.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El algoritmo }</p>
+        <h2>Preguntarle a los vecinos</h2>
+        <p>Querés saber si una casa es cara o barata. Buscás las cinco casas más parecidas a la tuya entre las que ya conocés, mirás cómo se clasificó cada una, y te quedás con lo que dice la mayoría. Eso es todo. No hay fórmula, no hay coeficientes, no hay optimización.</p>
+        <p>La consecuencia rara es que <strong>no hay etapa de entrenamiento</strong>. <code>fit()</code> no calcula nada: guarda el dataset. Todo el trabajo pasa en la predicción, cuando hay que medir la distancia del punto nuevo contra todos los guardados.</p>
+        <p>Por eso KNN es el ejemplo canónico de modelo <strong>no paramétrico</strong>, esa distinción que la página de temas marcaba como fácil de confundir. No significa "sin parámetros": significa que lo que el modelo guarda crece con la cantidad de datos. Una regresión lineal con un millón de filas guarda los mismos dos coeficientes que con cinco. KNN con un millón de filas guarda un millón de filas.</p>
+        <figure class="diagram" id="d-vecinos">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Un punto nuevo rodeado por sus cinco vecinos más cercanos, tres de una clase y dos de la otra, dentro de un círculo">
+            <line class="daxis" x1="50" y1="260" x2="600" y2="260"/>
+            <line class="daxis" x1="50" y1="260" x2="50" y2="30"/>
+            <circle class="dnode-bg" cx="320" cy="145" r="95"/>
+            <circle class="dnode-solid" cx="250" cy="100" r="7"/>
+            <circle class="dnode-solid" cx="270" cy="185" r="7"/>
+            <circle class="dnode-solid" cx="380" cy="120" r="7"/>
+            <rect class="dnode-bg" x="345" y="185" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="290" y="75" width="16" height="16" rx="2"/>
+            <circle class="dnode-solid" cx="130" cy="90" r="7"/>
+            <circle class="dnode-solid" cx="150" cy="215" r="7"/>
+            <rect class="dnode-bg" x="500" y="80" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="530" y="180" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="470" y="220" width="16" height="16" rx="2"/>
+            <path class="dedge" d="M305 130 L 335 160 M335 130 L 305 160"/>
+            <text class="dlabel" x="320" y="265" text-anchor="middle">el punto nuevo · k = 5 · gana el círculo, 3 a 2</text>
+          </svg>
+          <figcaption>El círculo grande abarca exactamente los cinco vecinos más cercanos. Tres son círculos y dos son cuadrados, así que el punto nuevo se clasifica como círculo.</figcaption>
+        </figure>
+        <p>Sirve igual para regresión: en vez de votar, se promedia el valor de los k vecinos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La única perilla }</p>
+        <h2>Qué hace k</h2>
+        <p>KNN tiene un solo hiperparámetro importante, y mueve el modelo exactamente sobre la curva en U del tema 08.</p>
+        <p>Con <strong>k = 1</strong>, cada punto nuevo copia la clase de su vecino más cercano. La frontera de decisión queda toda dentada, siguiendo cada punto individual, incluidos los que están mal etiquetados o son ruido. Error de entrenamiento: cero, porque el vecino más cercano de un punto del entrenamiento es él mismo. Es overfitting puro.</p>
+        <p>Con <strong>k muy grande</strong>, digamos igual a la cantidad de datos, cada predicción consulta a todo el dataset y siempre gana la clase mayoritaria. La frontera desaparece: el modelo predice siempre lo mismo. Underfitting.</p>
+        <p>En el medio está el punto útil, y se elige con validación cruzada. Un detalle práctico: conviene <strong>k impar</strong> en clasificación binaria, para que no haya empates.</p>
+        <div class="callout"><span class="etiqueta">Clave</span>Ojo con la dirección: acá <em>más k es menos complejo</em>, al revés que en casi todos los otros modelos, donde subir el hiperparámetro suele agregar flexibilidad. Si estás combatiendo overfitting en KNN, hay que subir k.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Qué significa parecido }</p>
+        <h2>La distancia, y por qué hay que estandarizar</h2>
+        <p>"Los más parecidos" se mide con la distancia euclídea del tema 03: la norma de la diferencia entre los dos vectores. Es Pitágoras, generalizado a todas las columnas.</p>
+        <p>Y acá aparece el problema que hunde a KNN en la práctica. Tomá dos casas y comparalas por metros cuadrados y ambientes:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Casa</th><th>m²</th><th>ambientes</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>A</td><td>85</td><td>3</td></tr>
+              <tr><td>B</td><td>120</td><td>4</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>diferencia</td><td>35</td><td>1</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p>La distancia sale de 35² + 1² = 1225 + 1. Los ambientes aportan <strong>uno</strong> contra <strong>mil doscientos veinticinco</strong>. Para efectos prácticos, esa columna no existe: la distancia la decide enteramente la variable que se mide en números más grandes.</p>
+        <p>Y si en vez de ambientes tuvieras el precio, con valores de cientos de miles, pasaría al revés: los metros cuadrados desaparecerían.</p>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>Sin estandarizar, KNN no clasifica por parecido: clasifica por la variable que tenga las unidades más grandes, que es una propiedad de cómo mediste y no de los datos. El modelo corre, predice y no da ningún error; simplemente ignoró casi todas tus columnas. <code>StandardScaler</code> antes de KNN es parte del algoritmo, no una mejora opcional, y va dentro de un <code>Pipeline</code> para no filtrar datos entre pliegues.</div>
+        <p>Después de estandarizar, las dos columnas quedan en "cuántos desvíos me alejo del promedio" (tema 04) y aportan en pie de igualdad.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Los límites }</p>
+        <h2>Por qué no escala</h2>
+        <p>KNN invierte el costo habitual: entrenar es gratis y predecir es caro. Cada predicción exige calcular la distancia contra todas las filas guardadas y después ordenarlas. Con cien mil filas y cien columnas, cada predicción son diez millones de operaciones, y son por predicción.</p>
+        <p>Eso lo descarta para cualquier sistema que tenga que responder rápido a muchas consultas. Hay estructuras de índice que aceleran la búsqueda, pero pierden efectividad justo cuando hay muchas columnas, que es el otro problema.</p>
+        <p>La <strong>maldición de la dimensionalidad</strong> es ese otro problema, y es más profundo. A medida que agregás columnas, el espacio se vuelve enormemente más grande y tus datos quedan dispersos en él. La consecuencia contraintuitiva es que <em>todas las distancias se parecen entre sí</em>: la diferencia entre el vecino más cercano y el más lejano se achica hasta volverse insignificante.</p>
+        <p>Cuando eso pasa, "los cinco más cercanos" deja de significar "los cinco más parecidos", y KNN pierde su fundamento. Por eso funciona muy bien con pocas columnas y se degrada rápido con muchas. Es una de las motivaciones directas del tema 21, que reduce la cantidad de dimensiones antes de aplicar métodos que dependen de distancias.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre k, distancias y el efecto de no estandarizar.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Evaluar KNN con k = 1 sobre el entrenamiento.</strong> Da 100% siempre, porque el vecino más cercano de cada punto es él mismo. No es una señal de nada.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Subir k para combatir underfitting.</strong> Es al revés que en la mayoría de los modelos: más vecinos es menos flexible. Contra underfitting hay que bajar k.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Usar KNN sin estandarizar.</strong> Es el error de este tema y vale repetirlo: la variable con la escala más grande se lleva la distancia entera, así que el modelo clasifica en función de una sola columna sin que nada lo indique. Con precios y metros cuadrados en el mismo dataset, la diferencia entre estandarizar y no puede ser de veinte puntos de exactitud, y la versión rota no tira ningún error.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>KNN clasifica mirando los k puntos más cercanos y votando, y no tiene etapa de entrenamiento: <code>fit</code> guarda el dataset entero, lo cual lo vuelve el ejemplo canónico de modelo no paramétrico, donde lo guardado crece con los datos. El único hiperparámetro es k y se mueve sobre la curva en U al revés de lo habitual: k chico sobreajusta y sigue el ruido, k grande sub-ajusta hasta predecir siempre la clase mayoritaria, así que contra overfitting hay que subirlo. La distancia euclídea es lo que define "parecido", y por eso estandarizar no es opcional: sin eso la columna con las unidades más grandes se lleva la distancia entera y el modelo ignora todo lo demás, sin dar ningún error. El costo está invertido respecto de casi todos los modelos, con entrenamiento gratis y predicción cara, lo que lo descarta para sistemas de alto volumen. Y la maldición de la dimensionalidad lo degrada con muchas columnas, porque cuando el espacio es enorme todas las distancias se parecen y "el más cercano" deja de significar "el más parecido". El próximo tema es otro clasificador de los que se entrenan rapidísimo, y retoma el Bayes de la fase 0.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="knn.js"></script>
+</body>
+</html>

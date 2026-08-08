@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Métricas de clasificación · ML</title>
+  <meta name="description" content="Por qué la exactitud miente con clases desbalanceadas: matriz de confusión, precisión, recall, F1 y la curva ROC.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-3">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 3</p>
+      <p class="eyebrow">{ Tema 13 · Clasificación }</p>
+      <h1>Métricas de clasificación</h1>
+      <p class="lede">El tema 05 prometió que elegir la medida de éxito era lo que hunde proyectos. Este es ese tema: cómo un modelo con 99,5% de aciertos puede ser completamente inútil.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>La exactitud miente</h2>
+        <p>La <strong>exactitud</strong> (o <em>accuracy</em>) es la fracción de predicciones correctas sobre el total. Es la métrica que todo el mundo usa por defecto, y es la correcta cuando las clases están razonablemente balanceadas y los dos tipos de error cuestan parecido.</p>
+        <p>Fuera de esas dos condiciones, engaña. Ya lo viste en el tema 05: sobre 10.000 transacciones con 50 fraudes, el modelo que dice siempre "no es fraude" alcanza 99,5% de exactitud y no detecta un solo fraude. Es literalmente el peor modelo posible para la tarea, y su métrica lo felicita.</p>
+        <p>El problema de fondo es que la exactitud mete todos los errores en la misma bolsa, y en casi ningún problema real los dos errores cuestan lo mismo. Rechazar una transacción legítima molesta a un cliente; dejar pasar un fraude cuesta plata. Marcar un mail bueno como spam puede hacerte perder una oferta de trabajo; dejar pasar un spam es una molestia de dos segundos.</p>
+        <p>Para hablar de eso hace falta separar los errores por tipo, y para eso está la herramienta central del tema.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La herramienta }</p>
+        <h2>La matriz de confusión</h2>
+        <p>Es una tabla de dos por dos que cruza lo que el modelo predijo con lo que realmente era. Todas las métricas que siguen salen de estas cuatro celdas, así que vale la pena mirarla hasta que se lea sola.</p>
+        <figure class="diagram" id="d-matriz">
+          <svg viewBox="0 0 640 340" role="img" aria-label="Matriz de confusión de dos por dos con verdaderos positivos, falsos positivos, falsos negativos y verdaderos negativos">
+            <text class="dlabel" x="380" y="30" text-anchor="middle">la realidad</text>
+            <text class="dtxt-mute" x="290" y="60" text-anchor="middle">era positivo</text>
+            <text class="dtxt-mute" x="480" y="60" text-anchor="middle">era negativo</text>
+            <text class="dlabel" x="60" y="150" text-anchor="middle" transform="rotate(-90 60 150)">el modelo</text>
+            <text class="dtxt-mute" x="150" y="120" text-anchor="middle">dijo sí</text>
+            <text class="dtxt-mute" x="150" y="230" text-anchor="middle">dijo no</text>
+
+            <rect class="dfill" x="200" y="75" width="180" height="90" rx="8"/>
+            <text class="dtxt" x="290" y="115" text-anchor="middle">verdadero</text>
+            <text class="dtxt" x="290" y="140" text-anchor="middle">positivo</text>
+
+            <rect class="dnode-bg" x="390" y="75" width="180" height="90" rx="8"/>
+            <text class="dtxt" x="480" y="115" text-anchor="middle">falso</text>
+            <text class="dtxt" x="480" y="140" text-anchor="middle">positivo</text>
+
+            <rect class="dnode-bg" x="200" y="185" width="180" height="90" rx="8"/>
+            <text class="dtxt" x="290" y="225" text-anchor="middle">falso</text>
+            <text class="dtxt" x="290" y="250" text-anchor="middle">negativo</text>
+
+            <rect class="dfill" x="390" y="185" width="180" height="90" rx="8"/>
+            <text class="dtxt" x="480" y="225" text-anchor="middle">verdadero</text>
+            <text class="dtxt" x="480" y="250" text-anchor="middle">negativo</text>
+
+            <text class="dtxt-mute" x="385" y="310" text-anchor="middle">la diagonal llena son los aciertos · las otras dos celdas son los dos errores, que no cuestan lo mismo</text>
+          </svg>
+          <figcaption>La regla para leer los nombres: la segunda palabra es lo que dijo el modelo, la primera dice si acertó. "Falso positivo" es "dijo positivo y se equivocó".</figcaption>
+        </figure>
+        <p>Los dos errores tienen nombres del mundo real que ayudan a no confundirlos. Un <strong>falso positivo</strong> es una falsa alarma. Un <strong>falso negativo</strong> es algo que se te pasó.</p>
+        <p>La exactitud es la diagonal dividida por el total. Y ahí se ve por qué falla: si los verdaderos negativos son 9.950 y todo lo demás son decenas, esa celda gigante domina la fracción y las otras tres dejan de influir.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Las dos que importan }</p>
+        <h2>Precisión y recall</h2>
+        <p>En vez de una fracción sobre el total, estas dos miran una fila y una columna de la matriz.</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>Precisión</h3>
+            <p class="dist-trampa">De todo lo que el modelo marcó como positivo, ¿qué fracción lo era de verdad?</p>
+            <p class="dist-truco"><strong>VP / (VP + FP)</strong>. Responde "cuando este modelo dice que sí, ¿le puedo creer?". Es la fila de "dijo sí".</p>
+          </article>
+          <article class="dist">
+            <h3>Recall</h3>
+            <p class="dist-trampa">De todo lo que realmente era positivo, ¿qué fracción encontró el modelo?</p>
+            <p class="dist-truco"><strong>VP / (VP + FN)</strong>. Responde "¿cuánto se le escapa?". Es la columna de "era positivo".</p>
+          </article>
+        </div>
+        <p>Y acá está el punto: <strong>tirar de una baja la otra</strong>, y lo que las mueve es el umbral del tema 12. Subir el umbral hace que el modelo solo acuse cuando está muy seguro: menos falsas alarmas, más precisión, pero se le escapan más casos y baja el recall. Bajarlo hace lo contrario.</p>
+        <p>Cuál priorizar no lo decide el modelo, lo decide el problema:</p>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>Filtro de spam</h3>
+            <p class="pilar-e">Prioridad: <strong>precisión</strong>.</p>
+            <p>Un mail importante mandado a la basura es un desastre; un spam en la bandeja es una molestia de dos segundos. Conviene ser conservador para acusar.</p>
+          </article>
+          <article class="pilar">
+            <h3>Detección de cáncer</h3>
+            <p class="pilar-e">Prioridad: <strong>recall</strong>.</p>
+            <p>Una falsa alarma cuesta un estudio adicional; un caso que se pasa puede costar una vida. Conviene marcar de más y descartar después.</p>
+          </article>
+          <article class="pilar">
+            <h3>Búsqueda de documentos</h3>
+            <p class="pilar-e">Depende del uso.</p>
+            <p>Para una búsqueda casual importa la precisión de los primeros resultados. Para una revisión legal, donde no podés perderte nada, importa el recall.</p>
+          </article>
+        </div>
+        <p>Cuando hace falta un solo número, se usa el <strong>F1</strong>, que combina los dos con una media armónica. La media armónica castiga los desequilibrios: con precisión 1.0 y recall 0.0, el promedio común daría 0.5 y el F1 da 0. Eso es lo que se quiere, porque un modelo que nunca acusa no sirve por más preciso que sea cuando lo hace.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Sin elegir umbral }</p>
+        <h2>La curva ROC y el AUC</h2>
+        <p>Todo lo anterior depende de un umbral fijo. Pero el umbral es una decisión posterior, y a veces querés comparar dos modelos sin haberla tomado todavía.</p>
+        <p>La <strong>curva ROC</strong> resuelve eso: barre todos los umbrales posibles y, para cada uno, grafica cuántos positivos reales agarra (el recall) contra cuántas falsas alarmas produce. Un modelo que separa bien las clases sube rápido por la izquierda: consigue mucho recall con pocas falsas alarmas. Uno que no distingue nada da una diagonal, que es lo que produce el azar.</p>
+        <p>El <strong>AUC</strong> es el área bajo esa curva, un número entre 0 y 1. Vale 0.5 para un modelo que tira una moneda y 1.0 para uno perfecto. Tiene una interpretación linda: es la probabilidad de que, tomando un positivo y un negativo al azar, el modelo le dé más puntaje al positivo.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>El AUC también se pone optimista con clases muy desbalanceadas, porque su eje de falsas alarmas se divide por la cantidad enorme de negativos y casi no se mueve. Cuando la clase positiva es muy rara, la curva de precisión contra recall es más informativa.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre leer una matriz de confusión y elegir la métrica que corresponde.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Reportar exactitud con clases desbalanceadas.</strong> Es el error de este tema. Antes de mirar cualquier métrica, mirá qué proporción tiene cada clase, y calculá cuánta exactitud saca el modelo que dice siempre la clase mayoritaria.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Confundir precisión con recall.</strong> Las dos tienen los verdaderos positivos arriba y se distinguen por el denominador. Precisión divide por lo que el modelo marcó; recall, por lo que realmente había. La pregunta que las separa: "¿le creo cuando dice que sí?" contra "¿cuánto se le escapa?".</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Optimizar una métrica que no es la del problema.</strong> Un equipo puede pasar semanas subiendo el F1 de 0.71 a 0.78 cuando el negocio necesitaba recall alto porque un caso perdido cuesta cien veces más que una falsa alarma. Todo el proceso funciona, los números mejoran, los informes se ven bien, y el modelo que se elige es el equivocado. La métrica se define en la etapa 1 del flujo, hablando con quien va a usar el modelo, y no se cambia después de ver los resultados.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>La exactitud sirve solo cuando las clases están balanceadas y los dos errores cuestan parecido; fuera de ahí, un modelo que nunca detecta nada puede lucir 99,5%. La matriz de confusión separa los dos tipos de error, que casi nunca valen lo mismo: un falso positivo es una falsa alarma y un falso negativo es algo que se te pasó. Precisión responde si le podés creer al modelo cuando dice que sí, y recall responde cuánto se le escapa; las dos comparten numerador y se distinguen por el denominador. Moverse entre ellas es mover el umbral, y cuál priorizar lo decide el problema, no el modelo: precisión para spam, recall para diagnóstico. El F1 las resume en un número y castiga los desequilibrios más de lo que lo haría un promedio común. La curva ROC compara modelos sin fijar umbral y su área, el AUC, es la probabilidad de rankear bien un positivo contra un negativo al azar, aunque con clases muy raras conviene mirar precisión contra recall. Y lo que hay que evitar por encima de todo es optimizar una métrica que no es la del problema, porque ahí todo funciona y la decisión igual sale mal. El próximo tema es el primer clasificador que no aprende nada durante el entrenamiento: KNN.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="metricas.js"></script>
+</body>
+</html>
