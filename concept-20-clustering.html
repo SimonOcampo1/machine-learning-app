@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clustering: K-means y jerárquico · ML</title>
+  <meta name="description" content="El primer tema sin respuesta correcta: agrupar datos sin etiquetas. K-means paso a paso, cómo elegir k, y por qué ningún criterio da una respuesta objetiva.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-4">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 4</p>
+      <p class="eyebrow">{ Tema 20 · Árboles y no supervisado }</p>
+      <h1>Clustering: K-means y jerárquico</h1>
+      <p class="lede">Primer tema del sitio sin columna de respuestas. Todo lo anterior tenía con qué compararse; de acá en adelante, nadie puede decirte si el resultado está bien.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El cambio }</p>
+        <h2>Sin respuestas correctas</h2>
+        <p>Diecinueve temas de aprendizaje supervisado tuvieron todos la misma estructura: había una columna <code>y</code> con la respuesta, el modelo predecía, y comparar las dos cosas decía qué tan bien iba. Todas las métricas del tema 13 se apoyan en eso.</p>
+        <p>Acá no hay <code>y</code>. Tenés clientes con sus características y querés agruparlos en segmentos parecidos, pero nadie sabe cuáles son los segmentos, ni cuántos, ni si existen. El algoritmo va a devolver grupos siempre, y no hay contra qué chequearlos.</p>
+        <p>Eso cambia la relación con el resultado. En supervisado, el modelo está bien o mal. En clustering, el resultado <strong>es útil o no es útil</strong>, y eso lo decide una persona que conoce el dominio. Un agrupamiento matemáticamente óptimo puede ser inservible, y uno mediocre puede revelar exactamente la distinción que el negocio necesitaba.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>K-means siempre devuelve k grupos. Si le pedís cuatro grupos a datos que no tienen ninguna estructura, te va a dar cuatro grupos perfectamente descritos y completamente inventados. El algoritmo no tiene forma de decirte "acá no hay nada".</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El algoritmo }</p>
+        <h2>K-means, paso a paso</h2>
+        <p>Elegís k, la cantidad de grupos, y después se repiten dos pasos hasta que nada se mueva:</p>
+        <ol>
+          <li><strong>Poner k centroides al azar</strong> en el espacio de los datos.</li>
+          <li><strong>Asignar</strong> cada punto al centroide que le queda más cerca.</li>
+          <li><strong>Recalcular</strong> cada centroide como el promedio de los puntos que le tocaron.</li>
+          <li>Volver al paso 2. Cuando las asignaciones dejan de cambiar, terminó.</li>
+        </ol>
+        <figure class="diagram" id="d-kmeans">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Tres iteraciones de k-means: centroides al azar, puntos asignados al más cercano, y centroides recalculados en el centro de sus grupos">
+            <text class="dlabel" x="105" y="26" text-anchor="middle">1 · al azar</text>
+            <circle class="dnode-solid" cx="60" cy="90" r="5"/>
+            <circle class="dnode-solid" cx="85" cy="70" r="5"/>
+            <circle class="dnode-solid" cx="75" cy="115" r="5"/>
+            <circle class="dnode-solid" cx="145" cy="200" r="5"/>
+            <circle class="dnode-solid" cx="170" cy="180" r="5"/>
+            <circle class="dnode-solid" cx="155" cy="225" r="5"/>
+            <path class="dedge" d="M100 155 L 120 175 M120 155 L 100 175"/>
+            <path class="dedge" d="M130 90 L 150 110 M150 90 L 130 110"/>
+
+            <text class="dlabel" x="320" y="26" text-anchor="middle">2 · asignar</text>
+            <circle class="dnode-solid" cx="275" cy="90" r="5"/>
+            <circle class="dnode-solid" cx="300" cy="70" r="5"/>
+            <circle class="dnode-solid" cx="290" cy="115" r="5"/>
+            <circle class="dnode-solid" cx="360" cy="200" r="5"/>
+            <circle class="dnode-solid" cx="385" cy="180" r="5"/>
+            <circle class="dnode-solid" cx="370" cy="225" r="5"/>
+            <path class="dedge-mute" d="M275 90 L 340 105 M300 70 L 340 105 M290 115 L 340 105"/>
+            <path class="dedge-mute" d="M360 200 L 320 170 M385 180 L 320 170 M370 225 L 320 170"/>
+            <path class="dedge" d="M310 160 L 330 180 M330 160 L 310 180"/>
+            <path class="dedge" d="M330 95 L 350 115 M350 95 L 330 115"/>
+
+            <text class="dlabel" x="530" y="26" text-anchor="middle">3 · recalcular</text>
+            <circle class="dnode-solid" cx="490" cy="90" r="5"/>
+            <circle class="dnode-solid" cx="515" cy="70" r="5"/>
+            <circle class="dnode-solid" cx="505" cy="115" r="5"/>
+            <circle class="dnode-solid" cx="575" cy="200" r="5"/>
+            <circle class="dnode-solid" cx="600" cy="180" r="5"/>
+            <circle class="dnode-solid" cx="585" cy="225" r="5"/>
+            <path class="dedge" d="M493 82 L 513 102 M513 82 L 493 102"/>
+            <path class="dedge" d="M576 191 L 596 211 M596 191 L 576 211"/>
+            <text class="dtxt-mute" x="530" y="265" text-anchor="middle">cada centroide quedó</text>
+            <text class="dtxt-mute" x="530" y="282" text-anchor="middle">en el centro de su grupo</text>
+          </svg>
+          <figcaption>Las cruces son los centroides. En dos o tres vueltas suelen encontrar su lugar; el algoritmo termina cuando una iteración completa no cambia ninguna asignación.</figcaption>
+        </figure>
+        <p>Lo que k-means minimiza es la suma de las distancias al cuadrado de cada punto a su centroide, que se llama <strong>inercia</strong>. Cada uno de los dos pasos la baja o la deja igual, así que el algoritmo siempre converge.</p>
+        <p>Pero converge a un <strong>mínimo local</strong>, no necesariamente al mejor: el resultado depende de dónde cayeron los centroides iniciales. Por eso en la práctica se corre varias veces con inicios distintos y se queda con el de menor inercia. La inicialización inteligente <strong>k-means++</strong>, que separa los centroides iniciales entre sí, es el valor por defecto en scikit-learn y hace que esto casi nunca sea un problema.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La pregunta sin respuesta }</p>
+        <h2>Cuántos grupos</h2>
+        <p>K hay que elegirlo de antemano, y no se puede elegir minimizando la inercia: la inercia siempre baja al subir k, y con k igual a la cantidad de puntos vale cero, con cada punto en su propio grupo. Es exactamente el mismo problema que el error de entrenamiento del tema 07.</p>
+        <p>Hay dos criterios de uso común, y conviene decir de entrada que <strong>ninguno da una respuesta objetiva</strong>:</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>El codo</h3>
+            <p class="dist-trampa">Graficar la inercia contra k y buscar el punto donde la curva deja de caer bruscamente y se aplana.</p>
+            <p class="dist-truco">La contra: muchas veces no hay ningún codo visible, la curva baja suave, y dos personas señalan valores distintos mirando el mismo gráfico.</p>
+          </article>
+          <article class="dist">
+            <h3>La silueta</h3>
+            <p class="dist-trampa">Para cada punto, comparar qué tan cerca está de su grupo contra qué tan cerca está del grupo vecino más próximo. Va de −1 a 1.</p>
+            <p class="dist-truco">Más cuantitativo, y se puede elegir el k que la maximiza. Pero premia grupos redondos y separados, que es precisamente lo que k-means produce, así que se autoconfirma un poco.</p>
+          </article>
+        </div>
+        <p>En la práctica el criterio decisivo es otro: <strong>que los grupos signifiquen algo</strong>. Si con k = 4 los segmentos se pueden nombrar y accionar, y con k = 7 son indistinguibles entre sí, la respuesta es 4 aunque la silueta prefiera 7.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Los supuestos }</p>
+        <h2>Cuándo k-means falla feo</h2>
+        <p>K-means asigna cada punto al centroide más cercano, y esa regla tiene consecuencias geométricas fuertes: las fronteras entre grupos siempre son rectas, y los grupos siempre salen convexos y más o menos del mismo tamaño.</p>
+        <p>Cuando los grupos reales no son así, falla, y falla en silencio:</p>
+        <ul>
+          <li><strong>Grupos alargados o curvos.</strong> Dos medialunas entrelazadas tienen una estructura obvia para el ojo, y k-means las corta al medio con una recta.</li>
+          <li><strong>Grupos de tamaños muy distintos.</strong> Un grupo grande y disperso junto a uno chico y compacto: k-means suele partir el grande y fusionar el chico con parte del otro, porque así baja más la inercia.</li>
+          <li><strong>Densidades distintas.</strong> No tiene forma de expresar "acá los puntos están apretados y allá sueltos".</li>
+        </ul>
+        <p>Y como toda la mecánica son distancias, vale lo mismo que en los temas 14 y 16: <strong>hay que estandarizar</strong>. Sin eso, la columna con las unidades más grandes define los grupos ella sola.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Cuando los grupos no son redondos, la alternativa habitual es <strong>DBSCAN</strong>, que agrupa por densidad en vez de por distancia a un centro. Encuentra formas arbitrarias, decide solo cuántos grupos hay, y marca como ruido los puntos que no pertenecen a ninguno, cosa que k-means no puede hacer.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La otra familia }</p>
+        <h2>Clustering jerárquico</h2>
+        <p>El enfoque aglomerativo no pide k de antemano, que es su gran ventaja. Arranca con cada punto siendo su propio grupo, y en cada paso fusiona los dos grupos más cercanos. Repite hasta que queda uno solo.</p>
+        <p>El registro completo de esas fusiones es el <strong>dendrograma</strong>, un árbol donde la altura de cada unión indica a qué distancia se fusionaron esos dos grupos. Cortarlo a distintas alturas da distintas cantidades de grupos, así que en vez de elegir k antes, mirás la estructura entera y decidís después, viendo dónde hay saltos grandes de altura.</p>
+        <p>Una decisión que sí hay que tomar es cómo se mide la distancia <em>entre grupos</em>, no entre puntos. Las opciones habituales son el par más cercano (tiende a producir cadenas largas), el par más lejano (produce grupos compactos), el promedio, y el criterio de Ward, que fusiona los dos grupos que menos aumentan la varianza total y es el que suele dar resultados más parecidos a k-means.</p>
+        <p>Su límite es el costo: comparar todos los pares contra todos escala muy mal, así que con más de unas decenas de miles de filas se vuelve impracticable. K-means aguanta mucho más.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre la iteración de k-means, la inercia y la elección de k.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Elegir k minimizando la inercia.</strong> La inercia siempre baja al subir k y llega a cero con un grupo por punto. Es el mismo problema que el error de entrenamiento: no puede servir como criterio de selección.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Correr k-means una sola vez.</strong> Converge a un mínimo local que depende del inicio. Con <code>n_init</code> mayor a 1 se corre varias veces y se elige la mejor; el valor por defecto de scikit-learn ya lo hace, pero conviene saber por qué está.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Tratar los grupos encontrados como si fueran reales.</strong> K-means devuelve k grupos siempre, incluso sobre datos completamente uniformes sin ninguna estructura. Los segmentos salen, se les pone nombre, se arma una presentación, y se toman decisiones de negocio sobre categorías que el algoritmo inventó. No hay ningún error ni advertencia. La verificación mínima es correr el mismo agrupamiento sobre datos al azar con las mismas dimensiones y comparar la silueta: si son parecidas, tus grupos no son estructura, son partición arbitraria.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Este es el primer tema sin columna de respuestas, y eso cambia la pregunta: el resultado no está bien o mal, es útil o no lo es, y eso lo decide alguien que conoce el dominio. K-means alterna dos pasos, asignar cada punto al centroide más cercano y recalcular cada centroide como el promedio de sus puntos, hasta que nada se mueve; minimiza la inercia y siempre converge, pero a un mínimo local que depende del inicio, y por eso se corre varias veces con k-means++. Elegir k no se puede hacer minimizando la inercia, porque siempre baja y llega a cero con un grupo por punto: hay que usar el codo o la silueta, y ninguno de los dos da una respuesta objetiva, así que el criterio decisivo termina siendo que los grupos signifiquen algo. K-means asume grupos redondos, de tamaño parecido y separables por rectas, y falla en silencio cuando no lo son, para lo cual está DBSCAN, que agrupa por densidad. El clustering jerárquico no pide k de antemano y produce un dendrograma que se puede cortar a distintas alturas, a cambio de escalar mucho peor. Y como todo se basa en distancias, estandarizar es obligatorio. Lo más importante para llevarse es la desconfianza: el algoritmo siempre devuelve grupos, incluso cuando no hay ninguno. El próximo tema es el otro método no supervisado, y ataca el problema opuesto: demasiadas columnas.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="clustering.js"></script>
+</body>
+</html>

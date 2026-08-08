@@ -33,8 +33,8 @@
         { "n": 17, "titulo": "Árboles de decisión", "slug": "arboles", "archivo": "concept-17-arboles.html", "escrito": true, "ejercicios": 5 },
         { "n": 18, "titulo": "Random Forest y bagging", "slug": "random-forest", "archivo": "concept-18-random-forest.html", "escrito": true, "ejercicios": 5 },
         { "n": 19, "titulo": "Boosting", "slug": "boosting", "archivo": "concept-19-boosting.html", "escrito": true, "ejercicios": 5 },
-        { "n": 20, "titulo": "Clustering: K-means y jerárquico", "slug": "clustering", "archivo": "concept-20-clustering.html" },
-        { "n": 21, "titulo": "Reducción de dimensionalidad: PCA", "slug": "pca", "archivo": "concept-21-pca.html" }
+        { "n": 20, "titulo": "Clustering: K-means y jerárquico", "slug": "clustering", "archivo": "concept-20-clustering.html", "escrito": true, "ejercicios": 5 },
+        { "n": 21, "titulo": "Reducción de dimensionalidad: PCA", "slug": "pca", "archivo": "concept-21-pca.html", "escrito": true, "ejercicios": 5 }
       ] },
     { "n": 5, "nombre": "Redes neuronales", "hint": "De una neurona a una red que aprende sola", "hue": 330,
       "temas": [
