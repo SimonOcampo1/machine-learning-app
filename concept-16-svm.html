@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SVM y el truco del kernel · ML</title>
+  <meta name="description" content="Entre todas las rectas que separan bien, quedate con la que pasa más lejos. Y cuando ninguna recta sirve, el truco del kernel resuelve sin calcular la proyección.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-3">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 3</p>
+      <p class="eyebrow">{ Tema 16 · Clasificación }</p>
+      <h1>SVM y el truco del kernel</h1>
+      <p class="lede">Dos ideas, y la segunda es de las más elegantes que hay en todo el machine learning: resolver un problema en un espacio de más dimensiones sin llegar a construirlo nunca.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La primera idea }</p>
+        <h2>Elegir la recta más despejada</h2>
+        <p>Cuando dos clases se pueden separar con una recta, casi nunca hay una sola: hay infinitas. La regresión logística del tema 12 elige una de ellas, y puede quedar pegadísima a los puntos de una clase.</p>
+        <p>Las <strong>máquinas de vectores de soporte</strong> agregan un criterio para elegir entre todas: quedate con la que pasa <strong>más lejos</strong> de los puntos más cercanos de ambas clases. Esa distancia se llama <strong>margen</strong>, y la idea es maximizarlo.</p>
+        <p>La intuición es de robustez. Una frontera pegada a los datos se equivoca con un punto nuevo que caiga apenas corrido. Una con margen ancho tiene lugar para absorber esa variación.</p>
+        <figure class="diagram" id="d-margen">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Dos clases separadas por una franja: la recta del medio es la frontera y los puntos que tocan los bordes son los vectores de soporte">
+            <line class="daxis" x1="40" y1="270" x2="600" y2="270"/>
+            <line class="daxis" x1="40" y1="270" x2="40" y2="30"/>
+            <path class="dfill" d="M90 250 L 500 40 L 560 80 L 150 290 Z" opacity="0.35"/>
+            <path class="dedge-mute" d="M90 235 L 520 45" stroke-dasharray="6 4"/>
+            <path class="dedge-mute" d="M120 285 L 550 95" stroke-dasharray="6 4"/>
+            <path class="dedge" d="M105 260 L 535 70"/>
+            <circle class="dnode-solid" cx="130" cy="120" r="7"/>
+            <circle class="dnode-solid" cx="200" cy="90" r="7"/>
+            <circle class="dnode-solid" cx="280" cy="60" r="7"/>
+            <circle class="dnode-solid" cx="185" cy="175" r="8"/>
+            <circle class="dnode-solid" cx="330" cy="110" r="8"/>
+            <rect class="dnode-bg" x="330" y="230" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="430" y="185" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="500" y="215" width="16" height="16" rx="2"/>
+            <rect class="dnode-bg" x="272" y="222" width="18" height="18" rx="2"/>
+            <rect class="dnode-bg" x="412" y="152" width="18" height="18" rx="2"/>
+            <text class="dlabel" x="470" y="130" text-anchor="middle">margen</text>
+            <text class="dtxt-mute" x="160" y="205" text-anchor="middle">vectores de soporte</text>
+          </svg>
+          <figcaption>La franja es el margen y la línea del medio es la frontera. Los puntos más grandes, que tocan los bordes de la franja, son los vectores de soporte.</figcaption>
+        </figure>
+        <p>De ahí sale la propiedad que le da nombre al método y que lo hace distinto de todo lo anterior: <strong>solo unos pocos puntos definen la frontera</strong>. Son los que tocan el borde del margen, y se llaman <em>vectores de soporte</em>. Mover cualquier otro punto, o incluso borrarlo, no cambia absolutamente nada mientras no invada la franja.</p>
+        <p>Compará con KNN, que guarda el dataset entero. Una SVM entrenada se resume en un puñado de puntos, que muchas veces son unas pocas decenas sobre miles de filas.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cuando no hay separación limpia }</p>
+        <h2>Margen blando y el parámetro C</h2>
+        <p>Todo lo anterior asume que existe una recta que separa perfecto. En datos reales casi nunca existe: hay puntos mezclados, mal etiquetados, o simplemente atípicos. Exigir separación perfecta con margen duro llevaría a una frontera retorcidísima obsesionada con un solo punto raro, que es overfitting del tema 08.</p>
+        <p>La solución es el <strong>margen blando</strong>: permitir que algunos puntos queden del lado equivocado o dentro de la franja, a cambio de un margen más ancho para todos los demás. Cuánto se permite lo decide el hiperparámetro <strong>C</strong>.</p>
+        <div class="dist-grid">
+          <article class="dist">
+            <h3>C chico</h3>
+            <p class="dist-trampa">Tolera muchas violaciones. Margen ancho, frontera suave, algunos puntos mal clasificados en entrenamiento.</p>
+            <p class="dist-truco">Más regularizado: más sesgo, menos varianza. Es el lado izquierdo de la curva en U.</p>
+          </article>
+          <article class="dist">
+            <h3>C grande</h3>
+            <p class="dist-trampa">Casi no tolera violaciones. Margen angosto, frontera que se retuerce para acomodar cada punto.</p>
+            <p class="dist-truco">Menos regularizado: menos sesgo, más varianza. Con C enorme volvés al margen duro y al overfitting.</p>
+          </article>
+        </div>
+        <p>Es la misma perilla conceptual que el alpha del tema 11, con la dirección invertida: <strong>más C es menos regularización</strong>. Se elige con validación cruzada, como todas.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La segunda idea }</p>
+        <h2>Cuando ninguna recta puede</h2>
+        <p>Hay casos donde el problema no es que la separación sea imperfecta: es que ninguna recta puede servir, ni de cerca. El ejemplo clásico son dos clases en círculos concéntricos, una nube en el centro rodeada por un anillo de la otra.</p>
+        <p>Ninguna recta separa eso. Pero fijate qué pasa si agregamos una tercera dimensión, calculada a partir de las dos que ya tenemos: la distancia de cada punto al centro. Los del centro tienen distancia chica, los del anillo la tienen grande. Si usamos esa distancia como altura, los puntos del centro quedan abajo y los del anillo arriba, y ahora <strong>un plano horizontal los separa perfecto</strong>.</p>
+        <figure class="diagram" id="d-kernel">
+          <svg viewBox="0 0 640 280" role="img" aria-label="A la izquierda, dos clases en círculos concéntricos que ninguna recta separa. A la derecha, los mismos puntos elevados según su distancia al centro, ahora separables por una línea horizontal">
+            <text class="dlabel" x="150" y="30" text-anchor="middle">en 2 dimensiones</text>
+            <circle class="dnode-bg" cx="150" cy="150" r="95"/>
+            <circle class="dnode-solid" cx="150" cy="150" r="6"/>
+            <circle class="dnode-solid" cx="128" cy="135" r="6"/>
+            <circle class="dnode-solid" cx="170" cy="140" r="6"/>
+            <circle class="dnode-solid" cx="145" cy="172" r="6"/>
+            <rect class="dnode-bg" x="66" y="112" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="220" y="120" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="140" y="55" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="145" y="228" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="82" y="205" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="212" y="200" width="14" height="14" rx="2"/>
+            <text class="dtxt-mute" x="150" y="268" text-anchor="middle">ninguna recta sirve</text>
+
+            <path class="dedge" d="M270 150 H 340"/>
+            <text class="dlabel" x="305" y="138" text-anchor="middle">+1 dim</text>
+
+            <text class="dlabel" x="490" y="30" text-anchor="middle">en 3 dimensiones</text>
+            <line class="daxis" x1="380" y1="240" x2="600" y2="240"/>
+            <line class="daxis" x1="380" y1="240" x2="380" y2="55"/>
+            <text class="dtxt-mute" x="372" y="145" text-anchor="middle" transform="rotate(-90 372 145)">distancia al centro</text>
+            <circle class="dnode-solid" cx="420" cy="215" r="6"/>
+            <circle class="dnode-solid" cx="460" cy="222" r="6"/>
+            <circle class="dnode-solid" cx="500" cy="210" r="6"/>
+            <circle class="dnode-solid" cx="545" cy="218" r="6"/>
+            <path class="dedge" d="M385 165 H 595"/>
+            <rect class="dnode-bg" x="414" y="100" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="456" y="88" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="498" y="105" width="14" height="14" rx="2"/>
+            <rect class="dnode-bg" x="540" y="92" width="14" height="14" rx="2"/>
+            <text class="dtxt-mute" x="490" y="268" text-anchor="middle">un plano las separa</text>
+          </svg>
+          <figcaption>Los puntos son los mismos: lo único que cambió es el espacio donde se los mira. La separación no lineal de la izquierda es lineal en la derecha.</figcaption>
+        </figure>
+        <p>Esa es la idea general: <strong>proyectar los datos a un espacio de más dimensiones donde sí sean separables por un plano</strong>.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El truco }</p>
+        <h2>No hace falta construir el espacio</h2>
+        <p>El problema obvio de esa idea es el costo. Para separar bien casos complicados hacen falta muchísimas dimensiones nuevas, a veces infinitas, y calcular las coordenadas de cada punto en ese espacio sería imposible.</p>
+        <p>Acá aparece el <strong>truco del kernel</strong>, y lo que lo hace posible es un detalle del algoritmo: cuando se resuelve una SVM, los puntos <em>nunca aparecen solos</em>. Aparecen siempre en productos punto entre pares de puntos, esa operación del tema 03.</p>
+        <p>Entonces, si lo único que se necesita del espacio nuevo son los productos punto entre pares, y existe una función que calcula ese producto punto <em>directamente desde las coordenadas originales</em>, nunca hace falta construir el espacio. Esa función es el <strong>kernel</strong>.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>El kernel devuelve el mismo número que devolvería el producto punto en el espacio de más dimensiones, pero calculado con las coordenadas que ya tenías. Obtenés el resultado de la proyección sin hacer la proyección. Por eso el kernel RBF puede corresponder a un espacio de dimensión infinita y aun así calcularse en microsegundos.</div>
+        <p>Los dos que se usan en la práctica:</p>
+        <ul>
+          <li><strong>Polinomial.</strong> Equivale a agregar todos los productos entre características hasta cierto grado. Sirve cuando sospechás interacciones entre variables.</li>
+          <li><strong>RBF</strong> (base radial, también llamado gaussiano). El más usado y la opción por defecto. Mide parecido en función de la distancia: dos puntos cercanos dan valor alto, dos lejanos casi cero. Su hiperparámetro <strong>gamma</strong> controla el alcance de esa influencia: gamma chico hace una frontera suave y global, gamma grande hace que cada punto influya solo en su vecindad inmediata, lo que produce fronteras muy retorcidas y overfitting.</li>
+        </ul>
+        <p>Con RBF hay <strong>dos</strong> hiperparámetros que interactúan, C y gamma, y hay que buscarlos juntos en una grilla. Es lo que hace que entrenar una SVM sea más caro en tiempo de búsqueda que otros modelos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El paso obligatorio }</p>
+        <h2>Estandarizar, otra vez</h2>
+        <p>Vale la misma advertencia del tema 14, y por el mismo motivo exacto: el kernel RBF mide distancias, así que sin estandarizar la variable con las unidades más grandes se lleva la distancia entera y las demás dejan de existir. También afecta al margen, que se mide en el espacio de las características.</p>
+        <p>Y ahí no termina: gamma se interpreta en relación a esa escala de distancias, así que sin estandarizar el rango razonable de gamma cambia por completo y la búsqueda en grilla se hace sobre valores que no tienen sentido. <code>StandardScaler</code> dentro de un <code>Pipeline</code>, siempre.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Las SVM escalan mal con la cantidad de filas: el costo crece más rápido que linealmente, así que con cientos de miles de ejemplos se vuelven poco prácticas. Su terreno son los datasets medianos con muchas características, donde brillan. Para tablas grandes, los métodos de la fase 4 son mejor opción.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre margen, vectores de soporte, C y kernels.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Creer que más C regulariza más.</strong> Es al revés: C grande castiga más los errores de clasificación, así que produce un modelo menos regularizado y más propenso a sobreajustar. Contra overfitting en SVM hay que bajar C.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Buscar C y gamma por separado.</strong> Interactúan: el mejor C depende del gamma elegido y viceversa. Optimizar uno y después el otro suele encontrar una combinación peor que buscar los dos a la vez en una grilla.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Usar SVM con RBF sin estandarizar.</strong> Es el mismo error del tema 14 y acá pega doble: la distancia queda dominada por una sola columna, y además el rango de gamma que estás buscando deja de tener sentido para tus datos. El resultado es un modelo mucho peor de lo que podría ser, con una búsqueda en grilla que parece haber funcionado porque devolvió unos «mejores parámetros». Nada falla, nada avisa.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Entre las infinitas rectas que separan dos clases, una SVM elige la que pasa más lejos de los puntos más cercanos, y esa distancia es el margen. De ahí sale su propiedad distintiva: solo los vectores de soporte, un puñado de puntos que tocan el borde del margen, definen la frontera, y mover o borrar cualquier otro no cambia nada. Como los datos reales casi nunca se separan perfecto, el margen blando permite violaciones a cambio de un margen más ancho, y C decide cuántas: más C es menos regularización, al revés que el alpha del tema 11. Cuando ninguna recta puede servir, la idea es proyectar a más dimensiones donde sí, y el truco del kernel logra eso sin construir el espacio, porque el algoritmo solo necesita productos punto entre pares y el kernel los calcula directamente desde las coordenadas originales. RBF es el kernel por defecto y agrega gamma, que controla el alcance de la influencia de cada punto; C y gamma interactúan y se buscan juntos. Y estandarizar es obligatorio por partida doble, porque el kernel mide distancias y porque gamma se interpreta contra esa escala. Con esto cierra la clasificación. La fase 4 cambia de familia: modelos que deciden por ramas en vez de por fronteras geométricas, y los primeros que aprenden sin etiquetas.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="svm.js"></script>
+</body>
+</html>
