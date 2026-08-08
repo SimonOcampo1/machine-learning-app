@@ -316,6 +316,22 @@ body > nav {
 }
 .pie p { margin: 0; }
 
+/* La leyenda a la izquierda y la firma a la derecha, sobre el mismo renglón.
+   `wrap` para que en pantallas angostas la firma baje entera en vez de
+   apretar las dos líneas contra los bordes. */
+.pie-fila {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--e5);
+}
+.pie-firma { display: flex; align-items: center; gap: var(--e4); }
+/* El SVG viene con `fill="#000"` y el sitio es oscuro siempre: `invert(1)` lo
+   pasa a crema sin un segundo archivo. `mask-image` no sirve acá — el `<text>`
+   del logo no pinta dentro de la máscara y la marca desaparece entera. */
+.ft-logo {
+  height: 2.2rem; width: auto; flex-shrink: 0;
+  opacity: 0.5; filter: invert(1);
+}
+
 .barra-progreso {
   position: fixed; top: 0; left: 0; height: 2px; width: 0%;
   background: var(--fase); z-index: 60; transition: width 80ms linear;
