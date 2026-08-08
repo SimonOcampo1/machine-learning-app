@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Árboles de decisión · ML</title>
+  <meta name="description" content="Una cadena de preguntas de sí o no: cómo se elige cada corte con Gini, por qué sobreajustan siempre, y por qué son los únicos modelos que se pueden explicar.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-4">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 4</p>
+      <p class="eyebrow">{ Tema 17 · Árboles y no supervisado }</p>
+      <h1>Árboles de decisión</h1>
+      <p class="lede">Una cadena de preguntas de sí o no. Es el único modelo del sitio que se le puede mostrar a alguien que no sabe nada de esto y que lo entienda, y eso vale más de lo que parece.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La forma }</p>
+        <h2>Preguntas encadenadas</h2>
+        <p>Todos los modelos anteriores trazaban fronteras geométricas: una recta, una curva, una franja. Un árbol hace algo completamente distinto y mucho más parecido a como decide una persona: encadena preguntas de sí o no.</p>
+        <p>¿La casa tiene más de 80 m²? Si no, es barata. Si sí, ¿tiene más de 3 ambientes? Si no, es media. Si sí, es cara. Cada pregunta parte los datos en dos, y las hojas del final son las respuestas.</p>
+        <figure class="diagram" id="d-arbol">
+          <svg viewBox="0 0 640 300" role="img" aria-label="Un árbol de decisión con dos preguntas encadenadas y tres hojas de resultado">
+            <rect class="dnode-bg" x="230" y="20" width="180" height="46" rx="8"/>
+            <text class="dtxt" x="320" y="49" text-anchor="middle">¿m² &gt; 80?</text>
+            <path class="dedge" d="M270 70 L 150 125"/>
+            <text class="dtxt-mute" x="195" y="90">no</text>
+            <path class="dedge" d="M370 70 L 470 125"/>
+            <text class="dtxt-mute" x="435" y="90">sí</text>
+
+            <rect class="dfill" x="70" y="130" width="160" height="46" rx="8"/>
+            <text class="dtxt" x="150" y="159" text-anchor="middle">barata</text>
+
+            <rect class="dnode-bg" x="390" y="130" width="180" height="46" rx="8"/>
+            <text class="dtxt" x="480" y="159" text-anchor="middle">¿amb &gt; 3?</text>
+            <path class="dedge" d="M430 180 L 350 235"/>
+            <text class="dtxt-mute" x="365" y="205">no</text>
+            <path class="dedge" d="M530 180 L 570 235"/>
+            <text class="dtxt-mute" x="565" y="205">sí</text>
+
+            <rect class="dfill" x="260" y="240" width="150" height="46" rx="8"/>
+            <text class="dtxt" x="335" y="269" text-anchor="middle">media</text>
+            <rect class="dfill" x="480" y="240" width="140" height="46" rx="8"/>
+            <text class="dtxt" x="550" y="269" text-anchor="middle">cara</text>
+          </svg>
+          <figcaption>Cada camino desde la raíz hasta una hoja es una regla legible: "si tiene más de 80 m² y más de 3 ambientes, es cara". Ningún otro modelo del sitio produce algo así.</figcaption>
+        </figure>
+        <p>Geométricamente, cada corte es una línea perpendicular a un eje, y el árbol entero divide el espacio en rectángulos. Por eso los árboles son malos para fronteras diagonales: una recta inclinada tiene que aproximarse con una escalera de muchos cortes. Y son buenos para reglas del tipo "si esta variable pasa tal umbral, cambia todo", que los modelos lineales capturan mal.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cómo se construye }</p>
+        <h2>Elegir cada corte</h2>
+        <p>El algoritmo es directo y bastante bruto: en cada nodo prueba <strong>todos los cortes posibles de todas las variables</strong> y se queda con el que deja los dos grupos resultantes lo más "puros" posible. Después repite lo mismo dentro de cada grupo, y así hasta que decida parar.</p>
+        <p>Puro significa que en el grupo hay una sola clase. Si un corte deja a la izquierda diez casas caras y cero baratas, ese lado es perfectamente puro. Si deja cinco y cinco, es lo más impuro que puede ser.</p>
+        <p>La medida estándar es la <strong>impureza de Gini</strong>: 1 menos la suma de los cuadrados de las proporciones de cada clase.</p>
+        <div class="callout formula">Gini = 1 − Σ pᵢ²</div>
+        <p>Con un grupo todo de una clase, p = 1 y Gini = 1 − 1 = 0. Con mitad y mitad, Gini = 1 − (0.25 + 0.25) = 0.5, que es el máximo con dos clases. Hagamos la cuenta completa sobre un corte:</p>
+        <div class="tabla-scroll">
+          <table class="tabla-calc">
+            <thead>
+              <tr><th>Grupo</th><th>caras</th><th>baratas</th><th>total</th><th>Gini</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>antes del corte</td><td>6</td><td>6</td><td>12</td><td>0.500</td></tr>
+              <tr><td>izquierda (m² ≤ 80)</td><td>1</td><td>5</td><td>6</td><td>0.278</td></tr>
+              <tr><td>derecha (m² &gt; 80)</td><td>5</td><td>1</td><td>6</td><td>0.278</td></tr>
+            </tbody>
+            <tfoot>
+              <tr><td>después, promediado</td><td>—</td><td>—</td><td>12</td><td>0.278</td></tr>
+            </tfoot>
+          </table>
+        </div>
+        <p>El Gini bajó de 0.500 a 0.278. Esa caída de 0.222 es la <strong>ganancia</strong> de este corte, y el algoritmo elige el corte que la maximiza. El promedio de la última fila se pondera por cuántos datos cayó de cada lado, para que un corte que aísla dos elementos purísimos no le gane a uno que ordena la mitad del dataset.</p>
+        <p>Existe también la <strong>entropía</strong> como medida alternativa. Da árboles casi idénticos y es un poco más cara de calcular, así que Gini es el valor por defecto.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>Un árbol suelto siempre sobreajusta</h2>
+        <p>Si dejás crecer el árbol sin límite, va a seguir partiendo hasta que cada hoja tenga una sola clase. En el extremo, cada fila del entrenamiento termina en su propia hoja: el árbol memorizó el dataset. Exactitud de entrenamiento del 100%, y una máquina de reproducir ruido.</p>
+        <p>No es un caso raro ni un accidente: <strong>es lo que hace un árbol sin restricciones, siempre</strong>. Es el ejemplo más claro de varianza alta del tema 08, y se nota en que basta cambiar unas pocas filas del entrenamiento para que el árbol salga completamente distinto, con otras variables en la raíz.</p>
+        <p>Las restricciones que se usan para frenarlo son tres, y todas se eligen con validación cruzada:</p>
+        <ul>
+          <li><strong>Profundidad máxima.</strong> Cuántas preguntas encadenadas como mucho. Es la más usada y la más fácil de razonar.</li>
+          <li><strong>Mínimo de muestras por hoja.</strong> Impide hojas construidas sobre uno o dos casos, que son las que capturan ruido.</li>
+          <li><strong>Mínimo de muestras para partir.</strong> Un nodo con muy pocos datos deja de dividirse.</li>
+        </ul>
+        <p>La <strong>poda</strong> es la alternativa: dejar crecer el árbol entero y después cortar de abajo hacia arriba las ramas que no mejoran el desempeño en validación. Suele dar mejores resultados que limitar de antemano, porque un corte mediocre puede habilitar dos cortes excelentes debajo, y limitar la profundidad nunca llega a verlos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Lo que los hace valiosos }</p>
+        <h2>Se pueden explicar</h2>
+        <p>Un árbol podado se dibuja y se lee. Podés mostrárselo a un gerente, a un médico o a un auditor y van a entender exactamente por qué el modelo decidió lo que decidió, sin saber nada de machine learning.</p>
+        <p>Eso no es un detalle estético. El tema 05 mencionaba que en crédito, salud o justicia, "el modelo dijo que no" a veces es inaceptable y a veces directamente ilegal. Un árbol produce una justificación en castellano para cada decisión individual: "se rechazó porque los ingresos son menores a X y la antigüedad menor a Y".</p>
+        <p>Ninguno de los modelos anteriores hace eso. Una SVM con kernel RBF da una decisión correcta y una explicación imposible.</p>
+        <div class="callout ok"><span class="etiqueta">Clave</span>Otra ventaja práctica: <strong>los árboles no necesitan estandarizar.</strong> Solo comparan cada variable contra un umbral, así que las unidades no importan: cambiar metros por hectáreas cambia el umbral y nada más. Después de tres temas insistiendo con <code>StandardScaler</code>, acá sobra. Tampoco les molestan mucho los outliers, porque un valor extremo cae de un lado del corte y ya está, sin arrastrar nada como haría con una media.</div>
+        <p>El precio de todo esto es la inestabilidad, que ya vimos, y que un árbol solo casi nunca es competitivo en exactitud. Los dos temas que siguen resuelven exactamente eso, combinando muchos árboles.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios, incluida la cuenta de Gini de la sección 02.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Usar un árbol sin límite de profundidad.</strong> El valor por defecto de <code>max_depth</code> en scikit-learn es <code>None</code>, o sea sin límite, así que el comportamiento por defecto es memorizar. Siempre hay que fijar alguna restricción y elegirla con validación cruzada.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Interpretar la estructura como si fuera estable.</strong> Cambiar unas pocas filas puede poner otra variable en la raíz y reordenar el árbol entero. La regla que leíste con tanta claridad puede no sobrevivir a un dataset ligeramente distinto.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Confiar en la importancia de variables de un árbol solo.</strong> La medida por defecto favorece a las variables con muchos valores distintos, porque ofrecen más cortes posibles y es más fácil que alguno reduzca la impureza por casualidad. Un identificador numérico o una fecha pueden aparecer como la variable más importante del modelo siendo puro ruido. Los números salen, el ranking se ve razonable, y las conclusiones sobre qué importa en el negocio están mal.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Un árbol encadena preguntas de sí o no y divide el espacio en rectángulos, lo que lo hace bueno para reglas con umbrales y malo para fronteras diagonales. Cada corte se elige probando todos los cortes posibles de todas las variables y quedándose con el que más baja la impureza, medida con Gini, que vale 0 en un grupo de una sola clase y 0.5 con dos clases mitad y mitad; la caída ponderada por el tamaño de cada lado es la ganancia del corte. Sin restricciones, un árbol siempre termina memorizando el entrenamiento, y basta cambiar unas pocas filas para que salga uno completamente distinto: es el ejemplo más claro de varianza alta. Se lo frena con profundidad máxima, mínimo de muestras por hoja, o podando después de dejarlo crecer. Lo que lo hace valioso es que se puede dibujar y explicar en castellano, cosa que ningún otro modelo del sitio permite, y que no necesita estandarizar porque solo compara contra umbrales. La contra es que un árbol solo casi nunca gana en exactitud, y hay que desconfiar de su importancia de variables, que favorece a las columnas con muchos valores distintos. Los dos temas que siguen resuelven la inestabilidad de la misma forma y por caminos opuestos: combinando muchos árboles en paralelo, o en cadena.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="arboles.js"></script>
+</body>
+</html>
