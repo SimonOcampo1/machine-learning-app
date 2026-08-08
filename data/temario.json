@@ -9,10 +9,10 @@
       ] },
     { "n": 1, "nombre": "Aprender de los datos", "hint": "Qué significa que una máquina aprenda", "hue": 285,
       "temas": [
-        { "n": 5, "titulo": "Qué es machine learning", "slug": "que-es-ml", "archivo": "concept-05-que-es-ml.html" },
-        { "n": 6, "titulo": "El flujo de trabajo", "slug": "flujo", "archivo": "concept-06-flujo.html" },
-        { "n": 7, "titulo": "Train/test y validación cruzada", "slug": "validacion", "archivo": "concept-07-validacion.html" },
-        { "n": 8, "titulo": "Sesgo, varianza y overfitting", "slug": "sesgo-varianza", "archivo": "concept-08-sesgo-varianza.html" }
+        { "n": 5, "titulo": "Qué es machine learning", "slug": "que-es-ml", "archivo": "concept-05-que-es-ml.html", "escrito": true, "ejercicios": 5 },
+        { "n": 6, "titulo": "El flujo de trabajo", "slug": "flujo", "archivo": "concept-06-flujo.html", "escrito": true, "ejercicios": 5 },
+        { "n": 7, "titulo": "Train/test y validación cruzada", "slug": "validacion", "archivo": "concept-07-validacion.html", "escrito": true, "ejercicios": 5 },
+        { "n": 8, "titulo": "Sesgo, varianza y overfitting", "slug": "sesgo-varianza", "archivo": "concept-08-sesgo-varianza.html", "escrito": true, "ejercicios": 5 }
       ] },
     { "n": 2, "nombre": "Regresión", "hint": "Predecir un número", "hue": 145,
       "temas": [

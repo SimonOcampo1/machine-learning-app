@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Qué es machine learning · ML</title>
+  <meta name="description" content="La definición operativa, el contraste con la programación tradicional, las tres ramas, y cuándo conviene no usar machine learning.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-1">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 1</p>
+      <p class="eyebrow">{ Tema 05 · Aprender de los datos }</p>
+      <h1>Qué es machine learning</h1>
+      <p class="lede">El piso ya está. Antes de entrenar el primer modelo hace falta una definición que no sea marketing: qué significa exactamente que una máquina aprenda, y cuándo conviene que no lo haga.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La definición }</p>
+        <h2>Aprender, en un sentido preciso</h2>
+        <p>La definición que se usa en el rubro es de Tom Mitchell y tiene la virtud de ser verificable: <strong>un programa aprende de la experiencia si su desempeño en una tarea mejora a medida que acumula más experiencia.</strong></p>
+        <p>Las tres piezas hay que nombrarlas explícitamente, porque un proyecto que no puede completar las tres no está listo para empezar:</p>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>La tarea</h3>
+            <p class="pilar-e">Qué querés que haga.</p>
+            <p>Decidir si un mail es spam. Predecir el precio de una casa. Agrupar clientes parecidos.</p>
+          </article>
+          <article class="pilar">
+            <h3>La experiencia</h3>
+            <p class="pilar-e">De qué aprende.</p>
+            <p>Diez mil mails ya marcados. Las ventas de los últimos tres años. El historial de compras.</p>
+          </article>
+          <article class="pilar">
+            <h3>La medida</h3>
+            <p class="pilar-e">Cómo sabés si mejoró.</p>
+            <p>Porcentaje de mails bien clasificados. Error promedio en pesos. Y acá empiezan los problemas.</p>
+          </article>
+        </div>
+        <p>La tercera es la que se saltea todo el mundo y la que hunde proyectos. "Que ande bien" no es una medida. Sin un número que se pueda calcular antes de empezar, no hay forma de saber si el modelo nuevo es mejor que el viejo, ni de saber cuándo parar. El tema 13 está dedicado entero a elegir bien ese número, porque elegir mal es la forma más común de construir con confianza algo inútil.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El cambio de método }</p>
+        <h2>Reglas escritas contra reglas inferidas</h2>
+        <p>En programación tradicional, vos escribís las reglas. Para filtrar spam pondrías algo como: si dice "GRATIS" en mayúsculas, o si viene de un remitente desconocido con tres links, marcalo como spam.</p>
+        <p>Funciona un rato. Después alguien escribe "G R A T I S", y agregás una regla. Después "gr4tis", y agregás otra. A los seis meses tenés cuatrocientas reglas que se contradicen entre sí, nadie se anima a borrar ninguna, y el sistema sigue dejando pasar spam.</p>
+        <p>El machine learning da vuelta la dirección del trabajo. En vez de escribir las reglas, le das <em>ejemplos con la respuesta puesta</em> y el algoritmo infiere las reglas solo. Cuando aparece "gr4tis", no agregás una regla: agregás mails etiquetados y reentrenás.</p>
+        <figure class="diagram" id="d-paradigma">
+          <svg viewBox="0 0 640 280" role="img" aria-label="Arriba, programación tradicional: reglas y datos entran a un programa y sale una respuesta. Abajo, machine learning: datos y respuestas entran y sale el programa">
+            <text class="dlabel" x="30" y="28">programación tradicional</text>
+            <rect class="dnode-bg" x="30" y="45" width="110" height="34" rx="6"/>
+            <text class="dtxt" x="85" y="68" text-anchor="middle">reglas</text>
+            <rect class="dnode-bg" x="30" y="88" width="110" height="34" rx="6"/>
+            <text class="dtxt" x="85" y="111" text-anchor="middle">datos</text>
+            <path class="dedge" d="M150 62 L 240 78"/>
+            <path class="dedge" d="M150 105 L 240 90"/>
+            <rect class="dfill" x="250" y="60" width="130" height="48" rx="10"/>
+            <text class="dtxt" x="315" y="90" text-anchor="middle">programa</text>
+            <path class="dedge" d="M390 84 H 460"/>
+            <rect class="dnode-bg" x="470" y="67" width="140" height="34" rx="6"/>
+            <text class="dtxt" x="540" y="90" text-anchor="middle">respuestas</text>
+
+            <line class="dedge-mute" x1="30" y1="150" x2="610" y2="150"/>
+
+            <text class="dlabel" x="30" y="185">machine learning</text>
+            <rect class="dnode-bg" x="30" y="200" width="110" height="34" rx="6"/>
+            <text class="dtxt" x="85" y="223" text-anchor="middle">datos</text>
+            <rect class="dnode-bg" x="30" y="243" width="110" height="34" rx="6"/>
+            <text class="dtxt" x="85" y="266" text-anchor="middle">respuestas</text>
+            <path class="dedge" d="M150 217 L 240 233"/>
+            <path class="dedge" d="M150 260 L 240 245"/>
+            <rect class="dfill" x="250" y="215" width="130" height="48" rx="10"/>
+            <text class="dtxt" x="315" y="245" text-anchor="middle">entrenamiento</text>
+            <path class="dedge" d="M390 239 H 460"/>
+            <rect class="dnode-bg" x="470" y="222" width="140" height="34" rx="6"/>
+            <text class="dtxt" x="540" y="245" text-anchor="middle">el programa</text>
+          </svg>
+          <figcaption>Es la misma caja con las entradas y las salidas intercambiadas. Antes las respuestas eran la salida; ahora son parte de la entrada, y la salida es el programa.</figcaption>
+        </figure>
+        <div class="callout"><span class="etiqueta">Clave</span>De ahí sale la consecuencia práctica más importante del rubro: <strong>tu modelo no puede ser mejor que tus datos.</strong> Si las etiquetas están mal, el modelo aprende a reproducir ese error con toda precisión, y ninguna elección de algoritmo lo arregla.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El mapa }</p>
+        <h2>Las tres ramas</h2>
+        <p>Todo lo que se llama machine learning cae en una de tres categorías, y lo único que las separa es qué le das al algoritmo.</p>
+        <div class="pillars">
+          <article class="pilar">
+            <h3>Supervisado</h3>
+            <p class="pilar-e"><strong>Entra:</strong> ejemplos con la respuesta correcta.</p>
+            <p class="pilar-s"><strong>Sale:</strong> una función que predice la respuesta de un ejemplo nuevo.</p>
+            <p>Es la rama más grande y la que cubren los temas 09 a 19 de este sitio.</p>
+          </article>
+          <article class="pilar">
+            <h3>No supervisado</h3>
+            <p class="pilar-e"><strong>Entra:</strong> ejemplos sin ninguna respuesta.</p>
+            <p class="pilar-s"><strong>Sale:</strong> estructura que estaba escondida en los datos.</p>
+            <p>Agrupar o resumir. Temas 20 y 21. No hay con qué comparar, así que no hay una respuesta objetivamente correcta.</p>
+          </article>
+          <article class="pilar">
+            <h3>Por refuerzo</h3>
+            <p class="pilar-e"><strong>Entra:</strong> un entorno que premia y castiga.</p>
+            <p class="pilar-s"><strong>Sale:</strong> una política: qué conviene hacer en cada situación.</p>
+            <p>Juegos y robótica. Este sitio no lo cubre, pero conviene saber que existe y por qué es distinto.</p>
+          </article>
+        </div>
+        <p>La pregunta que resuelve casi todos los casos es una sola: <strong>¿tenés una columna con la respuesta?</strong> Si la tenés, es supervisado. Si no, es no supervisado. Y si no hay respuestas pero sí hay un premio que llega después de una secuencia de decisiones, es refuerzo.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Dentro de supervisado }</p>
+        <h2>Regresión y clasificación</h2>
+        <p>El aprendizaje supervisado se parte en dos según qué tipo de respuesta querés predecir.</p>
+        <p><strong>Regresión</strong> predice un número que puede tomar cualquier valor intermedio: el precio de una casa, la temperatura de mañana, cuántos minutos va a tardar un envío. <strong>Clasificación</strong> predice a cuál de un conjunto de categorías pertenece algo: spam o no, qué dígito es, qué especie de flor.</p>
+        <p>El truco para no confundirse ya está en la página de temas, y es bueno: <strong>¿la respuesta admite un punto y medio?</strong> Un precio de 1500,5 tiene sentido. Un "spam y medio" no. Si el valor intermedio significa algo, es regresión.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Un número no garantiza regresión. Si las categorías son 1, 2 y 3 estrellas, son números pero el modelo no debería predecir 2,4 sin que eso signifique algo. Y al revés: una categoría con muchos niveles ordenados a veces conviene tratarla como número. El criterio no es el tipo de dato, es si la distancia entre dos valores significa algo.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La sección impopular }</p>
+        <h2>Cuándo no usar machine learning</h2>
+        <p>Un modelo es difícil de explicar, se degrada solo con el tiempo, necesita datos que hay que mantener, y falla de formas que nadie previó. Si una regla escrita a mano resuelve el problema, la regla gana siempre.</p>
+        <p>Casos concretos donde conviene no entrenar nada:</p>
+        <ul>
+          <li><strong>La regla existe y es exacta.</strong> Calcular el IVA es una multiplicación, no un problema de predicción. Suena obvio y sin embargo se ven modelos entrenados para esto.</li>
+          <li><strong>No tenés datos suficientes.</strong> Con doscientas filas y treinta columnas, cualquier modelo va a encontrar patrones que son puro ruido. El tema 08 explica por qué.</li>
+          <li><strong>Un error tiene consecuencias graves y no podés explicar la decisión.</strong> En crédito, salud o justicia, "el modelo dijo que no" no es una respuesta aceptable, y a veces es directamente ilegal.</li>
+          <li><strong>El mundo cambia más rápido de lo que podés reentrenar.</strong> Un modelo entrenado con datos de hace dos años describe un mundo que ya no existe.</li>
+        </ul>
+        <p>La versión corta: el machine learning sirve cuando el patrón existe, es demasiado complicado para escribirlo a mano, y tenés suficientes ejemplos de él. Si falta alguna de las tres, hay una solución más barata.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios: dos conceptuales, uno de cuentas, uno de armar código y uno de Python real.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Arrancar sin definir la medida de éxito.</strong> Si el número con el que vas a juzgar el modelo se elige después de ver los resultados, siempre vas a encontrar uno que te dé bien. Definilo antes de entrenar, por escrito.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Confundir correlación con causalidad.</strong> Un modelo encuentra que dos cosas van juntas, no que una cause la otra. Sirve perfecto para predecir y no sirve para decidir intervenciones: predecir quién va a cancelar el servicio no te dice qué hacer para que no cancele.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Entrenar sobre etiquetas mal puestas.</strong> Si el que etiquetó los mails se equivocó en el 15%, el modelo aprende ese 15% de error como si fuera la verdad, y va a alcanzar 85% de "acierto" contra las etiquetas reales sin que nada falle nunca. Ningún algoritmo, ninguna cantidad de datos y ninguna métrica lo detectan: el problema no está en el modelo, está en lo que le enseñaste. Mirar cien ejemplos a mano antes de entrenar es el uso más rentable de una hora en todo el proyecto.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Un programa aprende si su desempeño en una tarea mejora con más experiencia, y las tres piezas de esa definición (tarea, experiencia y medida) hay que poder nombrarlas antes de empezar; la medida es la que se saltea todo el mundo y la que hunde proyectos. La diferencia con la programación tradicional es una inversión de entradas y salidas: en vez de escribir reglas para producir respuestas, das respuestas para producir reglas, y de ahí sale que el modelo nunca puede ser mejor que sus datos. Hay tres ramas y se distinguen por una sola pregunta: si tenés una columna con la respuesta es supervisado, si no la tenés es no supervisado, y si en cambio hay premios y castigos a lo largo de una secuencia es refuerzo. Dentro de supervisado, regresión predice un número donde los valores intermedios significan algo y clasificación predice una categoría donde no. Y la sección que conviene no olvidar es la última: si una regla escrita a mano resuelve el problema, la regla gana, porque un modelo se degrada solo, es difícil de explicar y falla de maneras que nadie previó. El próximo tema recorre el flujo de trabajo completo, y ahí aparece el dato incómodo de que limpiar datos se lleva la mayor parte del tiempo real.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="que-es-ml.js"></script>
+</body>
+</html>

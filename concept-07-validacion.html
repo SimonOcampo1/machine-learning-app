@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Train/test y validación cruzada · ML</title>
+  <meta name="description" content="Por qué evaluar sobre los datos de entrenamiento miente, para qué sirve el tercer corte, cómo funciona k-fold, y qué es exactamente la fuga de datos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-1">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 1</p>
+      <p class="eyebrow">{ Tema 07 · Aprender de los datos }</p>
+      <h1>Train/test y validación cruzada</h1>
+      <p class="lede">Todo el tema responde una sola pregunta: cómo estimar honestamente qué va a hacer un modelo con datos que nunca vio. Es más difícil de lo que parece, y equivocarse acá invalida todo lo demás.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El problema }</p>
+        <h2>Evaluar donde entrenaste no mide nada</h2>
+        <p>Imaginá que estudiás para un examen con una guía de veinte ejercicios resueltos, y el examen resulta ser exactamente esos veinte ejercicios. Sacás diez. Ese diez no dice nada sobre si sabés la materia: dice que te acordás de la guía.</p>
+        <p>Un modelo hace lo mismo, pero con muchísima más capacidad de memorizar. Un árbol de decisión sin límite de profundidad puede aislar cada fila en su propia hoja y acertar el 100% sobre los datos de entrenamiento sin haber aprendido absolutamente ningún patrón general. El error de entrenamiento siempre se puede llevar a cero; eso lo vuelve inútil como medida.</p>
+        <p>Lo que querés saber es otra cosa: qué va a pasar con datos nuevos. Y la única forma honesta de estimarlo es apartar datos, no dejar que el modelo los vea, y recién al final preguntarle.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El corte básico }</p>
+        <h2>Train y test</h2>
+        <p>Se mezclan las filas al azar y se parte el dataset en dos: típicamente 75-80% para entrenar y 20-25% para testear. El modelo se entrena solo con la primera parte, y la segunda queda guardada.</p>
+        <div class="callout formula">X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25, random_state=42)</div>
+        <p>El <code>random_state</code> fija la mezcla para que el corte sea siempre el mismo. Sirve para que un resultado se pueda reproducir; no cambia nada de la lógica.</p>
+        <p>La regla de oro es incómoda pero no tiene excepciones: <strong>el conjunto de test se usa una sola vez, al final de todo.</strong> No para elegir el algoritmo, no para ajustar hiperparámetros, no para decidir qué columnas incluir. En cuanto tomás una decisión mirando el test, dejaste de tener una estimación limpia, porque elegiste lo que mejor le queda a ese conjunto puntual.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>Mezclar al azar es lo correcto salvo cuando los datos tienen orden temporal. Con series de tiempo, mezclar te deja entrenando con datos del futuro para predecir el pasado, que es imposible en producción. Ahí el corte es por fecha: se entrena con lo viejo y se testea con lo nuevo.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El tercer corte }</p>
+        <h2>Validación</h2>
+        <p>Si el test no se puede tocar, queda un problema práctico: casi todos los modelos tienen perillas que hay que elegir. Cuántos vecinos usa KNN, qué profundidad tiene un árbol, cuánto castiga Ridge. Esas perillas se llaman <strong>hiperparámetros</strong>, y no se aprenden de los datos: las elegís vos.</p>
+        <p>Para elegirlas hace falta comparar opciones, y comparar requiere evaluar. Si evaluás en test, lo quemás. La solución es un tercer corte: se parte el entrenamiento otra vez, y se aparta un conjunto de <strong>validación</strong> que sirve para tomar todas esas decisiones.</p>
+        <figure class="diagram" id="d-cortes">
+          <svg viewBox="0 0 640 200" role="img" aria-label="El dataset dividido en tres bloques: entrenamiento, validación y test, con el rol de cada uno">
+            <rect class="dnode-bg" x="30" y="50" width="330" height="56" rx="8"/>
+            <text class="dtxt" x="195" y="84" text-anchor="middle">entrenamiento · 60%</text>
+            <rect class="dfill" x="370" y="50" width="120" height="56" rx="8"/>
+            <text class="dtxt" x="430" y="84" text-anchor="middle">validación</text>
+            <rect class="dnode-bg" x="500" y="50" width="110" height="56" rx="8"/>
+            <text class="dtxt" x="555" y="84" text-anchor="middle">test · 20%</text>
+            <text class="dtxt-mute" x="195" y="135" text-anchor="middle">el modelo aprende acá</text>
+            <text class="dtxt-mute" x="430" y="135" text-anchor="middle">elegís perillas acá</text>
+            <text class="dtxt-mute" x="555" y="135" text-anchor="middle">se toca una vez</text>
+            <path class="dedge" d="M30 165 H 490"/>
+            <text class="dlabel" x="260" y="188" text-anchor="middle">todo esto se usa las veces que haga falta</text>
+          </svg>
+          <figcaption>Validación absorbe las decisiones repetidas para que el test quede intacto. Una vez elegido todo, se reentrena con train más validación y se mide una sola vez contra test.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cuando los datos son pocos }</p>
+        <h2>Validación cruzada de k pliegues</h2>
+        <p>El corte en tres tiene dos problemas cuando el dataset es chico. Primero, te quedás con muy pocos datos para entrenar. Segundo, y peor: el resultado depende de qué filas cayeron en validación. Con mala suerte, un corte distinto te habría hecho elegir otro modelo.</p>
+        <p>La <strong>validación cruzada</strong> resuelve las dos cosas. Se parte el entrenamiento en k pedazos iguales, llamados <em>pliegues</em> (típicamente 5 o 10). Después se entrena k veces: en cada vuelta, uno de los pliegues hace de validación y los otros k−1 de entrenamiento. Al final se promedian los k resultados.</p>
+        <figure class="diagram" id="d-kfold">
+          <svg viewBox="0 0 640 260" role="img" aria-label="Cinco vueltas de validación cruzada, en cada una un pliegue distinto hace de validación y los otros cuatro de entrenamiento">
+            <text class="dtxt-mute" x="25" y="35">1</text>
+            <rect class="dfill" x="45" y="18" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="157" y="18" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="269" y="18" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="381" y="18" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="493" y="18" width="106" height="26" rx="4"/>
+
+            <text class="dtxt-mute" x="25" y="79">2</text>
+            <rect class="dnode-bg" x="45" y="62" width="106" height="26" rx="4"/>
+            <rect class="dfill" x="157" y="62" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="269" y="62" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="381" y="62" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="493" y="62" width="106" height="26" rx="4"/>
+
+            <text class="dtxt-mute" x="25" y="123">3</text>
+            <rect class="dnode-bg" x="45" y="106" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="157" y="106" width="106" height="26" rx="4"/>
+            <rect class="dfill" x="269" y="106" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="381" y="106" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="493" y="106" width="106" height="26" rx="4"/>
+
+            <text class="dtxt-mute" x="25" y="167">4</text>
+            <rect class="dnode-bg" x="45" y="150" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="157" y="150" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="269" y="150" width="106" height="26" rx="4"/>
+            <rect class="dfill" x="381" y="150" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="493" y="150" width="106" height="26" rx="4"/>
+
+            <text class="dtxt-mute" x="25" y="211">5</text>
+            <rect class="dnode-bg" x="45" y="194" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="157" y="194" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="269" y="194" width="106" height="26" rx="4"/>
+            <rect class="dnode-bg" x="381" y="194" width="106" height="26" rx="4"/>
+            <rect class="dfill" x="493" y="194" width="106" height="26" rx="4"/>
+
+            <text class="dlabel" x="320" y="248" text-anchor="middle">el pliegue lleno es el de validación · el puntaje final es el promedio de los cinco</text>
+          </svg>
+          <figcaption>Cada fila del dataset participa exactamente una vez como validación y k−1 veces como entrenamiento. Nada se desperdicia y el promedio es mucho más estable que un corte solo.</figcaption>
+        </figure>
+        <p>El costo es que entrenás k veces en vez de una. Con modelos rápidos no importa; con redes neuronales grandes es prohibitivo, y ahí se vuelve a un corte simple.</p>
+        <p>Además, el desvío entre los k puntajes es información valiosa: si las cinco vueltas dan 0.81, 0.83, 0.80, 0.82 y 0.81, el modelo es estable. Si dan 0.65, 0.91, 0.72, 0.88 y 0.70, el promedio de 0.77 esconde que el resultado depende muchísimo de qué datos te tocaron.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Cuando las clases no están parejas }</p>
+        <h2>Estratificación</h2>
+        <p>Si el 5% de tus datos son fraude, un corte al azar puede dejarte un pliegue con el 1% y otro con el 9%. Peor: con clases muy raras, un pliegue puede quedarse sin ningún caso positivo, y entonces la métrica de esa vuelta no significa nada.</p>
+        <p>La <strong>estratificación</strong> arma los cortes cuidando que cada uno mantenga la misma proporción de clases que el dataset completo. En scikit-learn es un argumento: <code>stratify=y</code> en el split, o usar <code>StratifiedKFold</code>. Con clasificación desbalanceada no es opcional.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El error grande }</p>
+        <h2>Fuga de datos</h2>
+        <p>La <strong>fuga de datos</strong> ocurre cuando información del conjunto de test se cuela en el entrenamiento. El síntoma es siempre el mismo y es tramposo: resultados excelentes en tu evaluación, y un modelo que decepciona en producción.</p>
+        <p>El caso canónico es escalar antes de separar. Si calculás la media y el desvío sobre el dataset completo y después partís, esos dos números contienen información de las filas de test. El modelo entrenó en un espacio definido, en parte, por datos que se suponía que no conocía.</p>
+        <div class="callout err"><span class="etiqueta">Error clásico</span>El orden correcto es siempre: <strong>separar primero, después ajustar la transformación solo con train, después aplicarla a test.</strong> En scikit-learn eso es <code>fit_transform</code> sobre train y <code>transform</code> (sin <code>fit</code>) sobre test. Y con validación cruzada hay que rehacerlo en cada pliegue, lo cual es tan fácil de olvidar que existe <code>Pipeline</code> justamente para que no se pueda.</div>
+        <p>Hay formas más sutiles. Rellenar faltantes con la media global. Elegir qué columnas usar mirando su correlación con la respuesta sobre todo el dataset. Tener filas duplicadas que caen a los dos lados del corte. Y en series de tiempo, cualquier columna calculada mirando hacia adelante.</p>
+        <p>La pregunta que las detecta a todas es una: <strong>¿esta información habría estado disponible en el momento de hacer la predicción real?</strong> Si la respuesta es no, es fuga.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre cortes, pliegues y fugas.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Usar el test para elegir.</strong> Cada decisión tomada mirando el test le come un poco de honestidad a la estimación. Después de veinte comparaciones ya no queda nada: el número final es optimista y no hay forma de saber cuánto.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Mezclar series de tiempo.</strong> Con datos ordenados en el tiempo, un corte al azar deja al modelo entrenando con el futuro. Los resultados salen espectaculares y son imposibles de reproducir en producción, porque ahí el futuro todavía no pasó.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Escalar antes de separar.</strong> Una sola línea, <code>X = StandardScaler().fit_transform(X)</code> puesta antes del split, y toda tu evaluación queda inflada. No tira error, no hay advertencia, y el modelo se ve mejor de lo que es. Es el error de fuga más frecuente y el más fácil de cometer, porque escalar primero es lo que parece ordenado.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>El error sobre los datos de entrenamiento siempre se puede llevar a cero memorizando, así que no mide nada: lo único que importa es el desempeño con datos nunca vistos, y para estimarlo hay que apartarlos antes de entrenar. El conjunto de test se toca una sola vez, al final, y cualquier decisión tomada mirándolo lo contamina; para las decisiones repetidas, como elegir hiperparámetros, está el conjunto de validación. Cuando los datos son pocos, la validación cruzada de k pliegues aprovecha todo el dataset entrenando k veces y promediando, y el desvío entre esos k puntajes dice si el modelo es estable o si el resultado depende de la suerte del corte. Con clases desbalanceadas los cortes tienen que ser estratificados, o algún pliegue puede quedarse sin casos de la clase rara. Y el error que invalida todo lo demás es la fuga de datos: información del test que se cuela en el entrenamiento, casi siempre por transformar antes de separar. La pregunta que la detecta es si esa información habría existido en el momento real de predecir. El próximo tema explica qué está pasando por dentro cuando el error de entrenamiento y el de test se separan, que es la tensión central de todo el machine learning.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="validacion.js"></script>
+</body>
+</html>

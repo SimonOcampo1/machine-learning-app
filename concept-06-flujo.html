@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>El flujo de trabajo · ML</title>
+  <meta name="description" content="Las etapas reales de un proyecto de machine learning, incluida la que nadie cuenta: limpiar datos se lleva la mayor parte del tiempo.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
+</head>
+<body class="fase-1">
+  <div class="barra-progreso"></div>
+  <svg class="svg-defs" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="grad-fase" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="var(--fase)"/>
+        <stop offset="100%" stop-color="var(--fase-tint)"/>
+      </linearGradient>
+    </defs>
+  </svg>
+  <nav>
+    <a href="index.html" class="nav-brand">ML · Estudio</a>
+    <div class="nav-right">
+      <a href="index.html" class="nav-link">Inicio</a>
+      <a href="temas.html" class="nav-link">Temas</a>
+    </div>
+  </nav>
+
+  <main class="envoltura">
+    <header class="hero-c">
+      <p class="breadcrumb"><a href="index.html">Inicio</a> · <a href="temas.html">Temas</a> · Fase 1</p>
+      <p class="eyebrow">{ Tema 06 · Aprender de los datos }</p>
+      <h1>El flujo de trabajo</h1>
+      <p class="lede">Elegir el algoritmo es la parte más chica y más divertida del trabajo. Este tema es el mapa de todo lo demás, que es casi todo.</p>
+    </header>
+
+    <section class="section reveal">
+      <div class="sec-no">01</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El mapa }</p>
+        <h2>Ocho etapas, y ninguna es la última</h2>
+        <p>Los tutoriales muestran tres líneas: cargar datos, entrenar, predecir. Un proyecto real tiene ocho etapas, y la más importante es que <strong>no terminan</strong>: lo que sale de evaluar vuelve a entrar en cualquiera de las anteriores.</p>
+        <figure class="diagram" id="d-ciclo">
+          <svg viewBox="0 0 640 360" role="img" aria-label="Las ocho etapas del flujo dispuestas en ciclo, con la flecha de evaluación volviendo hacia las etapas anteriores">
+            <rect class="dnode-bg" x="240" y="20" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="320" y="45" text-anchor="middle">1 · definir</text>
+            <rect class="dnode-bg" x="440" y="80" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="520" y="105" text-anchor="middle">2 · conseguir</text>
+            <rect class="dfill" x="460" y="150" width="160" height="46" rx="8"/>
+            <text class="dtxt" x="540" y="178" text-anchor="middle">3 · limpiar</text>
+            <rect class="dnode-bg" x="440" y="226" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="520" y="251" text-anchor="middle">4 · explorar</text>
+            <rect class="dnode-bg" x="240" y="290" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="320" y="315" text-anchor="middle">5 · separar</text>
+            <rect class="dnode-bg" x="40" y="226" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="120" y="251" text-anchor="middle">6 · entrenar</text>
+            <rect class="dnode-bg" x="20" y="150" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="100" y="175" text-anchor="middle">7 · evaluar</text>
+            <rect class="dnode-bg" x="40" y="80" width="160" height="40" rx="8"/>
+            <text class="dtxt" x="120" y="105" text-anchor="middle">8 · producción</text>
+
+            <path class="dedge" d="M405 45 L 470 78"/>
+            <path class="dedge" d="M525 125 V 145"/>
+            <path class="dedge" d="M535 200 V 222"/>
+            <path class="dedge" d="M470 268 L 405 292"/>
+            <path class="dedge" d="M235 312 L 175 270"/>
+            <path class="dedge" d="M115 222 V 195"/>
+            <path class="dedge" d="M110 146 V 125"/>
+            <path class="dedge-mute" d="M180 168 C 300 140, 320 100, 245 55" stroke-dasharray="6 6"/>
+            <text class="dtxt-mute" x="300" y="140" text-anchor="middle">casi siempre se vuelve</text>
+          </svg>
+          <figcaption>La flecha punteada es la etapa real: evaluar casi nunca termina el proyecto, lo devuelve a limpiar mejor, conseguir más datos o redefinir el problema.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">02</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Antes de tocar datos }</p>
+        <h2>Definir el problema</h2>
+        <p>Esta etapa se hace hablando, no programando, y consiste en convertir un pedido vago en las tres piezas del tema anterior: tarea, experiencia y medida.</p>
+        <p>"Queremos usar inteligencia artificial para mejorar las ventas" no es un problema. Convertirlo requiere preguntas incómodas: ¿qué decisión concreta va a cambiar si el modelo funciona? ¿Quién la toma hoy y con qué información? ¿Qué error es peor, decir que sí cuando era no, o al revés? ¿Contra qué se compara el modelo para saber si vale la pena?</p>
+        <p>Esa última pregunta tiene una respuesta obligatoria: <strong>siempre hay que definir un baseline</strong>, una regla tonta contra la cual medirse. Predecir siempre el promedio, o siempre la clase mayoritaria, o repetir el valor de ayer. Si el modelo no le gana claramente al baseline, no justifica su costo. Y como vimos en el tema anterior, el baseline tonto puede tener 99,5% de aciertos.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">03</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ La etapa que nadie cuenta }</p>
+        <h2>Conseguir y limpiar</h2>
+        <p>Acá se va el grueso del tiempo. Las encuestas del rubro lo ponen entre el 60% y el 80% del esfuerzo total de un proyecto, y ningún tutorial lo muestra porque no tiene nada de fotogénico.</p>
+        <p>Lo que aparece, siempre:</p>
+        <ul>
+          <li><strong>Faltantes.</strong> Celdas vacías. Hay que decidir si borrar la fila, borrar la columna, o rellenar con la media o la mediana. Y antes de decidir, preguntarse por qué faltan: si los ingresos altos son los que no se declaran, borrar esas filas te sesga el modelo entero.</li>
+          <li><strong>Duplicados.</strong> La misma observación dos veces, a veces con diferencias mínimas de formato que impiden detectarla con una comparación exacta.</li>
+          <li><strong>Formatos inconsistentes.</strong> Fechas en tres formatos distintos, "CABA" y "Capital Federal" y "C.A.B.A." como tres categorías separadas, números guardados como texto con coma decimal.</li>
+          <li><strong>Categorías en texto.</strong> Un modelo consume números. "Flores" hay que convertirlo, y no a 1, 2, 3, porque eso inventa un orden que no existe. Se usa <em>one-hot</em>: una columna por barrio, con 1 en la que corresponde.</li>
+          <li><strong>Escalas incompatibles.</strong> Metros cuadrados entre 30 y 200 conviviendo con precios entre 100.000 y 900.000. Para KNN, SVM, PCA y regularización esto no es un detalle: es la diferencia entre funcionar y no.</li>
+        </ul>
+        <div class="callout"><span class="etiqueta">Clave</span>Toda transformación que aprende algo de los datos (la media para rellenar, el mínimo y el máximo para escalar, las categorías del one-hot) se calcula <strong>solo sobre el conjunto de entrenamiento</strong> y después se aplica al de test. Hacerlo antes de separar es el error de la sección 05.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">04</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Mirar antes de modelar }</p>
+        <h2>Explorar</h2>
+        <p>Antes de entrenar nada hay que mirar los datos. No es una formalidad: es donde aparecen los problemas que después son imposibles de diagnosticar.</p>
+        <p>El mínimo indispensable son cuatro cosas. Cuántas filas y columnas hay (<code>X.shape</code>, del tema 02). Media, mediana y desvío de cada columna numérica, para detectar outliers por la separación entre las dos primeras, como en el tema 04. Cuántos valores distintos tiene cada columna categórica. Y qué proporción tiene cada clase, si el problema es de clasificación, porque un desbalance fuerte cambia todo lo que viene después.</p>
+        <p>Y sobre todo, <strong>graficar</strong>. El cuarteto de Anscombe que se menciona en el tema 09 existe justamente para esto: cuatro conjuntos de datos completamente distintos que comparten media, varianza, correlación y recta de ajuste. Mirando solo los números son idénticos; mirando el gráfico, tres de los cuatro son un desastre.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">05</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ El corte }</p>
+        <h2>Separar, entrenar, evaluar</h2>
+        <p>Antes de entrenar se aparta una porción de los datos, típicamente entre el 20% y el 30%, y no se toca hasta el final. Ese es el conjunto de <strong>test</strong>, y su único trabajo es responder una pregunta que ningún otro dato puede responder: cómo se comporta el modelo con casos que nunca vio.</p>
+        <p>Entrenar es la parte corta. Con scikit-learn son dos líneas, y la mayoría de las veces se prueban varios modelos simples antes de complicarse.</p>
+        <div class="callout formula">modelo.fit(X_train, y_train)<br>predicciones = modelo.predict(X_test)</div>
+        <p>Evaluar es comparar esas predicciones contra <code>y_test</code> usando la medida que definiste en la etapa 1, y contra el baseline. El tema 07 desarrolla la mecánica de la separación y el 13 las métricas.</p>
+        <div class="callout warn"><span class="etiqueta">Cuidado</span>El conjunto de test se usa <strong>una sola vez</strong>, al final. Si probás veinte modelos y elegís el que mejor da en test, ese resultado ya no estima nada: elegiste en función de él, así que está contaminado. Para elegir entre modelos está el conjunto de validación, que es el tema 07.</div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">06</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Después del modelo }</p>
+        <h2>Producción y degradación</h2>
+        <p>Un modelo entrenado no sirve de nada guardado en una notebook. Ponerlo en producción implica que reciba datos nuevos, en el mismo formato y con las mismas transformaciones que en el entrenamiento, y devuelva predicciones a tiempo.</p>
+        <p>Y ahí empieza el problema que separa un ejercicio de un sistema real: <strong>los modelos se degradan solos</strong>. El mundo cambia, los datos que llegan dejan de parecerse a los del entrenamiento, y la calidad cae sin que nada falle ni avise. Un modelo de precios entrenado antes de una devaluación sigue devolviendo números con toda seguridad; simplemente están mal.</p>
+        <p>Por eso la etapa 8 no es "terminar": es monitorear la métrica en producción y reentrenar cuando baje. Un modelo es algo que se mantiene, no algo que se entrega.</p>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">07</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Practicar }</p>
+        <h2>Ejercicios</h2>
+        <p>Cinco ejercicios sobre el orden de las etapas y las decisiones de limpieza.</p>
+        <div id="ejercicios"></div>
+      </div>
+    </section>
+
+    <section class="section reveal">
+      <div class="sec-no">08</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Errores frecuentes }</p>
+        <h2>Lo que más se rompe</h2>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Saltear el baseline.</strong> Sin una regla tonta contra la cual comparar, un 92% de aciertos no se puede interpretar. Puede ser excelente o puede ser peor que predecir siempre lo mismo.</div>
+        <div class="callout warn"><span class="etiqueta">Trampa</span><strong>Convertir categorías a 1, 2, 3.</strong> Eso le dice al modelo que Flores está más cerca de Caballito que de Palermo, y que la distancia entre el primero y el tercero es el doble. Nada de eso es cierto. Para categorías sin orden va one-hot.</div>
+        <div class="callout err"><span class="etiqueta">Error clásico</span><strong>Limpiar antes de separar.</strong> Si calculás la media para rellenar faltantes, o el desvío para estandarizar, usando el dataset completo, esos números ya contienen información del test. El modelo entrena habiendo visto de refilón datos que se suponía que no conocía, la evaluación sale mejor de lo real, y en producción el resultado es peor de lo prometido. No hay excepción ni error visible: es la fuga de datos, y el tema 07 la desarma.</div>
+      </div>
+    </section>
+
+    <section class="section reveal" id="sintesis">
+      <div class="sec-no">09</div>
+      <div class="sec-body">
+        <p class="eyebrow">{ Síntesis }</p>
+        <h2>Lo que hay que llevarse</h2>
+        <p>Un proyecto tiene ocho etapas y la flecha importante es la que vuelve: evaluar casi nunca termina nada, devuelve el proyecto a limpiar mejor o a redefinir el problema. Definir se hace hablando y termina con las tres piezas del tema anterior más un baseline, una regla tonta contra la cual medirse, sin la cual ningún porcentaje se puede interpretar. Conseguir y limpiar se lleva entre el 60% y el 80% del tiempo real: faltantes, duplicados, formatos inconsistentes, categorías que hay que convertir con one-hot y no con números, y escalas incompatibles. Explorar es mirar formas, medias contra medianas, proporciones de clase y sobre todo gráficos, porque los resúmenes numéricos esconden desastres. Separar, entrenar y evaluar es la parte corta, y el conjunto de test se toca una sola vez. Producción no es el final: los modelos se degradan solos cuando el mundo cambia, sin fallar ni avisar. La regla que atraviesa todo el tema es que cualquier transformación que aprenda algo de los datos se calcula solo sobre entrenamiento, porque hacerlo antes de separar filtra información y hace que la evaluación mienta. El próximo tema es exactamente eso: cómo se separan los datos bien, y por qué la validación cruzada es mejor que un solo corte.</p>
+      </div>
+    </section>
+
+    <nav class="concept-nav"></nav>
+  </main>
+
+  <footer class="pie">
+    <div class="envoltura">
+      <p>Hecho para David y Abel · <span data-anio></span></p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/DrawSVGPlugin.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.3.11/dist/lenis.min.js"></script>
+  <script src="anim.js"></script>
+  <script src="progreso.js"></script>
+  <script src="ejercicios.js"></script>
+  <script src="flujo.js"></script>
+</body>
+</html>
