@@ -1,8 +1,9 @@
 # Temario validado — 24 temas en 6 fases
 
 Contraste del temario de §3 del spec (`docs/superpowers/specs/2026-08-06-machine-learning-app-design.md`)
-contra los índices reales de los 5 libros de referencia, extraídos en
-`docs/fuentes/indices.md`. Cantidad de temas (24) y fases (6) sin cambios, tal como fija
+contra los índices reales de los 5 libros de referencia. Los índices se extrajeron
+en un archivo de trabajo local que no se versiona: son tablas de contenido de obras con
+copyright y no corresponde publicarlas. Cantidad de temas (24) y fases (6) sin cambios, tal como fija
 el spec. Detalle completo de cada discrepancia y su resolución en
 `.superpowers/sdd/2026-08-06-etapas-1-4/task-1-report.md`.
 
